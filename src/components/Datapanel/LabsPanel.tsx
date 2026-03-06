@@ -5,16 +5,14 @@ import {
   Calendar,
   Check,
   X,
-  Download,
-  Send,
-  User,
+ User,
   ArrowUp,
   ArrowDown,
   CheckCircle2,
   Trash2,
   RotateCcw,
   Save,
-  FileText,
+
 } from "lucide-react";
 
 // --- Types ---
@@ -243,107 +241,43 @@ export default function LaboratoryReport() {
   // --- Styles ---
   const inputClass =
     "w-full h-8 bg-[#CFE8F2] rounded px-3 text-sm text-gray-700 outline-none focus:ring-1 focus:ring-blue-400 border-none placeholder-gray-400 transition-all";
-  const labelClass = "block text-xs font-bold text-[#000000] mb-1.5";
+  const labelClass = "block text-xs font-semibold text-black mb-1";
 
   return (
     <div className="min-h-screen bg-white pb-24 font-sans text-gray-800">
       
       {/* 1. Top Status & Action Bar */}
-      <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-2 px-4 py-4 bg-white border-b border-gray-200 sticky top-0 z-20">
-        <div className="flex items-center gap-3 w-full sm:w-auto">
-          <span className="text-sm font-semibold text-gray-700">Status</span>
-          <div className="relative flex-1 sm:flex-none">
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value as Status)}
-              className={`
-                appearance-none px-6 py-2 rounded-lg font-medium text-sm 
-                transition-all duration-200 shadow-sm border 
-                pr-10 cursor-pointer outline-none w-full sm:w-auto
-                ${
-                  status === "pending"
-                    ? "bg-yellow-500 text-white border-yellow-600"
-                    : status === "in progress"
-                    ? "bg-blue-500 text-white border-blue-600"
-                    : status === "Clarification"
-                    ? "bg-purple-500 text-white border-purple-600"
-                    : "bg-green-600 text-white border-green-700"
-                }
-              `}
-            >
-              <option value="pending" className="bg-white text-yellow-700">Pending</option>
-              <option value="in progress" className="bg-white text-blue-700">In Progress</option>
-              <option value="completed" className="bg-white text-green-700">Completed</option>
-              <option value="Clarification" className="bg-white text-purple-700">Clarification</option>
-            </select>
-            <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-white" />
-          </div>
+      <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-2 px-4 py-2 bg-white border-b border-gray-200 sticky top-0 z-20">
+        <div className="flex items-center gap-1 w-full sm:w-auto">
+          
+        {/* 2. Title Header */}
+      
+          <h1 className="block text-lg font-semibold text-black mb-1">Laboratory Report</h1>
         </div>
+      
 
         <div className="flex gap-3 sm:ml-auto w-full sm:w-auto justify-end">
-          <button onClick={handleDelete} className="flex items-center justify-center gap-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium text-xs transition-all duration-200 shadow-sm">
-            <Trash2 size={14} /> Delete
+           <button onClick={handleSave} className="flex items-center justify-center gap-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium text-xs transition-all duration-200 shadow-sm">
+            <Save size={14} /> Save
           </button>
+          
           <button onClick={handleReset} className="flex items-center justify-center gap-1 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium text-xs transition-all duration-200 shadow-sm">
             <RotateCcw size={14} /> Reset
           </button>
           
-          <button onClick={handleSave} className="flex items-center justify-center gap-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium text-xs transition-all duration-200 shadow-sm">
-            <Save size={14} /> Save
+        <button onClick={handleDelete} className="flex items-center justify-center gap-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium text-xs transition-all duration-200 shadow-sm">
+            <Trash2 size={14} /> Delete
           </button>
         </div>
       </div>
 
-      <div className="px-2 sm:px-2 py-6 max-w-[1400px] mx-auto space-y-6">
+      <div className="px-2 sm:px-2 py-4 max-w-[1400px] mx-auto space-y-2">
         
-        {/* 2. Title Header */}
-        <div className="border border-gray-300 rounded-lg p-1 bg-white flex items-center gap-2 shadow-sm">
-          <h1 className="text-lg font-bold text-black pl-4">Laboratory Report</h1>
-        </div>
-        
-        {/* 3. Patient Information */}
-        <div className="bg-white border border-blue-300 rounded-xl p-5 shadow-sm">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center">
-              <User size={14} className="text-blue-600" />
-            </div>
-            <h2 className="text-sm font-bold text-[#000000]">Patient information</h2>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
-            <div>
-              <label className={labelClass}>First Name</label>
-              <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="First Name" className={inputClass} />
-            </div>
-            <div>
-              <label className={labelClass}>Last Name</label>
-              <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Last Name" className={inputClass} />
-            </div>
-            <div className="relative">
-              <label className={labelClass}>DOB</label>
-              <div className="relative cursor-pointer" onClick={() => triggerDatePicker(dobRef)}>
-                <input ref={dobRef} type="date" value={dob} onChange={(e) => setDob(e.target.value)} className={`${inputClass} pr-10 cursor-pointer [&::-webkit-calendar-picker-indicator]:hidden`} />
-                <Calendar size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
-              </div>
-            </div>
-            <div className="relative">
-              <label className={labelClass}>Gender</label>
-              <div className="relative">
-                <select value={gender} onChange={(e) => setGender(e.target.value)} className={`${inputClass} appearance-none cursor-pointer`}>
-                  <option value="">Select</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Other">Other</option>
-                </select>
-                <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
-              </div>
-            </div>
-          </div>
-        </div>
-
+       
+       
         {/* 4. Provider & Facility */}
-        <div className="bg-white border border-blue-300 rounded-xl p-5 shadow-sm">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 items-end">
+        <div className="bg-white border border-blue-300 rounded-xl p-2 shadow-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-2 items-end">
             <div>
               <label className={labelClass}>Provider name</label>
               <input type="text" value={providerName} onChange={(e) => setProviderName(e.target.value)} placeholder="Provider name" className={inputClass} />
@@ -367,16 +301,16 @@ export default function LaboratoryReport() {
         </div>
 
         {/* 5. Panel Selection & Parameters with Select All Button */}
-        <div className="bg-white border border-blue-300 rounded-xl p-6 shadow-sm mb-2">
-          <div className="flex flex-col md:flex-row gap-8">
+        <div className="bg-white border border-blue-300 rounded-xl p-2 shadow-sm ">
+          <div className="flex flex-col md:flex-row gap-6">
             {/* Panel Select */}
-            <div className="flex-1 mb-2">
+            <div className="flex-1 ">
               <label className={labelClass}>Panel Name</label>
-              <div className="relative py-1.5">
+              <div className="relative py-4">
                 <select 
                   value={panelName}
                   onChange={(e) => setPanelName(e.target.value)}
-                  className="w-full h-10 bg-[#CFE8F2] rounded-lg px-4 text-sm text-gray-700 appearance-none outline-none focus:ring-1 focus:ring-blue-400 cursor-pointer"
+                  className="w-full h-8 bg-[#CFE8F2] rounded-lg px-2 text-sm text-gray-700 appearance-none outline-none focus:ring-1 focus:ring-blue-400 cursor-pointer"
                 >
                   {Object.keys(PANELS_DATA).map(p => <option key={p} value={p}>{p}</option>)}
                 </select>
@@ -386,7 +320,7 @@ export default function LaboratoryReport() {
 
             {/* Parameters List with Select All */}
             <div className="flex-[1.5]">
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-1">
                 <label className="block text-sm font-semibold text-[#030303]">Select Parameters</label>
                 <button
                   onClick={handleSelectAll}
@@ -399,7 +333,7 @@ export default function LaboratoryReport() {
                   {allParametersSelected ? 'Deselect All' : 'Select All'}
                 </button>
               </div>
-              <div className="bg-[#bae6fd] bg-opacity-40 rounded-lg p-5">
+              <div className="bg-[#bae6fd] bg-opacity-40 rounded-lg p-2">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {availableParams.map((param) => {
                     const isChecked = results.some(r => r.parameter === param);
@@ -416,7 +350,7 @@ export default function LaboratoryReport() {
                 
                 {/* Selection Summary */}
                 {availableParams.length > 0 && (
-                  <div className="mt-3 text-xs text-gray-600 border-t border-blue-200 pt-2">
+                  <div className="mt-2 text-xs text-gray-600 border-t border-blue-200 pt-1">
                     {results.length} of {availableParams.length} parameters selected
                   </div>
                 )}
@@ -426,8 +360,8 @@ export default function LaboratoryReport() {
         </div>
 
         {/* 6. Lab Results Table */}
-        <div className="bg-white border border-blue-300 rounded-xl p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
+        <div className="bg-white border border-blue-300 rounded-xl p-2 shadow-sm">
+          <div className="flex items-center justify-between mb-1">
             <h2 className="text-sm font-bold text-[#020202]">Lab Results</h2>
             <div className="flex gap-4 text-xs font-medium text-gray-500">
               <span className="text-red-600">High</span>
@@ -533,52 +467,22 @@ export default function LaboratoryReport() {
         </div>
 
         {/* 7. Doctor's Comments & Footer Section */}
-        <div className="bg-white border border-blue-300 rounded-xl p-6 shadow-sm mb-10">
+        <div className="bg-white border border-blue-300 rounded-xl p-2 shadow-sm mb-1">
           <h2 className="text-sm font-bold text-[#000000] mb-2">Doctor's Comments & Observations</h2>
           
-          <div className="bg-[#fcfdfd] border border-gray-300 rounded-lg p-0 mb-4 overflow-hidden">
+          <div className="bg-[#fcfdfd] border border-gray-300 rounded-lg p-0 mb-2 overflow-hidden">
             <AutoResizeTextarea
               value={comments}
               onChange={(e) => setComments(e.target.value)}
               placeholder="Enter clinical observations, interpretations, and recommendations..."
-              className="w-full min-h-[150px] bg-transparent p-4 text-sm text-gray-700"
+              className="w-full min-h-[100px] bg-transparent p-4 text-sm text-gray-700"
             />
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
-            <span className="text-xs text-gray-400">Last updated: Never</span>
-            
-            <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-              <button 
-                onClick={() => setComments('')}
-                className="text-sm text-gray-600 hover:text-red-600 font-medium px-2"
-              >
-                Clear
-              </button>
-              <button 
-                className="bg-[#0284c7] hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-              >
-                Save Comments
-              </button>
-            </div>
-          </div>
+          
         </div>
         
-        {/* 8. Integrated Footer Action Buttons */}
-        <div className="flex justify-end gap-3 mt-4 mb-8">
-            <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-xs font-medium hover:bg-gray-50 transition-colors shadow-sm">
-              <X size={14} /> Cancel
-            </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-xs font-medium hover:bg-gray-50 transition-colors shadow-sm">
-              <FileText size={14} /> Export PDF
-            </button>
-            <button 
-              onClick={handleSave}
-              className="flex items-center gap-2 px-6 py-2 bg-[#0284c7] hover:bg-blue-700 text-white rounded-lg text-xs font-medium transition-colors shadow-sm"
-            >
-              <Send size={14} /> Submit Report
-            </button>
-        </div>
+       
 
       </div>
     </div>

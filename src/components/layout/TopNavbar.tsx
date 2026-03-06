@@ -1,9 +1,8 @@
-// src/components/TopNavbar.tsx (or wherever it is)
-import { Bell, LogOut, Settings, Home, Search, FileText, User, ChevronDown, Menu, X, Activity, Microscope, HeartPulse, Stethoscope, Calendar } from "lucide-react";
+// src/components/TopNavbar.tsx
+import { LogOut, Home, Search, FileText, User, ChevronDown, Menu, X, Calendar, Settings, Activity, Microscope, HeartPulse, Stethoscope, Sparkles } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 
-// Define the props interface
 interface TopNavbarProps {
   onPanelChange?: (panel: string) => void;
   activePanel?: string;
@@ -18,7 +17,9 @@ const TopNavbar = ({ onPanelChange, activePanel }: TopNavbarProps) => {
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [showEntryDropdown, setShowEntryDropdown] = useState(false);
   const calendarRef = useRef<HTMLDivElement>(null);
+  const entryDropdownRef = useRef<HTMLDivElement>(null);
 
   // Handle scroll effect
   useEffect(() => {
@@ -29,11 +30,14 @@ const TopNavbar = ({ onPanelChange, activePanel }: TopNavbarProps) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Handle click outside calendar
+  // Handle click outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (calendarRef.current && !calendarRef.current.contains(event.target as Node)) {
         setShowCalendar(false);
+      }
+      if (entryDropdownRef.current && !entryDropdownRef.current.contains(event.target as Node)) {
+        setShowEntryDropdown(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -69,11 +73,11 @@ const TopNavbar = ({ onPanelChange, activePanel }: TopNavbarProps) => {
     setShowCalendar(false);
   };
 
-  // Handle medical nav click
-  const handleMedicalNavClick = (path: string, panelId: string) => {
+  const handleEntrySelect = (panelId: string) => {
     if (onPanelChange) {
       onPanelChange(panelId);
     }
+    setShowEntryDropdown(false);
   };
 
   const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -81,38 +85,46 @@ const TopNavbar = ({ onPanelChange, activePanel }: TopNavbarProps) => {
 
   const navItems = [
     { label: "Home", path: "/", icon: Home },
-    { label: "Search", path: "/search", icon: Search },
     { label: "Admin", path: "/admin", icon: Settings },
     { label: "Report", path: "/report", icon: FileText },
+    { label: "Search", path: "/search", icon: Search },
   ];
 
-  const medicalNavItems = [
-    { label: "OV", path: "/ov", icon: Stethoscope, color: "text-blue-400", panelId: "ov" },
-    { label: "Diagnostics", path: "/diagnostics", icon: Activity, color: "text-green-400", panelId: "diagnostics" },
-    { label: "Labs", path: "/labs", icon: Microscope, color: "text-purple-400", panelId: "labs" },
-    { label: "EKG", path: "/ekg", icon: HeartPulse, color: "text-red-400", panelId: "ekg" },
+  const entryItems = [
+    { label: "OV", icon: Stethoscope, panelId: "ov", color: "from-blue-500 to-cyan-400" },
+    { label: "Diagnostics", icon: Activity, panelId: "diagnostics", color: "from-emerald-500 to-teal-400" },
+    { label: "Labs", icon: Microscope, panelId: "labs", color: "from-purple-500 to-pink-400" },
+    { label: "EKG", icon: HeartPulse, panelId: "ekg", color: "from-rose-500 to-red-400" },
   ];
 
   return (
-    <div className={`sticky top-0 z-50 w-full transition-all duration-300 ${
+    <div className={`sticky top-0 z-50 w-full transition-all duration-500 ${
       isScrolled 
-        ? 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-lg' 
-        : 'bg-gradient-to-r from-slate-900 to-slate-800 dark:from-gray-900 dark:to-gray-800'
+        ? 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.12)]' 
+        : 'bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900'
     }`}>
-      {/* Main Top Bar */}
-      <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-3">
-        {/* Logo Section */}
-        <div className="flex items-center gap-3 group cursor-pointer" onClick={() => navigate('/')}>
-          <div className="relative w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-            <span className="text-sm font-bold text-white">Logo</span>
+      
+      {/* Animated gradient line */}
+      <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 animate-gradient-x"></div>
+
+      {/* ROW 1: Main Navigation */}
+      <div className="relative flex items-center justify-between px-4 sm:px-6 lg:px-8 py-1.5">
+        {/* Logo Section with enhanced effects */}
+        <div 
+          className="flex items-center gap-3 group cursor-pointer transform transition-all duration-300 hover:scale-105" 
+          onClick={() => navigate('/')}
+        >
+          <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 overflow-hidden">
+            <div className="absolute inset-0 bg-white/20 transform -translate-x-full group-hover:translate-x-full transition-transform duration-700 skew-x-12"></div>
+            <span className="text-sm font-bold text-white relative z-10">Logo</span>
           </div>
-          <div className="flex flex-col">
-            <span className="text-xl font-bold text-white tracking-tight">Cubexle</span>
-          </div>
+          <span className="text-base sm:text-lg font-semibold text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-blue-200 transition-all duration-300">
+            Logo Name
+          </span>
         </div>
 
-        {/* Desktop Navigation - Main Menu */}
-        <div className="hidden lg:flex items-center gap-24">
+        {/* Desktop Navigation - Main Menu with modern effects */}
+        <div className="hidden lg:flex items-center gap-10">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
@@ -120,25 +132,27 @@ const TopNavbar = ({ onPanelChange, activePanel }: TopNavbarProps) => {
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className={`relative px-4 py-2 rounded-lg transition-all duration-300 ${
+                className={`relative px-5\ py-2 text-sm font-medium rounded-xl transition-all duration-300 group overflow-hidden ${
                   isActive 
-                    ? 'bg-white/20 text-white' 
-                    : 'text-white/80 hover:text-white hover:bg-white/10'
+                    ? 'text-white bg-white/15 shadow-lg shadow-white/5' 
+                    : 'text-white/70 hover:text-white hover:bg-white/10'
                 }`}
               >
-                <div className="flex items-center gap-2">
+                <span className="relative z-10 flex items-center gap-2">
                   <Icon className="w-4 h-4" />
-                  <span className="font-medium">{item.label}</span>
-                </div>
+                  {item.label}
+                </span>
                 {isActive && (
-                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-8 h-0.5 bg-blue-400 rounded-full" />
+                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-8 h-0.5 bg-gradient-to-r from-blue-400 to-indigo-400 rounded-full"></div>
                 )}
+                {/* Hover shimmer effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
               </button>
             );
           })}
         </div>
 
-        {/* Right Actions */}
+           {/* Right Actions */}
         <div className="flex items-center gap-4">
           {/* User Name - Desktop */}
           <div className="hidden lg:flex items-center gap-3">
@@ -150,113 +164,79 @@ const TopNavbar = ({ onPanelChange, activePanel }: TopNavbarProps) => {
             </div>
           </div>
 
-          {/* Logout Button */}
+          {/* Logout Button with enhanced effects */}
           <button
             onClick={() => navigate("/login")}
-            className="hidden sm:flex items-center gap-2 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-white rounded-lg transition-all duration-300 border border-red-500/30 hover:border-red-500/50"
+            className="relative group px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-white rounded-xl transition-all duration-300 border border-red-500/30 hover:border-red-500/50 overflow-hidden"
           >
-            <LogOut className="w-4 h-4" />
-            <span className="text-sm font-medium">Logout</span>
+            <div className="absolute inset-0 bg-gradient-to-r from-red-500/0 to-red-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <LogOut className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" />
           </button>
 
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="lg:hidden p-2 hover:bg-white/10 rounded-lg transition-colors"
+            className="lg:hidden relative w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 transition-all duration-300"
           >
             {isMobileMenuOpen ? (
-              <X className="w-6 h-6 text-white" />
+              <X className="w-5 h-5 text-white animate-spin" />
             ) : (
-              <Menu className="w-6 h-6 text-white" />
+              <Menu className="w-5 h-5 text-white" />
             )}
           </button>
         </div>
       </div>
 
-      {/* Medical Navigation */}
-      <div className="border-t border-white/10">
-        <div className="flex justify-between items-center px-8 sm:px-8 lg:px-32 py-1">
-          <div className="w-0"></div>
-          <div className="flex items-center gap-4 sm:gap-16 ml-auto">
-            {medicalNavItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = activePanel === item.panelId;
-              return (
-                <button
-                  key={item.path}
-                  onClick={() => handleMedicalNavClick(item.path, item.panelId)}
-                  className={`px-4 py-2 rounded-lg transition-all duration-300 flex items-center gap-2 ${
-                    isActive
-                      ? 'bg-white/20 text-white'
-                      : 'text-white/70 hover:text-white hover:bg-white/10'
-                  }`}
-                >
-                  <Icon className={`w-4 h-4 ${item.color}`} />
-                  <span className="text-sm font-medium">{item.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Document Search Bar */}
+      {/* ROW 2: Search/Filter Bar - All data in one row */}
       <div className="border-t border-white/10 bg-black/20 backdrop-blur-sm">
-        <div className="px-2 sm:px-6 lg:px-3 py-1">
-          <div className="flex items-center gap-2">
-            {/* Document Name/No */}
-            <div className="w-[350px]">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/40" />
-                <input
-                  type="text"
-                  placeholder="Document Name or No"
-                  className="w-full pl-10 pr-4 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-transparent transition-all text-sm"
-                />
-              </div>
+        <div className="px-4 sm:px-6 lg:px-8 py-1">
+          <div className="flex flex-wrap items-center gap-2 justify-end">
+            {/* Provider Name */}
+            <div className="relative ">
+              <input
+                type="text"
+                placeholder="Provider Name"
+                className="w-36 sm:w-80 px-4 py-2 bg-white/10 border border-white/20 rounded-sm text-white placeholder-white/50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-transparent transition-all duration-300 group-hover:bg-white/15"
+              />
+              <div className=" absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/0 to-purple-500/0 group-hover:from-blue-500/10 group-hover:to-purple-500/10 pointer-events-none transition-all duration-300"></div>
             </div>
 
-            {/* DOB Input with Calendar */}
-            <div className="relative w-32" ref={calendarRef}>
-              <div className="relative">
+            {/* DOB with Calendar */}
+            <div className="relative w-48" ref={calendarRef}>
+              <div className="relative group">
                 <input
                   type="text"
                   placeholder="DOB"
                   value={selectedDate}
                   onClick={() => setShowCalendar(!showCalendar)}
                   readOnly
-                  className="w-full px-3 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-400/50 text-sm cursor-pointer"
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-sm text-white placeholder-white/50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400/50 cursor-pointer transition-all duration-300 group-hover:bg-white/15"
                 />
-                <Calendar 
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/40 cursor-pointer"
-                  onClick={() => setShowCalendar(!showCalendar)}
-                />
+                <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/40 group-hover:text-white/60 transition-colors" />
               </div>
 
               {/* Calendar Popup */}
               {showCalendar && (
-                <div className="absolute left-0 top-full mt-1 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-3 z-50">
-                  {/* Calendar Header */}
-                  <div className="flex items-center justify-between mb-2">
+                <div className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-4 z-50 animate-slideDown">
+                  <div className="flex items-center justify-between mb-3">
                     <button
                       onClick={handlePrevMonth}
-                      className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                      className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                     >
-                      <ChevronDown className="w-4 h-4 rotate-90" />
+                      <ChevronDown className="w-4 h-4 rotate-90 text-gray-600 dark:text-gray-400" />
                     </button>
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">
                       {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
                     </span>
                     <button
                       onClick={handleNextMonth}
-                      className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                      className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                     >
-                      <ChevronDown className="w-4 h-4 -rotate-90" />
+                      <ChevronDown className="w-4 h-4 -rotate-90 text-gray-600 dark:text-gray-400" />
                     </button>
                   </div>
 
-                  {/* Week Days */}
-                  <div className="grid grid-cols-7 gap-1 mb-1">
+                  <div className="grid grid-cols-7 gap-1 mb-2">
                     {weekDays.map(day => (
                       <div key={day} className="text-center text-xs font-medium text-gray-500 dark:text-gray-400">
                         {day}
@@ -264,7 +244,6 @@ const TopNavbar = ({ onPanelChange, activePanel }: TopNavbarProps) => {
                     ))}
                   </div>
 
-                  {/* Calendar Days */}
                   <div className="grid grid-cols-7 gap-1">
                     {Array.from({ length: getFirstDayOfMonth(currentMonth) }).map((_, i) => (
                       <div key={`empty-${i}`} className="h-8" />
@@ -273,14 +252,17 @@ const TopNavbar = ({ onPanelChange, activePanel }: TopNavbarProps) => {
                       const day = i + 1;
                       const dateStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                       const isSelected = selectedDate === dateStr;
+                      const isToday = dateStr === new Date().toISOString().split('T')[0];
                       
                       return (
                         <button
                           key={day}
                           onClick={() => handleDateSelect(day)}
-                          className={`h-8 w-8 flex items-center justify-center text-sm rounded-lg transition-colors ${
+                          className={`h-8 w-8 flex items-center justify-center text-sm rounded-lg transition-all duration-200 ${
                             isSelected
-                              ? 'bg-blue-500 text-white'
+                              ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-md'
+                              : isToday
+                              ? 'border border-blue-500 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10'
                               : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                           }`}
                         >
@@ -290,8 +272,7 @@ const TopNavbar = ({ onPanelChange, activePanel }: TopNavbarProps) => {
                     })}
                   </div>
 
-                  {/* Today Button */}
-                  <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                  <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
                     <button
                       onClick={() => {
                         const today = new Date();
@@ -301,7 +282,7 @@ const TopNavbar = ({ onPanelChange, activePanel }: TopNavbarProps) => {
                         setSelectedDate(`${year}-${month}-${day}`);
                         setShowCalendar(false);
                       }}
-                      className="w-full px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                      className="w-full px-3 py-1.5 text-sm bg-gradient-to-r  from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:from-gray-200 hover:to-gray-300 dark:hover:from-gray-600 dark:hover:to-gray-500 transition-all duration-300"
                     >
                       Today
                     </button>
@@ -310,125 +291,178 @@ const TopNavbar = ({ onPanelChange, activePanel }: TopNavbarProps) => {
               )}
             </div>
 
-            {/* Gender Select */}
-            <div className="relative w-28">
-              <select className="w-full px-3 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400/50 text-sm">
+            {/* Gender Dropdown */}
+            <div className="relative group">
+              <select className="w-32 px-4 py-2 bg-white/10 border border-white/20 rounded-sm text-white appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400/50 text-sm transition-all duration-300 group-hover:bg-white/15">
                 <option value="" className="bg-slate-800 text-white">Gender</option>
                 <option value="male" className="bg-slate-800 text-white">Male</option>
                 <option value="female" className="bg-slate-800 text-white">Female</option>
                 <option value="other" className="bg-slate-800 text-white">Other</option>
               </select>
-              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
+              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/40 group-hover:text-white/60 transition-colors pointer-events-none" />
             </div>
 
             {/* Page Number */}
-            <div className="w-20">
+            <div className="relative ">
               <input
                 type="text"
                 placeholder="Pg No"
-                className="w-full px-3 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-400/50 text-sm"
+                className="w-24 px-4 py-2 bg-white/10 border border-white/20 rounded-sm text-white placeholder-white/50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all duration-300 group-hover:bg-white/15"
               />
             </div>
 
-            {/* Status Dropdown */}
-            <div className="relative w-32">
-              <select className="w-full px-3 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400/50 text-sm">
-                <option value="" className="bg-slate-800 text-white">Clarification</option>
-                <option value="active" className="bg-slate-800 text-white">Active</option>
-                <option value="pending" className="bg-slate-800 text-white">Pending</option>
-                <option value="completed" className="bg-slate-800 text-white">Completed</option>
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
-            </div>
+            {/* Entry Pages Dropdown with OV, Diagnostics, Labs, EKG */}
+            <div className="relative" ref={entryDropdownRef}>
+              <button
+                onClick={() => setShowEntryDropdown(!showEntryDropdown)}
+                className="group flex items-center gap-2 px-5 py-2 bg-white/10 border border-white/20 rounded-sm text-white text-sm hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all duration-300"
+              >
+                <span>Entry Pages</span>
+                <ChevronDown className={`w-4 h-4 text-white/60 transition-transform duration-300 `} />
+              </button>
 
-            {/* Search Button */}
-            <button className="px-6 py-2.5 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-all duration-300 transform hover:scale-105 active:scale-95 text-sm shadow-lg flex items-center gap-2">
-              <Search className="w-4 h-4" />
-              <span>Search</span>
-            </button>
+              {/* Entry Pages Dropdown Menu */}
+              {showEntryDropdown && (
+                <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-gray-800  shadow-2xl border border-gray-200 dark:border-gray-700 py-2 z-50 animate-slideDown">
+                  {entryItems.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = activePanel === item.panelId;
+                    return (
+                      <button
+                        key={item.panelId}
+                        onClick={() => handleEntrySelect(item.panelId)}
+                        className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-all duration-300 group hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                          isActive ? 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-600' : ''
+                        }`}
+                      >
+                        <div className={`p-1.5 rounded-lg bg-gradient-to-r ${item.color} bg-opacity-10 group-hover:scale-110 transition-transform duration-300`}>
+                          <Icon className={`w-4 h-4 text-${item.color.split('-')[1]}-500`} />
+                        </div>
+                        <span className={`flex-1 text-left ${isActive ? 'font-medium text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'}`}>
+                          {item.label}
+                        </span>
+                        {isActive && <Sparkles className="w-3 h-3 text-blue-500 animate-pulse" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden absolute top-full left-0 right-0 bg-white dark:bg-gray-900 shadow-xl border-t border-gray-200 dark:border-gray-700 animate-slideDown max-h-[80vh] overflow-y-auto">
-          <div className="p-4 space-y-4">
-            {/* User Info */}
-            <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-800 rounded-xl">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center">
-                <User className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <div className="font-semibold text-gray-900 dark:text-white">User Name</div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">User</div>
-              </div>
-            </div>
-
-            {/* Main Navigation */}
-            <div className="space-y-1">
-              <div className="text-xs font-semibold text-gray-400 uppercase px-3">Main Menu</div>
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = location.pathname === item.path;
-                return (
+        <div className="lg:hidden fixed inset-0 top-[73px] bg-gradient-to-b from-slate-900 to-slate-800 dark:from-gray-900 dark:to-gray-800 z-40 animate-slideDown">
+          <div className="h-full overflow-y-auto pb-20">
+            <div className="p-6 space-y-6">
+              {/* User Profile */}
+              <div className="relative bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-6 text-white overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full transform translate-x-16 -translate-y-16"></div>
+                <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full transform -translate-x-12 translate-y-12"></div>
+                <div className="relative z-10">
+                  <input
+                    type="text"
+                    placeholder="User Name"
+                    defaultValue="User Name"
+                    className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-xl text-white placeholder-white/80 text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-white/50 mb-3"
+                  />
                   <button
-                    key={item.path}
-                    onClick={() => {
-                      navigate(item.path);
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all ${
-                      isActive 
-                        ? 'bg-blue-50 dark:bg-gray-800 text-blue-600 dark:text-blue-400' 
-                        : 'hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300'
-                    }`}
+                    onClick={() => navigate("/login")}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-500/30 hover:bg-red-500/40 rounded-xl transition-colors"
                   >
-                    <Icon className="w-5 h-5" />
-                    <span className="font-medium">{item.label}</span>
-                    {isActive && <div className="ml-auto w-1.5 h-1.5 bg-blue-600 rounded-full"></div>}
+                    <LogOut className="w-4 h-4" />
+                    <span>Logout</span>
                   </button>
-                );
-              })}
-            </div>
+                </div>
+              </div>
 
-            {/* Medical Navigation */}
-            <div className="space-y-1 pt-2 border-t border-gray-200 dark:border-gray-700">
-              <div className="text-xs font-semibold text-gray-400 uppercase px-3">Medical</div>
-              {medicalNavItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = activePanel === item.panelId;
-                return (
-                  <button
-                    key={item.path}
-                    onClick={() => {
-                      handleMedicalNavClick(item.path, item.panelId);
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all ${
-                      isActive 
-                        ? 'bg-blue-50 dark:bg-gray-800' 
-                        : 'hover:bg-gray-50 dark:hover:bg-gray-800'
-                    }`}
-                  >
-                    <Icon className={`w-5 h-5 ${item.color}`} />
-                    <span className="font-medium text-gray-700 dark:text-gray-300">{item.label}</span>
-                  </button>
-                );
-              })}
-            </div>
+              {/* Main Navigation */}
+              <div className="space-y-2">
+                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4">Main Menu</div>
+                {navItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = location.pathname === item.path;
+                  return (
+                    <button
+                      key={item.path}
+                      onClick={() => {
+                        navigate(item.path);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-4 px-4 py-4 rounded-xl transition-all duration-300 transform active:scale-95 ${
+                        isActive 
+                          ? 'bg-white/20 text-white shadow-lg' 
+                          : 'text-white/70 hover:bg-white/10 hover:text-white'
+                      }`}
+                    >
+                      <div className={`p-2 rounded-lg ${isActive ? 'bg-white/20' : 'bg-white/5'}`}>
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <span className="font-medium flex-1 text-left">{item.label}</span>
+                      {isActive && <Sparkles className="w-4 h-4 text-blue-300 animate-pulse" />}
+                    </button>
+                  );
+                })}
+              </div>
 
-            {/* Logout Button */}
-            <button
-              onClick={() => navigate("/login")}
-              className="w-full flex items-center gap-3 px-3 py-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors mt-4"
-            >
-              <LogOut className="w-5 h-5" />
-              <span className="font-medium">Logout</span>
-            </button>
+              {/* Entry Pages */}
+              <div className="space-y-2 pt-4 border-t border-white/10">
+                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4">Entry Pages</div>
+                {entryItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activePanel === item.panelId;
+                  return (
+                    <button
+                      key={item.panelId}
+                      onClick={() => {
+                        handleEntrySelect(item.panelId);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-4 px-4 py-4 rounded-xl transition-all duration-300 transform active:scale-95 ${
+                        isActive 
+                          ? `bg-gradient-to-r ${item.color} text-white shadow-lg` 
+                          : 'text-white/70 hover:bg-white/10'
+                      }`}
+                    >
+                      <div className={`p-2 rounded-lg ${isActive ? 'bg-white/20' : 'bg-white/5'}`}>
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <span className="font-medium flex-1 text-left">{item.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
       )}
+
+      {/* Animation keyframes */}
+      <style>{`
+        @keyframes gradient-x {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+        .animate-gradient-x {
+          background-size: 200% 200%;
+          animation: gradient-x 3s ease infinite;
+        }
+        .animate-slideDown {
+          animation: slideDown 0.3s ease-out;
+        }
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   );
 };

@@ -51,11 +51,11 @@ interface MedicationRow {
   cmt: string;
 }
 
-type Status = "pending" | "completed" | "in progress" | "Clarification";
+
 
 // --- Components ---
 const PageBox: React.FC<PageBoxProps> = ({ value, setValue, id }) => (
-  <div className="flex bg-[#b6d3dc] rounded overflow-hidden w-[90px] h-[30px] border border-[#a6c3cc] shadow-sm">
+  <div className="flex bg-[#b6d3dc] rounded overflow-hidden w-[70px] h-[30px] border border-[#a6c3cc] shadow-sm">
     <input
       id={id}
       type="number"
@@ -70,15 +70,15 @@ const PageBox: React.FC<PageBoxProps> = ({ value, setValue, id }) => (
 );
 
 const Header: React.FC<HeaderProps> = ({ title, icon: Icon, hideIcon }) => (
-  <div className="flex justify-between items-center mb-1">
-    <span className="font-semibold text-[15px] text-gray-800 flex items-center gap-1">
+  <div className="flex justify-between items-center ">
+    <span className="font-semibold text-[15px] text-gray-800 flex items-center ">
       {Icon && !hideIcon && <Icon size={16} className="text-gray-600" strokeWidth={2} />} {title}
     </span>
 
   </div>
 );
 
-const Block: React.FC<BlockProps> = ({ title, value, onChange, icon: Icon, minHeight = 95, hideIcon }) => {
+const Block: React.FC<BlockProps> = ({ title, value, onChange, icon: Icon, minHeight = 60, hideIcon }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const adjustHeight = useCallback(() => {
@@ -110,8 +110,8 @@ const Block: React.FC<BlockProps> = ({ title, value, onChange, icon: Icon, minHe
   const shouldHideIcon = hideIcon !== undefined ? hideIcon : true;
 
   return (
-    <div className="border border-blue-400 rounded-lg p-3 bg-white shadow-sm transition-all duration-200 hover:shadow-md">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-2">
+    <div className="border border-blue-400 rounded-lg p-2 bg-white shadow-sm transition-all duration-200 hover:shadow-md">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center ">
         <Header title={title} icon={CurrentIcon} hideIcon={shouldHideIcon} />
 
       </div>
@@ -132,7 +132,7 @@ const Block: React.FC<BlockProps> = ({ title, value, onChange, icon: Icon, minHe
 // --- Main UI Component ---
 export default function MedicalUI() {
   /* STATUS BUTTONS */
-  const [status, setStatus] = useState<Status>("pending");
+
 
   /* PAGE NUMBERS for sections */
   /* VITALS - Add two independent page number states for original row */
@@ -230,9 +230,8 @@ export default function MedicalUI() {
       setBlockPageNumbers(Object.fromEntries(fields.map((f) => [f])));
       setPlanRecommendation("");
       setWorkStatus("");
-
       setSpecialComments("");
-      setStatus("pending");
+      
     }
   };
 
@@ -258,13 +257,13 @@ export default function MedicalUI() {
       setWorkStatus("");
       setSpecialComments("");
 
-      setStatus("pending");
+    
     }
   };
 
   const saveData = () => {
     const allData = {
-      status,
+     
 
       notesType,
       dos,
@@ -344,7 +343,7 @@ export default function MedicalUI() {
       sys: "",
       pulse: "",
       pageNo1: 0,
-      pageNo2:0,
+      pageNo2: 0,
     }]);
   };
 
@@ -362,53 +361,17 @@ export default function MedicalUI() {
 
   return (
     <div className="w-full gap-3">
-      <div className="w-full flex flex-wrap items-center gap-3 mb-6 pb-4 pt-3 border-b border-gray-200 px-4">
-        <span className="text-sm font-semibold text-gray-700 mr-2">Status</span>
-
-        {/* Native Select styled as button */}
-        <div className="relative">
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value as Status)}
-            className={`
-        appearance-none px-6 py-2 rounded-lg font-medium text-sm 
-        transition-all duration-200 shadow-sm border 
-        pr-10 cursor-pointer
-        ${status === "pending" ? "bg-yellow-500 text-white border-yellow-600" :
-                status === "in progress" ? "bg-blue-500 text-white border-blue-600" :
-                  status === "Clarification" ? "bg-purple-500 text-white border-purple-600" :
-                    "bg-green-600 text-white border-green-700"
-
-              }
-        hover:opacity-90
-      `}
-            style={{
-              backgroundImage: 'none',
-              WebkitAppearance: 'none',
-              MozAppearance: 'none'
-            }}
-          >
-            <option value="pending" className="bg-white text-yellow-700">Pending</option>
-            <option value="in progress" className="bg-white text-blue-700">In Progress</option>
-            <option value="completed" className="bg-white text-green-700">Completed</option>
-            <option value="Clarification" className="bg-white text-purple-700">Clarification</option>
-          </select>
-          <ChevronDown
-            size={16}
-            strokeWidth={2}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none text-current"
-          />
-        </div>
-
+      <div className="w-full flex flex-wrap items-center gap-3 mb-2 pb-2 pt-3 border-b border-gray-200 px-4">
+        <span className="block text-lg font-semibold text-black mb-1">OV</span>
         {/* Action Buttons - Positioned to the right */}
         <div className="flex gap-2 ml-auto">
           <button
             type="button"
-            onClick={deleteAll}
-            className="flex items-center justify-center gap-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium text-xs transition-all duration-200 shadow-sm"
-            aria-label="Delete all data"
+            onClick={saveData}
+            className="flex items-center justify-center gap-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium text-xs transition-all duration-200 shadow-sm"
+            aria-label="Save current record"
           >
-            <Trash2 size={16} strokeWidth={2} /> Delete
+            <Save size={16} strokeWidth={2} /> Save
           </button>
           <button
             type="button"
@@ -418,22 +381,23 @@ export default function MedicalUI() {
           >
             <RotateCcw size={16} strokeWidth={2} /> Reset
           </button>
+
           <button
             type="button"
-            onClick={saveData}
-            className="flex items-center justify-center gap-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium text-xs transition-all duration-200 shadow-sm"
-            aria-label="Save current record"
+            onClick={deleteAll}
+            className="flex items-center justify-center gap-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium text-xs transition-all duration-200 shadow-sm"
+            aria-label="Delete all data"
           >
-            <Save size={16} strokeWidth={2} /> Save
+            <Trash2 size={16} strokeWidth={2} /> Delete
           </button>
         </div>
       </div>
 
       {/* Scrollable Content */}
-      <div className="overflow-y-auto space-y-6 custom-scroll pr-2" style={{ maxHeight: 'calc(100vh - 250px)' }}>
+      <div className="overflow-y-auto space-y-1 custom-scroll pr-2" style={{ maxHeight: 'calc(100vh - 250px)' }}>
         {/* Top Panel */}
-        <div className="border border-blue-400 rounded-lg p-4 bg-white shadow-sm">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="border border-blue-400 rounded-lg p-2 bg-white shadow-sm">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2z gap-2">
             {/* Notes Type */}
             <div className="space-y-1">
               <div className="flex items-center justify-between">
@@ -446,7 +410,7 @@ export default function MedicalUI() {
                 <select
                   value={notesType}
                   onChange={(e) => setNotesType(e.target.value)}
-                  className="w-full bg-transparent outline-none text-sm appearance-none pr-6 cursor-pointer text-gray-800 px-3"
+                  className="w-full bg-transparent outline-none text-sm appearance-none pr-6 cursor-pointer text-gray-800 px-2"
                 >
                   <option value="select" disabled>select</option>
                   <option value="Consultation">Consultation</option>
@@ -490,7 +454,7 @@ export default function MedicalUI() {
               <input
                 value={provider}
                 onChange={(e) => setProvider(e.target.value)}
-                className="w-full h-[30px] bg-[#b6d3dc] rounded px-3 text-sm outline-none text-gray-800 border border-[#a6c3cc]"
+                className="w-full h-[30px] bg-[#b6d3dc] rounded px-2 text-sm outline-none text-gray-800 border border-[#a6c3cc]"
                 placeholder="Provider name"
               />
             </div>
@@ -504,25 +468,24 @@ export default function MedicalUI() {
                   value={facility}
                   onChange={(e) => setFacility(e.target.value)}
                   placeholder="Enter facility name"
-                  className="w-full bg-transparent outline-none text-sm text-gray-800 px-3 h-full placeholder-gray-600"
+                  className="w-full bg-transparent outline-none text-sm text-gray-800 px-2 h-full placeholder-gray-600"
                 />
               </div>
 
             </div>
             <div className="items-center gap-1 h-[30px]">
               <label className="text-sm font-medium text-gray-700">Page no</label>
-              <div className="[&>div]:!w-[280px] [&>div]:!h-[30px] flex items-center gap-1">
+              <div className="[&>div]:!w-[435px] [&>div]:!h-[30px] flex items-center gap-1">
                 <PageBox value={pageTop} setValue={setPageTop} />
               </div>
             </div>
           </div>
         </div>
-
         {/* Vitals */}
-        <div className="border border-blue-400 rounded-lg p-3 sm:p-4 bg-white shadow-sm">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
-            <div className="flex items-center gap-2 mb-2 sm:mb-0">
-              <Scale size={18} className="text-gray-600 flex-shrink-0" />
+        <div className="border border-blue-400 rounded-lg p-2 sm:p-2 bg-white shadow-sm">
+          <div className="flex grid-cols-2 md:grid-cols-2 flex-col sm:flex-row justify-between items-start sm:items-center">
+            <div className="flex items-center gap-2 ">
+              <Scale size={16} className="text-gray-600 flex-shrink-0" />
               <span className="font-semibold text-sm sm:text-[20px] text-gray-800">Vitals</span>
             </div>
             <div className="flex items-center w-full sm:w-auto">
@@ -537,7 +500,7 @@ export default function MedicalUI() {
           </div>
 
           {/* Original Vitals Row - WITH TWO INDEPENDENT PAGE NO FIELDS */}
-          <div className="flex flex-wrap items-end gap-2 sm:gap-3 md:gap-4 mb-2 pb-2 relative group   rounded-lg">
+          <div className="flex flex-wrap items-end sm:gap-3 md:gap-4 pb-2 relative group rounded-lg">
             {/* Height */}
             <div className="space-y-1">
               <label className="text-[10px] sm:text-xs font-medium text-gray-700">Height</label>
@@ -545,12 +508,12 @@ export default function MedicalUI() {
                 <input
                   value={height}
                   onChange={(e) => setHeight(e.target.value)}
-                  className="w-[50px] xs:w-[55px] sm:w-[60px] h-[28px] sm:h-[30px] bg-[#b6d3dc] rounded px-1 sm:px-2 text-xs sm:text-sm outline-none border border-[#a6c3cc]"
+                  className=" sm:w-[70px] sm:h-[30px] bg-[#b6d3dc] rounded px-1 sm:px-2 text-xs sm:text-sm outline-none border border-[#a6c3cc]"
                 />
                 <select
                   value={heightUnit}
                   onChange={(e) => setHeightUnit(e.target.value)}
-                  className="w-[45px] xs:w-[48px] sm:w-[50px] h-[28px] sm:h-[30px] bg-[#b6d3dc] rounded px-1 text-xs sm:text-sm outline-none border border-[#a6c3cc]"
+                  className=" sm:w-[50px] sm:h-[30px] bg-[#b6d3dc] rounded px-1 text-xs sm:text-sm outline-none border border-[#a6c3cc]"
                 >
                   <option>CM</option>
                   <option>INCH</option>
@@ -566,12 +529,12 @@ export default function MedicalUI() {
                 <input
                   value={weight}
                   onChange={(e) => setWeight(e.target.value)}
-                  className="w-[50px] xs:w-[55px] sm:w-[60px] h-[28px] sm:h-[30px] bg-[#b6d3dc] rounded px-1 sm:px-2 text-xs sm:text-sm outline-none border border-[#a6c3cc]"
+                  className="sm:w-[70px] h-[28px] sm:h-[30px] bg-[#b6d3dc] rounded px-1 sm:px-2 text-xs sm:text-sm outline-none border border-[#a6c3cc]"
                 />
                 <select
                   value={weightUnit}
                   onChange={(e) => setWeightUnit(e.target.value)}
-                  className="w-[45px] xs:w-[48px] sm:w-[50px] h-[28px] sm:h-[30px] bg-[#b6d3dc] rounded px-1 text-xs sm:text-sm outline-none border border-[#a6c3cc]"
+                  className=" sm:w-[50px] h-[28px] sm:h-[30px] bg-[#b6d3dc] rounded px-1 text-xs sm:text-sm outline-none border border-[#a6c3cc]"
                 >
                   <option>KG</option>
                   <option>LBS</option>
@@ -579,14 +542,9 @@ export default function MedicalUI() {
               </div>
             </div>
 
-            {/* FIRST PAGE NO - AFTER WEIGHT (independent) */}
-            <div className="space-y-1 ">
-              <label className="text-[10px] sm:text-xs font-medium text-gray-700">Page no</label>
-              <PageBox value={pageVitals1} setValue={setPageVitals1} />
-            </div>
 
             {/* BMI */}
-            <div className="space-y-0.5 ">
+            <div className="space-y-1 ">
               <label className="text-[10px] sm:text-xs font-medium text-gray-700">BMI</label>
               <div className="[&>div]:!w-[80px] [&>div]:!h-[30px]"></div>
               <input
@@ -596,6 +554,12 @@ export default function MedicalUI() {
               />
             </div>
 
+            {/* FIRST PAGE NO - AFTER WEIGHT (independent) */}
+            <div className="space-y-1 ">
+              <label className="text-[10px] sm:text-xs font-medium text-gray-700">Page no</label>
+              <PageBox value={pageVitals1} setValue={setPageVitals1} />
+
+            </div>
             {/* BP */}
             <div className="space-y-1 ">
               <label className="text-[10px] sm:text-xs font-medium text-gray-700">Blood Pressure / BP</label>
@@ -604,13 +568,13 @@ export default function MedicalUI() {
                   value={dia}
                   onChange={(e) => setDia(e.target.value)}
                   placeholder="Dia"
-                  className="w-[55px] xs:w-[60px] sm:w-[65px] h-[28px] sm:h-[30px] bg-[#b6d3dc] rounded px-1 sm:px-2 text-xs sm:text-sm outline-none border border-[#a6c3cc]"
+                  className="w-[55px] xs:w-[60px] sm:w-[70px] h-[28px] sm:h-[30px] bg-[#b6d3dc] rounded px-1 sm:px-2 text-xs sm:text-sm outline-none border border-[#a6c3cc]"
                 />
                 <input
                   value={sys}
                   onChange={(e) => setSys(e.target.value)}
                   placeholder="Sys"
-                  className="w-[55px] xs:w-[60px] sm:w-[65px] h-[28px] sm:h-[30px] bg-[#b6d3dc] rounded px-1 sm:px-2 text-xs sm:text-sm outline-none border border-[#a6c3cc]"
+                  className="w-[55px] xs:w-[60px] sm:w-[60px] h-[28px] sm:h-[30px] bg-[#b6d3dc] rounded px-1 sm:px-2 text-xs sm:text-sm outline-none border border-[#a6c3cc]"
                 />
               </div>
             </div>
@@ -618,11 +582,11 @@ export default function MedicalUI() {
             {/* Pulse */}
             <div className="space-y-1 ">
               <label className="text-[10px] sm:text-xs font-medium text-gray-700">Pulse</label>
-              <div className="[&>div]:!w-[80px] [&>div]:!h-[30px]"></div>
+              <div className="[&>div]:!w-[60px] [&>div]:!h-[30px]"></div>
               <input
                 value={pulse}
                 onChange={(e) => setPulse(e.target.value)}
-                className="w-[60px] xs:w-[65px] sm:w-[70px] h-[28px] sm:h-[30px] bg-[#b6d3dc] rounded px-1 sm:px-2 text-xs sm:text-sm outline-none border border-[#a6c3cc]"
+                className="w-[60px] xs:w-[60px] sm:w-[70px] h-[28px] sm:h-[30px] bg-[#b6d3dc] rounded px-1 sm:px-2 text-xs sm:text-sm outline-none border border-[#a6c3cc]"
               />
             </div>
 
@@ -636,7 +600,7 @@ export default function MedicalUI() {
 
           {/* Additional Vitals Rows - WITH TWO INDEPENDENT PAGE NO FIELDS PER ROW */}
           {vitalsRows.map((row, index) => (
-            <div key={index} className="flex flex-wrap items-end gap-2 sm:gap-3 md:gap-4 mb-2 pb-2 relative group   rounded-lg">
+            <div key={index} className="flex flex-wrap items-end gap-2 sm:gap-3 md:gap-4  pb-2 relative group  rounded-lg">
               {/* Height */}
               <div className="space-y-1 ">
                 <label className="text-[10px] sm:text-xs font-medium text-gray-700">Height</label>
@@ -644,7 +608,7 @@ export default function MedicalUI() {
                   <input
                     value={row.height}
                     onChange={(e) => updateVitalsRow(index, "height", e.target.value)}
-                    className="w-[50px] xs:w-[55px] sm:w-[60px] h-[28px] sm:h-[30px] bg-[#b6d3dc] rounded px-1 sm:px-2 text-xs sm:text-sm outline-none border border-[#a6c3cc]"
+                    className="sm:w-[70px] sm:h-[30px] bg-[#b6d3dc] rounded px-1 sm:px-2 text-xs sm:text-sm outline-none border border-[#a6c3cc]"
                   />
                   <select
                     value={row.heightUnit}
@@ -665,7 +629,7 @@ export default function MedicalUI() {
                   <input
                     value={row.weight}
                     onChange={(e) => updateVitalsRow(index, "weight", e.target.value)}
-                    className="w-[50px] xs:w-[55px] sm:w-[60px] h-[28px] sm:h-[30px] bg-[#b6d3dc] rounded px-1 sm:px-2 text-xs sm:text-sm outline-none border border-[#a6c3cc]"
+                    className="sm:w-[70px] sm:h-[30px] bg-[#b6d3dc] rounded px-1 sm:px-2 text-xs sm:text-sm outline-none border border-[#a6c3cc]"
                   />
                   <select
                     value={row.weightUnit}
@@ -678,18 +642,6 @@ export default function MedicalUI() {
                 </div>
               </div>
 
-              {/* FIRST PAGE NO - AFTER WEIGHT (independent for this row) */}
-              <div className="space-y-1 ">
-                <label className="text-[10px] sm:text-xs font-medium text-gray-700">Page no</label>
-                <PageBox
-                  value={row.pageNo1}
-                  setValue={(val) => {
-                    const newValue = typeof val === 'function' ? val(row.pageNo1) : val;
-                    updateVitalsRow(index, "pageNo1", newValue);
-                  }}
-                />
-              </div>
-
               {/* BMI */}
               <div className="space-y-1">
                 <label className="text-[10px] sm:text-xs font-medium text-gray-700">BMI</label>
@@ -698,6 +650,18 @@ export default function MedicalUI() {
                   value={row.bmi}
                   onChange={(e) => updateVitalsRow(index, "bmi", e.target.value)}
                   className="w-[60px] xs:w-[65px] sm:w-[70px] h-[28px] sm:h-[30px] bg-[#b6d3dc] rounded px-1 sm:px-2 text-xs sm:text-sm outline-none border border-[#a6c3cc]"
+                />
+              </div>
+
+                {/* FIRST PAGE NO - AFTER WEIGHT (independent for this row) */}
+              <div className="space-y-1 ">
+                <label className="text-[10px] sm:text-xs font-medium text-gray-700">Page no</label>
+                <PageBox
+                  value={row.pageNo1}
+                  setValue={(val) => {
+                    const newValue = typeof val === 'function' ? val(row.pageNo1) : val;
+                    updateVitalsRow(index, "pageNo1", newValue);
+                  }}
                 />
               </div>
 
@@ -743,44 +707,42 @@ export default function MedicalUI() {
                   }}
                 />
               </div>
-
               {/* Delete Row Button */}
               <button
                 type="button"
                 onClick={() => removeVitalsRow(index)}
-                className="pr-6 px-5 hover:bg-red-200 text-red-600 rounded transition-colors w-fit absolute right-0 top-10 duration-200  "
-
+                className="absolute -top-3 right-2 sm:right-4 p-1.5 hover:bg-red-100 text-red-600 rounded-full transition-all duration-200 bg-white shadow-sm border border-gray-200 z-10"
+                title="Remove vitals row"
               >
-                <Trash2 size={20} />
+                <Trash2 size={16} />
               </button>
             </div>
           ))}
         </div>
+
         {/* Text Blocks */}
-        {fields.map((title) => (
-          <Block
-            key={title}
-            title={title}
-            value={data[title] || ""}
-            onChange={(v: string) => setData({ ...data, [title]: v })}
-
-
-            minHeight={95}
-            hideIcon={true}
-          />
-        ))}
-
+        <div className="space-y-1">
+          {fields.map((title) => (
+            <Block
+              key={title}
+              title={title}
+              value={data[title] || ""}
+              onChange={(v: string) => setData({ ...data, [title]: v })}
+              minHeight={60}
+              hideIcon={true}
+            />
+          ))}
+        </div>
         {/* Medication */}
-        <div className="border border-blue-400 rounded-lg p-4 bg-white shadow-sm">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 ">
+        <div className="border border-blue-400 rounded-lg p-2 bg-white shadow-sm">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
             <span className="font-semibold text-[15px] text-gray-800">Medication</span>
-            <div className="flex items-center gap-4 mt-2 sm:mt-0">
-              <div className="flex items-center gap-1">
-              </div>
+            <div className="flex items-center gap-2  sm:mt-0">
+              <div className="flex items-center gap-1"></div>
               <button
                 type="button"
                 onClick={addRow}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1.5 rounded text-sm font-medium flex items-center gap-1 h-[30px] "
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 rounded text-sm font-medium flex items-center gap-2 h-[25px] mb-1"
               >
                 <Plus size={16} /> Add Medication
               </button>
@@ -790,40 +752,59 @@ export default function MedicalUI() {
           {rows.length === 0 ? (
             <div className="text-center py-8 text-gray-500 text-sm italic">No medications added</div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {rows.map((row, i) => (
-                <div key={i} className="grid grid-cols-1 sm:grid-cols-5 gap-40 items-center">
-                  <input
-                    value={row.db}
-                    onChange={(e) => updateRow(i, "db", e.target.value)}
-                    className="bg-[#f3f5f6] px-3 py-1.5 rounded text-sm outline-none border border-gray-300 w-[180px]"
-                    placeholder="Drug/Brand"
-                  />
-                  <input
-                    value={row.dose}
-                    onChange={(e) => updateRow(i, "dose", e.target.value)}
-                    className="bg-[#f3f5f6] px-3 py-1.5 rounded text-sm outline-none border border-gray-300 w-[180px]"
-                    placeholder="Dose"
-                  />
-                  <input
-                    value={row.freq}
-                    onChange={(e) => updateRow(i, "freq", e.target.value)}
-                    className="bg-[#f3f5f6] px-3 py-1.5 rounded text-sm outline-none border border-gray-300 w-[180px]"
-                    placeholder="Frequency"
-                  />
-                  <input
-                    value={row.cmt}
-                    onChange={(e) => updateRow(i, "cmt", e.target.value)}
-                    className="bg-[#f3f5f6] px-3 py-1.5 rounded text-sm outline-none border border-gray-300 w-[180px] "
-                    placeholder="Comments"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeRow(i)}
-                    className="px-2 h-[34px] bg-red-100 hover:bg-red-200 text-red-600 rounded transition-colors   "
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                <div key={i} className="border border-gray-200 rounded-lg p-3 bg-gray-50">
+                  {/* First row - Drug/Brand, Dose, Frequency */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 mb-1">
+                    <input
+                      value={row.db}
+                      onChange={(e) => updateRow(i, "db", e.target.value)}
+                      className="bg-white px-3 py-1.5 rounded text-sm outline-none border border-gray-300 w-full"
+                      placeholder="Drug/Brand"
+                    />
+                    <input
+                      value={row.dose}
+                      onChange={(e) => updateRow(i, "dose", e.target.value)}
+                      className="bg-white px-3 py-1.5 rounded text-sm outline-none border border-gray-300 w-full"
+                      placeholder="Dose"
+                    />
+                    <input
+                      value={row.freq}
+                      onChange={(e) => updateRow(i, "freq", e.target.value)}
+                      className="bg-white px-3 py-1.5 rounded text-sm outline-none border border-gray-300 w-full"
+                      placeholder="Frequency"
+                    />
+                  </div>
+
+                  {/* Second row - Comments and Delete button */}
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                    <textarea
+                      value={row.cmt}
+                      onChange={(e) => updateRow(i, "cmt", e.target.value)}
+                      onInput={(e: React.FormEvent<HTMLTextAreaElement>) => {
+                        const textarea = e.currentTarget;
+                        textarea.style.height = 'auto';
+                        textarea.style.height = textarea.scrollHeight + 'px';
+                      }}
+                      ref={(el: HTMLTextAreaElement | null) => {
+                        if (el) {
+                          el.style.height = 'auto';
+                          el.style.height = el.scrollHeight + 'px';
+                        }
+                      }}
+                      className="bg-white px-3 py-1.5 rounded text-sm outline-none border border-gray-300 w-full sm:flex-1 resize-none overflow-hidden min-h-[36px]"
+                      placeholder="Comments"
+                      rows={1}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeRow(i)}
+                      className="px-2 py-1.5 bg-red-100 hover:bg-red-200 text-red-600 rounded transition-colors flex items-center justify-center sm:w-auto w-full"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -831,14 +812,14 @@ export default function MedicalUI() {
         </div>
 
         {/* Plan/Recommendation and Work Status */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-1 gap-1">
           <Block
             title="Plan/Recommendation"
             value={planRecommendation}
             onChange={setPlanRecommendation}
 
 
-            minHeight={95}
+            minHeight={60}
             hideIcon={true}
           />
           <Block
@@ -847,7 +828,7 @@ export default function MedicalUI() {
             onChange={setWorkStatus}
 
 
-            minHeight={95}
+            minHeight={60}
             hideIcon={true}
           />
         </div>
@@ -858,7 +839,7 @@ export default function MedicalUI() {
           value={specialComments}
           onChange={setSpecialComments}
 
-          minHeight={95}
+          minHeight={60}
           hideIcon={true}
         />
       </div>

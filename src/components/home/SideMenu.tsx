@@ -58,11 +58,7 @@ const SideMenu = ({ isOpen, side = 'left', onItemSelect }: SideMenuProps) => {
           />
         </div>
 
-        {/* Stats */}
-        <div className="flex justify-between items-center mb-3 text-xs text-muted-foreground bg-muted/50 p-2 rounded-md">
-          <span>📋 {filteredItems.length} entries</span>
-          <span>📄 Total pages: {filteredItems.reduce((acc, item) => acc + parseInt(item.pageNo), 0)}</span>
-        </div>
+       
         
         {/* Table Header */}
         <div className="grid grid-cols-2 gap-2 mb-2 pb-2 border-b-2 border-primary/20 bg-primary/5 p-2 rounded-t-lg">
@@ -136,17 +132,7 @@ const SideMenu = ({ isOpen, side = 'left', onItemSelect }: SideMenuProps) => {
           )}
         </div>
 
-        {/* Footer with actions */}
-        <div className="mt-4 pt-3 border-t border-border flex justify-between items-center">
-          <span className="text-xs text-muted-foreground">
-            Click to select
-          </span>
-          {selectedIndex !== null && (
-            <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-full">
-              Selected: Page {menuItems[selectedIndex]?.pageNo}
-            </span>
-          )}
-        </div>
+      
       </div>
 
       <style>{`
