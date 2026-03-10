@@ -43,7 +43,6 @@
     --sidebar-border: 214 20% 88%;
     --sidebar-ring: 210 100% 45%;
 
-    /* Custom tokens */
     --nav-bg: 215 25% 15%;
     --nav-foreground: 0 0% 100%;
     --success: 142 71% 45%;
@@ -77,17 +76,6 @@
     --border: 215 20% 22%;
     --input: 215 20% 22%;
     --ring: 210 100% 50%;
-    --nav-bg: 215 30% 8%;
-    --nav-foreground: 0 0% 95%;
-    --success: 142 71% 40%;
-    --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
-    --panel-bg: 215 25% 12%;
-    --panel-border: 215 20% 20%;
-    --input-bg: 215 25% 18%;
-    --section-bg: 215 25% 11%;
-    --toolbar-bg: 215 25% 15%;
   }
 }
 
@@ -95,9 +83,10 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
   }
 }
 
@@ -105,25 +94,30 @@
   .nav-button {
     @apply px-16 py-2 rounded-full text-sm font-medium transition-all duration-200;
   }
+
   .nav-button-primary {
     @apply nav-button bg-primary text-primary-foreground hover:opacity-90;
   }
+
   .nav-button-outline {
     @apply nav-button border border-primary text-primary hover:bg-primary hover:text-primary-foreground;
   }
+
   .section-card {
     @apply bg-card rounded-md border border-border p-2;
   }
+
   .form-input-clinical {
     @apply h-10 rounded border border-border bg-accent/50 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring;
   }
+
   .toolbar-button {
     @apply flex items-center justify-center w-10 h-8 rounded border border-border bg-card hover:bg-muted transition-colors;
   }
 }
-/* Add to your global CSS file */
 
-/* Custom scrollbar */
+/* Scrollbar */
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -156,6 +150,7 @@
 }
 
 /* Animations */
+
 @keyframes slideIn {
   from {
     opacity: 0;
@@ -186,5 +181,3 @@
     opacity: 1;
   }
 }
-
-@key

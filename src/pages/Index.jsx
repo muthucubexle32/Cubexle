@@ -1,6 +1,5 @@
-// src/pages/Index.tsx
 import { useState } from 'react';
-import AppLayout from "@/components/layout/AppLayout"; // Change this
+import AppLayout from "@/components/layout/AppLayout";
 import PdfViewerPanel from "@/components/home/PdfViewerPanel";
 import OVPanel from "@/components/Datapanel/OVPanel";
 import DiagnosticsPanel from "@/components/Datapanel/DiagnosticsPanel";
@@ -9,13 +8,10 @@ import EKGPanel from "@/components/Datapanel/EKGPanel";
 import Toggle from "@/components/home/Toggle";
 import SideMenu from "@/components/home/SideMenu";
 
-// Define the panel types
-type PanelType = 'ov' | 'diagnostics' | 'labs' | 'ekg';
-
 const Index = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [menuSide, setMenuSide] = useState<'left' | 'right'>('right');
-  const [activePanel, setActivePanel] = useState<PanelType>('ov');
+  const [menuSide, setMenuSide] = useState('right');
+  const [activePanel, setActivePanel] = useState('ov');
 
   const handleToggle = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -38,7 +34,7 @@ const Index = () => {
   };
 
   // This function will be passed to the navbar to update the panel
-  const handlePanelChange = (panel: PanelType) => {
+  const handlePanelChange = (panel) => {
     setActivePanel(panel);
   };
 

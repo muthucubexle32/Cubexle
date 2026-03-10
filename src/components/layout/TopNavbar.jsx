@@ -1,14 +1,8 @@
-// src/components/TopNavbar.tsx
 import { LogOut, Home, Search, FileText, User, ChevronDown, Menu, X, Calendar, Settings, Activity, Microscope, HeartPulse, Stethoscope, Sparkles } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 
-interface TopNavbarProps {
-  onPanelChange?: (panel: string) => void;
-  activePanel?: string;
-}
-
-const TopNavbar = ({ onPanelChange, activePanel }: TopNavbarProps) => {
+const TopNavbar = ({ onPanelChange, activePanel }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -18,8 +12,8 @@ const TopNavbar = ({ onPanelChange, activePanel }: TopNavbarProps) => {
   const [selectedDate, setSelectedDate] = useState("");
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showEntryDropdown, setShowEntryDropdown] = useState(false);
-  const calendarRef = useRef<HTMLDivElement>(null);
-  const entryDropdownRef = useRef<HTMLDivElement>(null);
+  const calendarRef = useRef(null);
+  const entryDropdownRef = useRef(null);
 
   // Handle scroll effect
   useEffect(() => {
@@ -32,11 +26,11 @@ const TopNavbar = ({ onPanelChange, activePanel }: TopNavbarProps) => {
 
   // Handle click outside
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (calendarRef.current && !calendarRef.current.contains(event.target as Node)) {
+    const handleClickOutside = (event) => {
+      if (calendarRef.current && !calendarRef.current.contains(event.target)) {
         setShowCalendar(false);
       }
-      if (entryDropdownRef.current && !entryDropdownRef.current.contains(event.target as Node)) {
+      if (entryDropdownRef.current && !entryDropdownRef.current.contains(event.target)) {
         setShowEntryDropdown(false);
       }
     };
@@ -45,13 +39,13 @@ const TopNavbar = ({ onPanelChange, activePanel }: TopNavbarProps) => {
   }, []);
 
   // Calendar functions
-  const getDaysInMonth = (date: Date) => {
+  const getDaysInMonth = (date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
     return new Date(year, month + 1, 0).getDate();
   };
 
-  const getFirstDayOfMonth = (date: Date) => {
+  const getFirstDayOfMonth = (date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
     return new Date(year, month, 1).getDay();
@@ -65,7 +59,7 @@ const TopNavbar = ({ onPanelChange, activePanel }: TopNavbarProps) => {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
   };
 
-  const handleDateSelect = (day: number) => {
+  const handleDateSelect = (day) => {
     const year = currentMonth.getFullYear();
     const month = String(currentMonth.getMonth() + 1).padStart(2, '0');
     const dayStr = String(day).padStart(2, '0');
@@ -73,7 +67,7 @@ const TopNavbar = ({ onPanelChange, activePanel }: TopNavbarProps) => {
     setShowCalendar(false);
   };
 
-  const handleEntrySelect = (panelId: string) => {
+  const handleEntrySelect = (panelId) => {
     if (onPanelChange) {
       onPanelChange(panelId);
     }
@@ -132,7 +126,7 @@ const TopNavbar = ({ onPanelChange, activePanel }: TopNavbarProps) => {
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className={`relative px-5\ py-2 text-sm font-medium rounded-xl transition-all duration-300 group overflow-hidden ${
+                className={`relative px-5 py-2 text-sm font-medium rounded-xl transition-all duration-300 group overflow-hidden ${
                   isActive 
                     ? 'text-white bg-white/15 shadow-lg shadow-white/5' 
                     : 'text-white/70 hover:text-white hover:bg-white/10'
@@ -152,7 +146,7 @@ const TopNavbar = ({ onPanelChange, activePanel }: TopNavbarProps) => {
           })}
         </div>
 
-           {/* Right Actions */}
+        {/* Right Actions */}
         <div className="flex items-center gap-4">
           {/* User Name - Desktop */}
           <div className="hidden lg:flex items-center gap-3">
@@ -192,13 +186,13 @@ const TopNavbar = ({ onPanelChange, activePanel }: TopNavbarProps) => {
         <div className="px-4 sm:px-6 lg:px-8 py-1">
           <div className="flex flex-wrap items-center gap-2 justify-end">
             {/* Provider Name */}
-            <div className="relative ">
+            <div className="relative">
               <input
                 type="text"
                 placeholder="Provider Name"
                 className="w-36 sm:w-80 px-4 py-2 bg-white/10 border border-white/20 rounded-sm text-white placeholder-white/50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-transparent transition-all duration-300 group-hover:bg-white/15"
               />
-              <div className=" absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/0 to-purple-500/0 group-hover:from-blue-500/10 group-hover:to-purple-500/10 pointer-events-none transition-all duration-300"></div>
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/0 to-purple-500/0 group-hover:from-blue-500/10 group-hover:to-purple-500/10 pointer-events-none transition-all duration-300"></div>
             </div>
 
             {/* DOB with Calendar */}
@@ -282,7 +276,7 @@ const TopNavbar = ({ onPanelChange, activePanel }: TopNavbarProps) => {
                         setSelectedDate(`${year}-${month}-${day}`);
                         setShowCalendar(false);
                       }}
-                      className="w-full px-3 py-1.5 text-sm bg-gradient-to-r  from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:from-gray-200 hover:to-gray-300 dark:hover:from-gray-600 dark:hover:to-gray-500 transition-all duration-300"
+                      className="w-full px-3 py-1.5 text-sm bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:from-gray-200 hover:to-gray-300 dark:hover:from-gray-600 dark:hover:to-gray-500 transition-all duration-300"
                     >
                       Today
                     </button>
@@ -303,7 +297,7 @@ const TopNavbar = ({ onPanelChange, activePanel }: TopNavbarProps) => {
             </div>
 
             {/* Page Number */}
-            <div className="relative ">
+            <div className="relative">
               <input
                 type="text"
                 placeholder="Pg No"
@@ -318,12 +312,12 @@ const TopNavbar = ({ onPanelChange, activePanel }: TopNavbarProps) => {
                 className="group flex items-center gap-2 px-5 py-2 bg-white/10 border border-white/20 rounded-sm text-white text-sm hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all duration-300"
               >
                 <span>Entry Pages</span>
-                <ChevronDown className={`w-4 h-4 text-white/60 transition-transform duration-300 `} />
+                <ChevronDown className={`w-4 h-4 text-white/60 transition-transform duration-300`} />
               </button>
 
               {/* Entry Pages Dropdown Menu */}
               {showEntryDropdown && (
-                <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-gray-800  shadow-2xl border border-gray-200 dark:border-gray-700 py-2 z-50 animate-slideDown">
+                <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700 py-2 z-50 animate-slideDown">
                   {entryItems.map((item) => {
                     const Icon = item.icon;
                     const isActive = activePanel === item.panelId;

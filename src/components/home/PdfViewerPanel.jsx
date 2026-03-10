@@ -55,7 +55,6 @@ import {
   MoreHorizontal,
   Home,
   FileText,
-
   PenTool,
   CheckSquare,
   Circle,
@@ -66,49 +65,7 @@ import {
   Pentagon,
 } from "lucide-react";
 
-// Types
-type PageSize = 'A4' | 'A3' | 'A2' | 'A1' | 'A0' | 'Letter' | 'Legal' | 'Custom';
-type DocumentStatus = 'pending' | 'in-progress' | 'completed' | 'clarification';
-
-interface PageSizeDimensions {
-  width: number;
-  height: number;
-  unit: 'px' | 'mm' | 'in';
-}
-
-interface DocumentInfo {
-  docName: string;
-  docNo: string;
-  status: DocumentStatus;
-  pageNo: number;
-  totalPages: number;
-  fileSize: string;
-  createdDate: string;
-  modifiedDate: string;
-  author: string;
-  department: string;
-}
-
-interface EditableText {
-  id: string;
-  content: string;
-  pageNum: number;
-  x: number;
-  y: number;
-  fontSize: number;
-  fontWeight: 'normal' | 'bold';
-  fontStyle: 'normal' | 'italic';
-  textAlign: 'left' | 'center' | 'right';
-  color: string;
-}
-
-interface OCRResult {
-  pageNum: number;
-  text: string;
-  confidence: number;
-}
-
-const PAGE_SIZE_DIMENSIONS: Record<Exclude<PageSize, 'Custom'>, PageSizeDimensions> = {
+const PAGE_SIZE_DIMENSIONS = {
   'A4': { width: 595, height: 842, unit: 'px' },
   'A3': { width: 842, height: 1191, unit: 'px' },
   'A2': { width: 1191, height: 1684, unit: 'px' },
@@ -120,7 +77,7 @@ const PAGE_SIZE_DIMENSIONS: Record<Exclude<PageSize, 'Custom'>, PageSizeDimensio
 
 const PdfViewerPanel = () => {
   // Document Info State with manual entry
-  const [documentInfo, setDocumentInfo] = useState<DocumentInfo>({
+  const [documentInfo, setDocumentInfo] = useState({
     docName: "Annual Report 2025.pdf",
     docNo: "DOC-2025-001",
     status: "pending",
@@ -135,7 +92,7 @@ const PdfViewerPanel = () => {
 
   // Manual entry states
   const [isEditingDoc, setIsEditingDoc] = useState(false);
-  const [editDocInfo, setEditDocInfo] = useState<DocumentInfo>({ ...documentInfo });
+  const [editDocInfo, setEditDocInfo] = useState({ ...documentInfo });
 
   // Core states
   const [currentPage, setCurrentPage] = useState(1);
@@ -143,8 +100,8 @@ const PdfViewerPanel = () => {
   const [zoomLevel, setZoomLevel] = useState(100);
   const [isThumbnailOpen, setIsThumbnailOpen] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [selectedPage, setSelectedPage] = useState<number | null>(null);
-  const [viewMode, setViewMode] = useState<'single' | 'double' | 'continuous'>('single');
+  const [selectedPage, setSelectedPage] = useState(null);
+  const [viewMode, setViewMode] = useState('single');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -152,23 +109,23 @@ const PdfViewerPanel = () => {
   const [isScrolling, setIsScrolling] = useState(false);
   const [rotationAngle, setRotationAngle] = useState(0);
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const [starredPages, setStarredPages] = useState<number[]>([]);
+  const [starredPages, setStarredPages] = useState([]);
   const [isEditMode, setIsEditMode] = useState(false);
 
   // Page search states
   const [isPageSearchOpen, setIsPageSearchOpen] = useState(false);
-  const pageSearchInputRef = useRef<HTMLInputElement>(null);
+  const pageSearchInputRef = useRef(null);
   const [pageSearchInput, setPageSearchInput] = useState('');
-  const [pageSearchResults, setPageSearchResults] = useState<number[]>([]);
+  const [pageSearchResults, setPageSearchResults] = useState([]);
 
   // OCR states
   const [isOCRProcessing, setIsOCRProcessing] = useState(false);
-  const [ocrResults, setOcrResults] = useState<OCRResult[]>([]);
+  const [ocrResults, setOcrResults] = useState([]);
   const [ocrText, setOcrText] = useState('');
   const [showOCRPanel, setShowOCRPanel] = useState(false);
 
   // Page size states
-  const [pageSize, setPageSize] = useState<PageSize>('A4');
+  const [pageSize, setPageSize] = useState('A4');
   const [customWidth, setCustomWidth] = useState(595);
   const [customHeight, setCustomHeight] = useState(842);
   const [isSizeDropdownOpen, setIsSizeDropdownOpen] = useState(false);
@@ -180,12 +137,12 @@ const PdfViewerPanel = () => {
   const [showDocumentMenu, setShowDocumentMenu] = useState(false);
 
   // Refs
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const settingsRef = useRef<HTMLDivElement>(null);
-  const sizeRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const documentMenuRef = useRef<HTMLDivElement>(null);
-  const quickActionsRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef(null);
+  const settingsRef = useRef(null);
+  const sizeRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const documentMenuRef = useRef(null);
+  const quickActionsRef = useRef(null);
 
   // Page size handling
   const getCurrentPageDimensions = () => {
@@ -195,7 +152,7 @@ const PdfViewerPanel = () => {
     return PAGE_SIZE_DIMENSIONS[pageSize];
   };
 
-  const handlePageSizeChange = (size: PageSize) => {
+  const handlePageSizeChange = (size) => {
     setPageSize(size);
     if (size !== 'Custom') {
       const dims = PAGE_SIZE_DIMENSIONS[size];
@@ -230,17 +187,17 @@ const PdfViewerPanel = () => {
 
   // Click outside handlers
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
+    const handleClickOutside = (event) => {
+      if (settingsRef.current && !settingsRef.current.contains(event.target)) {
         setIsSettingsOpen(false);
       }
-      if (sizeRef.current && !sizeRef.current.contains(event.target as Node)) {
+      if (sizeRef.current && !sizeRef.current.contains(event.target)) {
         setIsSizeDropdownOpen(false);
       }
-      if (documentMenuRef.current && !documentMenuRef.current.contains(event.target as Node)) {
+      if (documentMenuRef.current && !documentMenuRef.current.contains(event.target)) {
         setShowDocumentMenu(false);
       }
-      if (quickActionsRef.current && !quickActionsRef.current.contains(event.target as Node)) {
+      if (quickActionsRef.current && !quickActionsRef.current.contains(event.target)) {
         setShowQuickActions(false);
       }
     };
@@ -259,7 +216,7 @@ const PdfViewerPanel = () => {
     setDocumentInfo(prev => ({ ...prev, pageNo: currentPage }));
   };
 
-  const handlePageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePageChange = (e) => {
     const value = parseInt(e.target.value);
     if (value > 0 && value <= totalPages) {
       setCurrentPage(value);
@@ -270,12 +227,12 @@ const PdfViewerPanel = () => {
   const handleZoomIn = () => setZoomLevel(prev => Math.min(prev + 25, 400));
   const handleZoomOut = () => setZoomLevel(prev => Math.max(prev - 25, 25));
 
-  const handleRotate = (direction: 'left' | 'right') => {
+  const handleRotate = (direction) => {
     setRotationAngle(prev => direction === 'left' ? prev - 90 : prev + 90);
   };
 
   // Manual page search
-  const handleManualPageSearch = (pageNum: number) => {
+  const handleManualPageSearch = (pageNum) => {
     if (pageNum >= 1 && pageNum <= totalPages) {
       setCurrentPage(pageNum);
       setSelectedPage(pageNum);
@@ -300,7 +257,7 @@ const PdfViewerPanel = () => {
     setIsEditingDoc(false);
   };
 
-  const getStatusColor = (status: DocumentStatus) => {
+  const getStatusColor = (status) => {
     switch (status) {
       case 'completed': return 'text-green-600 bg-green-100 dark:bg-green-900/20 dark:text-green-400';
       case 'in-progress': return 'text-blue-600 bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400';
@@ -310,7 +267,7 @@ const PdfViewerPanel = () => {
     }
   };
 
-  const getStatusIcon = (status: DocumentStatus) => {
+  const getStatusIcon = (status) => {
     switch (status) {
       case 'completed': return <CheckCircle className="w-3 h-3" />;
       case 'in-progress': return <Clock className="w-3 h-3" />;
@@ -325,7 +282,7 @@ const PdfViewerPanel = () => {
     setIsOCRProcessing(true);
     setTimeout(() => {
       const mockOCRText = `OCR text for page ${currentPage}...`;
-      const newOCRResult: OCRResult = {
+      const newOCRResult = {
         pageNum: currentPage,
         text: mockOCRText,
         confidence: Math.floor(Math.random() * 20) + 80,
@@ -341,7 +298,7 @@ const PdfViewerPanel = () => {
   const isTablet = windowWidth >= 640 && windowWidth < 1024;
 
   // Page Content Component
-  const PageContent = ({ pageNum }: { pageNum: number }) => (
+  const PageContent = ({ pageNum }) => (
     <div
       className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg border overflow-hidden transition-all ${selectedPage === pageNum ? 'ring-2 ring-blue-500' : 'border-gray-200 dark:border-gray-700'
         } ${pageSearchResults.includes(pageNum) ? 'ring-2 ring-yellow-500' : ''}`}
@@ -373,10 +330,6 @@ const PdfViewerPanel = () => {
       </div>
     </div>
   );
-
-  function toggleBookmark(): void {
-    throw new Error("Function not implemented.");
-  }
 
   return (
     <div className={`flex flex-col h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-gradient-to-b from-gray-50 to-white text-gray-800'
@@ -411,7 +364,7 @@ const PdfViewerPanel = () => {
               <label className="block text-xs font-medium mb-1">Status</label>
               <select
                 value={editDocInfo.status}
-                onChange={(e) => setEditDocInfo({ ...editDocInfo, status: e.target.value as DocumentStatus })}
+                onChange={(e) => setEditDocInfo({ ...editDocInfo, status: e.target.value })}
                 className={`w-full px-2 py-1 text-sm border rounded ${isDarkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
                   }`}
               >
@@ -451,7 +404,7 @@ const PdfViewerPanel = () => {
         ) : (
           // View Mode
           <div className="flex flex-wrap items-center justify-between gap-6">
-            <div className="flex flex-wrap items-center gap-3 sm:gap-16 ">
+            <div className="flex flex-wrap items-center gap-3 sm:gap-16">
               <div className="flex items-center gap-2">
                 <File className="w-5 h-4 text-blue-500 flex-shrink-0" />
                 <span className="text-xl font-semibold max-w-[150px] sm:max-w-[200px] md:max-w-[300px]">
@@ -498,7 +451,6 @@ const PdfViewerPanel = () => {
                     >
                       <Edit className="w-4 h-4" /> Edit Document Info
                     </button>
-                    
                   </div>
                 )}
               </div>
@@ -530,8 +482,7 @@ const PdfViewerPanel = () => {
         {/* View Mode - Collapsible */}
         {!isToolbarCollapsed && (
           <div className="flex items-center gap-1 border-l border-r border-gray-200 dark:border-gray-700 px-2">
-
-            <div className="flex items-center gap-2 ">
+            <div className="flex items-center gap-2">
               <button onClick={handleZoomOut} className="p-2 hover:bg-gray-100 rounded-lg">
                 <ZoomOut className="w-4 h-4" />
               </button>
@@ -548,23 +499,20 @@ const PdfViewerPanel = () => {
                 <RotateCw className="w-4 h-4" />
               </button>
               <button onClick={performOCR} className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-1">
-                    <ScanLine className="w-4 h-4" /> OCR 
+                <ScanLine className="w-4 h-4" /> OCR
               </button>
-
             </div>
           </div>
         )}
-
-
 
         {/* Main Settings Dropdown */}
         <div className="relative ml-auto" ref={settingsRef}>
           <button
             onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-            className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 text-white rounded-lg "
+            className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 text-white rounded-lg"
           >
             <Settings className="w-4 h-4" />
-            </button>
+          </button>
 
           {isSettingsOpen && (
             <div className={`absolute right-0 top-full mt-1 w-72 max-h-[80vh] overflow-y-auto rounded-lg shadow-lg border py-2 z-50 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
@@ -593,10 +541,6 @@ const PdfViewerPanel = () => {
 
               <div className="border-t my-2"></div>
 
-
-
-             
-
               {/* Page Size */}
               <div className="px-4 py-2">
                 <h4 className="text-xs font-semibold text-gray-500 mb-2">PAGE SIZE</h4>
@@ -613,7 +557,7 @@ const PdfViewerPanel = () => {
 
                   {isSizeDropdownOpen && (
                     <div className="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-gray-800 border rounded-lg shadow-lg z-10">
-                      {(['A4', 'A3', 'Letter', 'Legal'] as PageSize[]).map((size) => (
+                      {(['A4', 'A3', 'Letter', 'Legal']).map((size) => (
                         <button
                           key={size}
                           onClick={() => handlePageSizeChange(size)}
@@ -685,7 +629,7 @@ const PdfViewerPanel = () => {
                 <input
                   type="number"
                   ref={pageSearchInputRef}
-                  min="1"
+                  min="0"
                   max={totalPages}
                   placeholder={`Page (1-${totalPages})`}
                   className={`flex-1 px-3 py-1.5 text-sm border rounded-lg ${isDarkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'
@@ -724,8 +668,6 @@ const PdfViewerPanel = () => {
           {isToolbarCollapsed ? <MoreHorizontal className="w-4 h-4" /> : <Minus className="w-4 h-4" />}
         </button>
       </div>
-
-      
 
       {/* OCR Panel */}
       {showOCRPanel && (
@@ -779,8 +721,6 @@ const PdfViewerPanel = () => {
             </div>
           </div>
         </div>
-
-        
 
         {/* Thumbnail Sidebar */}
         {isThumbnailOpen && !isMobile && (

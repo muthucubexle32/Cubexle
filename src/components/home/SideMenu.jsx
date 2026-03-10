@@ -1,15 +1,8 @@
-// components/home/SideMenu.tsx
 import { useState } from 'react';
 import { Calendar, FileText, ChevronRight, Search } from 'lucide-react';
 
-interface SideMenuProps {
-  isOpen: boolean;
-  side?: 'left' | 'right';
-  onItemSelect?: (item: { date: string; pageNo: string }) => void;
-}
-
-const SideMenu = ({ isOpen, side = 'left', onItemSelect }: SideMenuProps) => {
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+const SideMenu = ({ isOpen, side = 'left', onItemSelect }) => {
+  const [selectedIndex, setSelectedIndex] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
   if (!isOpen) return null;
@@ -31,7 +24,7 @@ const SideMenu = ({ isOpen, side = 'left', onItemSelect }: SideMenuProps) => {
     item.pageNo.includes(searchTerm)
   );
 
-  const handleItemClick = (item: { date: string; pageNo: string }, index: number) => {
+  const handleItemClick = (item, index) => {
     setSelectedIndex(index);
     onItemSelect?.(item);
     console.log('Selected:', item);
@@ -58,8 +51,6 @@ const SideMenu = ({ isOpen, side = 'left', onItemSelect }: SideMenuProps) => {
           />
         </div>
 
-       
-        
         {/* Table Header */}
         <div className="grid grid-cols-2 gap-2 mb-2 pb-2 border-b-2 border-primary/20 bg-primary/5 p-2 rounded-t-lg">
           <div className="font-semibold text-xs text-primary flex items-center gap-1">
@@ -98,7 +89,7 @@ const SideMenu = ({ isOpen, side = 'left', onItemSelect }: SideMenuProps) => {
                   <div className={`absolute inset-0 ${isSelected ? 'bg-primary' : 'bg-gradient-to-r from-transparent to-transparent group-hover:from-primary/5 group-hover:to-transparent'} transition-all duration-300`} />
                   
                   {/* Date column - left aligned */}
-                  <div className={`relative text-sm text-left font-medium flex items-center 
+                  <div className={`relative text-sm text-left font-medium flex items-center gap-1
                     ${isSelected ? 'text-primary-foreground' : 'text-foreground group-hover:text-primary'}`}
                   >
                     <Calendar className={`w-3 h-3 ${isSelected ? 'text-primary-foreground' : 'text-muted-foreground group-hover:text-primary'}`} />
@@ -109,7 +100,7 @@ const SideMenu = ({ isOpen, side = 'left', onItemSelect }: SideMenuProps) => {
                   <div className={`relative text-sm font-bold flex items-center justify-center
                     ${isSelected ? 'text-primary-foreground' : 'text-foreground group-hover:text-primary'}`}
                   >
-                    <span className=" px-2 py-0.5 rounded-full group-hover:bg-primary/20 transition-colors">
+                    <span className="px-2 py-0.5 rounded-full group-hover:bg-primary/20 transition-colors">
                       {item.pageNo}
                     </span>
                   </div>
@@ -131,8 +122,6 @@ const SideMenu = ({ isOpen, side = 'left', onItemSelect }: SideMenuProps) => {
             </div>
           )}
         </div>
-
-      
       </div>
 
       <style>{`

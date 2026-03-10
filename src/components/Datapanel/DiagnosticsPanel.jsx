@@ -2,36 +2,17 @@ import React, { useState, useRef, useLayoutEffect } from "react";
 import {
   ChevronDown,
   RotateCcw,
-  ChevronLeft,
   Trash2,
-  User,
   Calendar,
   Plus,
+  Save,
   Activity,
   FolderOpen,
   MessageCircle,
   GitCompare,
   Search,
   FileCheck,
-  Save,
 } from "lucide-react";
-
-// --- Types ---
-type Status = "pending" | "in progress" | "completed" | "Clarification";
-
-interface VitalsRow {
-  id: number;
-  height: string;
-  heightUnit: string;
-  weight: string;
-  weightUnit: string;
-  bmi: string;
-  dia: string;
-  sys: string;
-  pulse: string;
-  pageNo1: number;
-  pageNo2: number;
-}
 
 // --- Auto-Resizing Textarea Component ---
 const AutoResizeTextarea = ({
@@ -39,21 +20,16 @@ const AutoResizeTextarea = ({
   onChange,
   placeholder,
   className,
-}: {
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  placeholder?: string;
-  className?: string;
 }) => {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const textareaRef = useRef(null);
 
   useLayoutEffect(() => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = "inherit"; // Reset height
+      textareaRef.current.style.height = "inherit";
       textareaRef.current.style.height = `${Math.max(
         textareaRef.current.scrollHeight,
         50
-      )}px`; // Set to scrollHeight
+      )}px`;
     }
   }, [value]);
 
@@ -72,7 +48,7 @@ const AutoResizeTextarea = ({
 // --- Main Component ---
 export default function DiagnosticReport() {
   /* STATUS */
-  const [status, setStatus] = useState<Status>("pending");
+  const [status, setStatus] = useState("pending");
 
   /* PATIENT INFORMATION */
   const [firstName, setFirstName] = useState("");
@@ -82,16 +58,16 @@ export default function DiagnosticReport() {
 
   /* PROVIDER / FACILITY / DOS */
   const [providerName, setProviderName] = useState("");
-  const [facility, setFacility] = useState(""); // Manual Entry now
-  const [dos, setDos] = useState(""); // Date of Service
-  const [pageNoHeader, setPageNoHeader] = useState<number | string>("");
+  const [facility, setFacility] = useState("");
+  const [dos, setDos] = useState("");
+  const [pageNoHeader, setPageNoHeader] = useState("");
 
   /* Refs for Date Pickers */
-  const dobRef = useRef<HTMLInputElement>(null);
-  const dosRef = useRef<HTMLInputElement>(null);
+  const dobRef = useRef(null);
+  const dosRef = useRef(null);
 
   /* VITALS STATE (Main + Extra Rows) */
-  const [vitalsRows, setVitalsRows] = useState<VitalsRow[]>([
+  const [vitalsRows, setVitalsRows] = useState([
     {
       id: 1,
       height: "",
@@ -137,7 +113,7 @@ export default function DiagnosticReport() {
     ]);
   };
 
-  const removeVitalsRow = (id: number) => {
+  const removeVitalsRow = (id) => {
     if (vitalsRows.length > 1) {
       setVitalsRows(vitalsRows.filter((row) => row.id !== id));
     } else {
@@ -154,11 +130,7 @@ export default function DiagnosticReport() {
     }
   };
 
-  const updateVitals = (
-    id: number,
-    field: keyof VitalsRow,
-    val: string | number
-  ) => {
+  const updateVitals = (id, field, val) => {
     setVitalsRows((prev) =>
       prev.map((row) => (row.id === id ? { ...row, [field]: val } : row))
     );
@@ -227,7 +199,7 @@ export default function DiagnosticReport() {
   const labelClass = "block text-xs font-semibold text-black mb-1";
 
   // Function to trigger native date picker
-  const triggerDatePicker = (ref: React.RefObject<HTMLInputElement>) => {
+  const triggerDatePicker = (ref) => {
     if (ref.current) {
       ref.current.showPicker();
     }
@@ -256,7 +228,6 @@ export default function DiagnosticReport() {
           </button>
         
            <button
-            
             onClick={handleDelete}
             className="flex items-center justify-center gap-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium text-xs transition-all duration-200 shadow-sm"
           >
@@ -267,7 +238,6 @@ export default function DiagnosticReport() {
 
       <div className="sm:px-2 space-y-2 max-w-[1400px] ">
        
-        
         {/* 4. Provider / Facility Row */}
         <div className="border border-blue-300 rounded-xl p-2 bg-white shadow-sm">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols- gap-4 items-end">
@@ -332,7 +302,7 @@ export default function DiagnosticReport() {
         {/* 5. VITALS Section */}
         <div className="border border-blue-300 rounded-xl p-2 mb-4 bg-white relative shadow-sm ">
           <div className="flex justify-between items-center mb-1">
-            <h2 className="text-sm font-bold  uppercase">
+            <h2 className="text-sm font-bold uppercase">
               VITALS
             </h2>
             <button
@@ -457,7 +427,6 @@ export default function DiagnosticReport() {
                     />
                   </div>
                 </div>
-
 
                 {/* Pulse */}
                 <div className="w-[30%] md:w-[12%] shrink-0">

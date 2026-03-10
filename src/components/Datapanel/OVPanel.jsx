@@ -3,7 +3,6 @@ import {
   ChevronDown,
   Trash2,
   Plus,
-  Minus,
   CalendarDays,
   Save,
   RotateCcw,
@@ -18,43 +17,8 @@ import {
   Scale,
 } from "lucide-react";
 
-// --- Type Definitions ---
-interface PageBoxProps {
-  value: number;
-  setValue: (value: number | ((prev: number) => number)) => void;
-  id?: string;
-}
-
-interface HeaderProps {
-  title: string;
-
-  icon?: React.ElementType;
-  hideIcon?: boolean;
-}
-
-interface BlockProps {
-  title: string;
-  value: string;
-  onChange: (value: string) => void;
-
-
-
-  icon?: React.ElementType;
-  minHeight?: number;
-  hideIcon?: boolean;
-}
-
-interface MedicationRow {
-  db: string;
-  dose: string;
-  freq: string;
-  cmt: string;
-}
-
-
-
 // --- Components ---
-const PageBox: React.FC<PageBoxProps> = ({ value, setValue, id }) => (
+const PageBox = ({ value, setValue, id }) => (
   <div className="flex bg-[#b6d3dc] rounded overflow-hidden w-[70px] h-[30px] border border-[#a6c3cc] shadow-sm">
     <input
       id={id}
@@ -65,21 +29,19 @@ const PageBox: React.FC<PageBoxProps> = ({ value, setValue, id }) => (
       className="w-full text-center bg-transparent outline-none text-sm px-1 text-gray-800 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:ring-1 focus:ring-blue-400"
       aria-label="Page number"
     />
-
   </div>
 );
 
-const Header: React.FC<HeaderProps> = ({ title, icon: Icon, hideIcon }) => (
-  <div className="flex justify-between items-center ">
-    <span className="font-semibold text-[15px] text-gray-800 flex items-center ">
+const Header = ({ title, icon: Icon, hideIcon }) => (
+  <div className="flex justify-between items-center">
+    <span className="font-semibold text-[15px] text-gray-800 flex items-center">
       {Icon && !hideIcon && <Icon size={16} className="text-gray-600" strokeWidth={2} />} {title}
     </span>
-
   </div>
 );
 
-const Block: React.FC<BlockProps> = ({ title, value, onChange, icon: Icon, minHeight = 60, hideIcon }) => {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+const Block = ({ title, value, onChange, icon: Icon, minHeight = 60, hideIcon }) => {
+  const textareaRef = useRef(null);
 
   const adjustHeight = useCallback(() => {
     if (textareaRef.current) {
@@ -92,7 +54,7 @@ const Block: React.FC<BlockProps> = ({ title, value, onChange, icon: Icon, minHe
     adjustHeight();
   }, [value, adjustHeight]);
 
-  const titleToIconMap: Record<string, React.ElementType> = {
+  const titleToIconMap = {
     "CC/HOPI": Clock,
     "Past Medical History": FileText,
     "Past Surgical History": FileText,
@@ -111,9 +73,8 @@ const Block: React.FC<BlockProps> = ({ title, value, onChange, icon: Icon, minHe
 
   return (
     <div className="border border-blue-400 rounded-lg p-2 bg-white shadow-sm transition-all duration-200 hover:shadow-md">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center ">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
         <Header title={title} icon={CurrentIcon} hideIcon={shouldHideIcon} />
-
       </div>
       <textarea
         ref={textareaRef}
@@ -131,36 +92,30 @@ const Block: React.FC<BlockProps> = ({ title, value, onChange, icon: Icon, minHe
 
 // --- Main UI Component ---
 export default function MedicalUI() {
-  /* STATUS BUTTONS */
-
-
   /* PAGE NUMBERS for sections */
-  /* VITALS - Add two independent page number states for original row */
-  const [pageVitals1, setPageVitals1] = useState<number>(); // First page no (after Weight)
-  const [pageVitals2, setPageVitals2] = useState<number>(); // Second page no (after Pulse)
-  /* PAGE NUMBERS for sections */
-  const [pageTop, setPageTop] = useState<number>(); // Add this line
-
+  const [pageVitals1, setPageVitals1] = useState(); // First page no (after Weight)
+  const [pageVitals2, setPageVitals2] = useState(); // Second page no (after Pulse)
+  const [pageTop, setPageTop] = useState(); // Add this line
 
   /* TOP PANEL FIELDS */
-  const [notesType, setNotesType] = useState<string>("select");
-  const [dos, setDos] = useState<string>("");
-  const [doi, setDoi] = useState<string>("");
-  const [provider, setProvider] = useState<string>("");
-  const [facility, setFacility] = useState<string>("");
+  const [notesType, setNotesType] = useState("select");
+  const [dos, setDos] = useState("");
+  const [doi, setDoi] = useState("");
+  const [provider, setProvider] = useState("");
+  const [facility, setFacility] = useState("");
 
   /* VITALS */
-  const [height, setHeight] = useState<string>("");
-  const [heightUnit, setHeightUnit] = useState<string>("CM");
-  const [weight, setWeight] = useState<string>("");
-  const [weightUnit, setWeightUnit] = useState<string>("KG");
-  const [bmi, setBmi] = useState<string>("");
-  const [dia, setDia] = useState<string>("");
-  const [sys, setSys] = useState<string>("");
-  const [pulse, setPulse] = useState<string>("");
+  const [height, setHeight] = useState("");
+  const [heightUnit, setHeightUnit] = useState("CM");
+  const [weight, setWeight] = useState("");
+  const [weightUnit, setWeightUnit] = useState("KG");
+  const [bmi, setBmi] = useState("");
+  const [dia, setDia] = useState("");
+  const [sys, setSys] = useState("");
+  const [pulse, setPulse] = useState("");
 
   /* TEXT SECTIONS - Main blocks */
-  const fields: string[] = [
+  const fields = [
     "CC/HOPI",
     "Past Medical History",
     "Past Surgical History",
@@ -171,39 +126,36 @@ export default function MedicalUI() {
     "Assessment",
   ];
 
-  const [data, setData] = useState<Record<string, string>>(
+  const [data, setData] = useState(
     Object.fromEntries(fields.map((f) => [f, ""]))
   );
-  const [blockPageNumbers, setBlockPageNumbers] = useState<Record<string, number>>(
+  const [blockPageNumbers, setBlockPageNumbers] = useState(
     Object.fromEntries(fields.map((f) => []))
   );
 
   /* PLAN, WORK STATUS, SPECIAL COMMENTS */
-  const [planRecommendation, setPlanRecommendation] = useState<string>("");
+  const [planRecommendation, setPlanRecommendation] = useState("");
+  const [workStatus, setWorkStatus] = useState("");
+  const [specialComments, setSpecialComments] = useState("");
 
-  const [workStatus, setWorkStatus] = useState<string>("");
-
-  const [specialComments, setSpecialComments] = useState<string>("");
-
-
-  const setBlockPage = (title: string, value: number) => {
+  const setBlockPage = (title, value) => {
     setBlockPageNumbers((prev) => ({ ...prev, [title]: value }));
   };
 
   /* MEDICATION */
-  const [rows, setRows] = useState<MedicationRow[]>([]);
+  const [rows, setRows] = useState([]);
 
   const addRow = () => {
     setRows([...rows, { db: "", dose: "", freq: "", cmt: "" }]);
   };
 
-  const removeRow = (i: number) => {
+  const removeRow = (i) => {
     if (window.confirm("Are you sure you want to remove this medication entry?")) {
       setRows(rows.filter((_, idx) => idx !== i));
     }
   };
 
-  const updateRow = (i: number, k: keyof MedicationRow, v: string) => {
+  const updateRow = (i, k, v) => {
     const copy = [...rows];
     copy[i][k] = v;
     setRows(copy);
@@ -227,11 +179,10 @@ export default function MedicalUI() {
       setPulse("");
       setRows([]);
       setData(Object.fromEntries(fields.map((f) => [f, ""])));
-      setBlockPageNumbers(Object.fromEntries(fields.map((f) => [f])));
+      setBlockPageNumbers(Object.fromEntries(fields.map((f) => [])));
       setPlanRecommendation("");
       setWorkStatus("");
       setSpecialComments("");
-      
     }
   };
 
@@ -256,15 +207,11 @@ export default function MedicalUI() {
       setPlanRecommendation("");
       setWorkStatus("");
       setSpecialComments("");
-
-    
     }
   };
 
   const saveData = () => {
     const allData = {
-     
-
       notesType,
       dos,
       doi,
@@ -279,58 +226,14 @@ export default function MedicalUI() {
         "Work Status": workStatus,
         "Special Comments": specialComments,
       },
-
       medication: rows,
     };
     console.log("Saved data:", allData);
     alert("Data saved successfully!");
   };
 
-  /* Header action handlers (placeholders) */
-  const handleUpload = (section: string) => console.log(`Upload functionality for "${section}"`);
-  const handleSort = (section: string) => console.log(`Sort functionality for "${section}"`);
-
-  const handleBlockDelete = (title: string) => {
-    if (window.confirm(`Are you sure you want to clear the content of "${title}"?`)) {
-      switch (title) {
-        case "Plan/Recommendation":
-          setPlanRecommendation("");
-
-          break;
-        case "Work Status":
-          setWorkStatus("");
-
-          break;
-        case "Special Comments":
-          setSpecialComments("");
-
-          break;
-        default:
-          setData({ ...data, [title]: "" });
-          setBlockPage(title, 0);
-          break;
-      }
-    }
-  };
-
-
-
   /* ADDITIONAL VITALS ROWS */
-  interface VitalsRow {
-    height: string;
-    heightUnit: string;
-    weight: string;
-    weightUnit: string;
-    bmi: string;
-    dia: string;
-    sys: string;
-    pulse: string;
-    pageNo1: number; // First page no (after Weight)
-    pageNo2: number; // Second page no (after Pulse)
-
-  }
-
-  const [vitalsRows, setVitalsRows] = useState<VitalsRow[]>([]);
+  const [vitalsRows, setVitalsRows] = useState([]);
 
   const addVitalsRow = () => {
     setVitalsRows([...vitalsRows, {
@@ -347,13 +250,13 @@ export default function MedicalUI() {
     }]);
   };
 
-  const updateVitalsRow = (index: number, key: keyof VitalsRow, value: string | number) => {
+  const updateVitalsRow = (index, key, value) => {
     const copy = [...vitalsRows];
     copy[index] = { ...copy[index], [key]: value };
     setVitalsRows(copy);
   };
 
-  const removeVitalsRow = (index: number) => {
+  const removeVitalsRow = (index) => {
     if (window.confirm("Are you sure you want to remove this vitals entry?")) {
       setVitalsRows(vitalsRows.filter((_, idx) => idx !== index));
     }
@@ -404,7 +307,6 @@ export default function MedicalUI() {
                 <span className="font-semibold text-sm text-gray-800 flex items-center gap-1">
                   <NotebookTabs size={16} className="text-gray-600" /> Notes Type
                 </span>
-
               </div>
               <div className="relative flex items-center bg-[#b6d3dc] rounded h-[30px] border border-[#a6c3cc]">
                 <select
@@ -419,7 +321,6 @@ export default function MedicalUI() {
                 </select>
                 <ChevronDown size={14} className="absolute right-2 pointer-events-none text-gray-600" />
               </div>
-
             </div>
 
             {/* DOS */}
@@ -471,7 +372,6 @@ export default function MedicalUI() {
                   className="w-full bg-transparent outline-none text-sm text-gray-800 px-2 h-full placeholder-gray-600"
                 />
               </div>
-
             </div>
             <div className="items-center gap-1 h-[30px]">
               <label className="text-sm font-medium text-gray-700">Page no</label>
@@ -484,7 +384,7 @@ export default function MedicalUI() {
         {/* Vitals */}
         <div className="border border-blue-400 rounded-lg p-2 sm:p-2 bg-white shadow-sm">
           <div className="flex grid-cols-2 md:grid-cols-2 flex-col sm:flex-row justify-between items-start sm:items-center">
-            <div className="flex items-center gap-2 ">
+            <div className="flex items-center gap-2">
               <Scale size={16} className="text-gray-600 flex-shrink-0" />
               <span className="font-semibold text-sm sm:text-[20px] text-gray-800">Vitals</span>
             </div>
@@ -542,9 +442,8 @@ export default function MedicalUI() {
               </div>
             </div>
 
-
             {/* BMI */}
-            <div className="space-y-1 ">
+            <div className="space-y-1">
               <label className="text-[10px] sm:text-xs font-medium text-gray-700">BMI</label>
               <div className="[&>div]:!w-[80px] [&>div]:!h-[30px]"></div>
               <input
@@ -555,13 +454,12 @@ export default function MedicalUI() {
             </div>
 
             {/* FIRST PAGE NO - AFTER WEIGHT (independent) */}
-            <div className="space-y-1 ">
+            <div className="space-y-1">
               <label className="text-[10px] sm:text-xs font-medium text-gray-700">Page no</label>
               <PageBox value={pageVitals1} setValue={setPageVitals1} />
-
             </div>
             {/* BP */}
-            <div className="space-y-1 ">
+            <div className="space-y-1">
               <label className="text-[10px] sm:text-xs font-medium text-gray-700">Blood Pressure / BP</label>
               <div className="flex items-center gap-1">
                 <input
@@ -580,7 +478,7 @@ export default function MedicalUI() {
             </div>
 
             {/* Pulse */}
-            <div className="space-y-1 ">
+            <div className="space-y-1">
               <label className="text-[10px] sm:text-xs font-medium text-gray-700">Pulse</label>
               <div className="[&>div]:!w-[60px] [&>div]:!h-[30px]"></div>
               <input
@@ -594,15 +492,14 @@ export default function MedicalUI() {
             <div className="space-y-1">
               <label className="text-[10px] sm:text-xs font-medium text-gray-700">Page no</label>
               <PageBox value={pageVitals2} setValue={setPageVitals2} />
-
             </div>
           </div>
 
           {/* Additional Vitals Rows - WITH TWO INDEPENDENT PAGE NO FIELDS PER ROW */}
           {vitalsRows.map((row, index) => (
-            <div key={index} className="flex flex-wrap items-end gap-2 sm:gap-3 md:gap-4  pb-2 relative group  rounded-lg">
+            <div key={index} className="flex flex-wrap items-end gap-2 sm:gap-3 md:gap-4 pb-2 relative group rounded-lg">
               {/* Height */}
-              <div className="space-y-1 ">
+              <div className="space-y-1">
                 <label className="text-[10px] sm:text-xs font-medium text-gray-700">Height</label>
                 <div className="flex items-center gap-1">
                   <input
@@ -653,8 +550,8 @@ export default function MedicalUI() {
                 />
               </div>
 
-                {/* FIRST PAGE NO - AFTER WEIGHT (independent for this row) */}
-              <div className="space-y-1 ">
+              {/* FIRST PAGE NO - AFTER WEIGHT (independent for this row) */}
+              <div className="space-y-1">
                 <label className="text-[10px] sm:text-xs font-medium text-gray-700">Page no</label>
                 <PageBox
                   value={row.pageNo1}
@@ -666,7 +563,7 @@ export default function MedicalUI() {
               </div>
 
               {/* BP */}
-              <div className="space-y-1 ">
+              <div className="space-y-1">
                 <label className="text-[10px] sm:text-xs font-medium text-gray-700">Blood Pressure / BP</label>
                 <div className="flex items-center gap-1">
                   <input
@@ -685,7 +582,7 @@ export default function MedicalUI() {
               </div>
 
               {/* Pulse */}
-              <div className="space-y-1 ">
+              <div className="space-y-1">
                 <label className="text-[10px] sm:text-xs font-medium text-gray-700">Pulse</label>
                 <div className="[&>div]:!w-[80px] [&>div]:!h-[30px]"></div>
                 <input
@@ -696,9 +593,8 @@ export default function MedicalUI() {
               </div>
 
               {/* SECOND PAGE NO - AFTER PULSE (independent for this row) */}
-              <div className="space-y-1 ">
+              <div className="space-y-1">
                 <label className="text-[10px] sm:text-xs font-medium text-gray-700">Page no</label>
-
                 <PageBox
                   value={row.pageNo2}
                   setValue={(val) => {
@@ -727,7 +623,7 @@ export default function MedicalUI() {
               key={title}
               title={title}
               value={data[title] || ""}
-              onChange={(v: string) => setData({ ...data, [title]: v })}
+              onChange={(v) => setData({ ...data, [title]: v })}
               minHeight={60}
               hideIcon={true}
             />
@@ -737,7 +633,7 @@ export default function MedicalUI() {
         <div className="border border-blue-400 rounded-lg p-2 bg-white shadow-sm">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
             <span className="font-semibold text-[15px] text-gray-800">Medication</span>
-            <div className="flex items-center gap-2  sm:mt-0">
+            <div className="flex items-center gap-2 sm:mt-0">
               <div className="flex items-center gap-1"></div>
               <button
                 type="button"
@@ -782,12 +678,12 @@ export default function MedicalUI() {
                     <textarea
                       value={row.cmt}
                       onChange={(e) => updateRow(i, "cmt", e.target.value)}
-                      onInput={(e: React.FormEvent<HTMLTextAreaElement>) => {
+                      onInput={(e) => {
                         const textarea = e.currentTarget;
                         textarea.style.height = 'auto';
                         textarea.style.height = textarea.scrollHeight + 'px';
                       }}
-                      ref={(el: HTMLTextAreaElement | null) => {
+                      ref={(el) => {
                         if (el) {
                           el.style.height = 'auto';
                           el.style.height = el.scrollHeight + 'px';
@@ -817,8 +713,6 @@ export default function MedicalUI() {
             title="Plan/Recommendation"
             value={planRecommendation}
             onChange={setPlanRecommendation}
-
-
             minHeight={60}
             hideIcon={true}
           />
@@ -826,8 +720,6 @@ export default function MedicalUI() {
             title="Work Status"
             value={workStatus}
             onChange={setWorkStatus}
-
-
             minHeight={60}
             hideIcon={true}
           />
@@ -838,12 +730,10 @@ export default function MedicalUI() {
           title="Special Comments"
           value={specialComments}
           onChange={setSpecialComments}
-
           minHeight={60}
           hideIcon={true}
         />
       </div>
     </div>
-
   );
 }

@@ -1,13 +1,6 @@
-// components/home/CenterToggle.tsx
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 
-interface ToggleProps {
-  isOpen: boolean;
-  onToggle: () => void;
-  position?: 'left' | 'right';
-}
-
-const Toggle = ({ isOpen, onToggle, position = 'left' }: ToggleProps) => {
+const Toggle = ({ isOpen, onToggle, position = 'left' }) => {
   return (
     <div 
       className={`flex items-center justify-center w-6 bg-muted border-x border-border cursor-pointer hover:bg-accent transition-colors h-full`}

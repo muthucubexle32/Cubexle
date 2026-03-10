@@ -1,26 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
 import {
-  ChevronDown,
-  Calendar,
-  Clock,
+  Activity,
   Plus,
   Trash2,
   RotateCcw,
   Save,
-  Activity,
-  X,
-  FileText,
-  Heart,
 } from "lucide-react";
-
-// --- Types ---
-type Status = "pending" | "in progress" | "completed" | "clarification";
-
-interface TimingComment {
-  id: string;
-  timing: string;
-  comment: string;
-}
 
 // --- Auto-resizing Textarea Component ---
 const AutoResizeTextarea = ({ value, onChange, placeholder, className }) => {
@@ -48,7 +33,7 @@ const AutoResizeTextarea = ({ value, onChange, placeholder, className }) => {
 // --- Main EKG Panel Component ---
 export default function EKGPanel() {
   /* STATUS */
-  const [status, setStatus] = useState<Status>("pending");
+  const [status, setStatus] = useState("pending");
 
   /* PROVIDER / FACILITY - TOP SECTION */
   const [providerName, setProviderName] = useState("Full Name");
@@ -57,7 +42,7 @@ export default function EKGPanel() {
   const [dos, setDos] = useState("");
 
   /* TIMING & COMMENTS - BOTTOM SECTION (Multiple entries) */
-  const [timingComments, setTimingComments] = useState<TimingComment[]>([
+  const [timingComments, setTimingComments] = useState([
     { id: "1", timing: "", comment: "" }
   ]);
 
@@ -65,16 +50,16 @@ export default function EKGPanel() {
   const [additionalNotes, setAdditionalNotes] = useState("");
 
   /* REFS for Date Pickers */
-  const dosRef = useRef<HTMLInputElement>(null);
+  const dosRef = useRef(null);
 
   /* HANDLERS */
-  const triggerDatePicker = (ref: React.RefObject<HTMLInputElement>) => {
+  const triggerDatePicker = (ref) => {
     if (ref.current) ref.current.showPicker();
   };
 
   // Add new timing/comment pair
   const handleAddTimingComment = () => {
-    const newEntry: TimingComment = {
+    const newEntry = {
       id: Date.now().toString(),
       timing: "",
       comment: ""
@@ -83,14 +68,14 @@ export default function EKGPanel() {
   };
 
   // Update timing or comment
-  const handleUpdateTimingComment = (id: string, field: 'timing' | 'comment', value: string) => {
+  const handleUpdateTimingComment = (id, field, value) => {
     setTimingComments(prev =>
       prev.map(item => item.id === id ? { ...item, [field]: value } : item)
     );
   };
 
   // Delete timing/comment pair
-  const handleDeleteTimingComment = (id: string) => {
+  const handleDeleteTimingComment = (id) => {
     if (timingComments.length > 1) {
       setTimingComments(prev => prev.filter(item => item.id !== id));
     }
@@ -142,12 +127,6 @@ export default function EKGPanel() {
               </div>
               <h1 className="block text-lg font-semibold text-black mb-1">EKG Report</h1>
             </div>
-
-
-
-
-
-
           </div>
 
           <div className="flex gap-2 w-full sm:w-auto justify-end">
@@ -166,7 +145,6 @@ export default function EKGPanel() {
 
       {/* 2. Main Content */}
       <div className="px-3 sm:px-4 py-2 max-w-5xl mx-auto">
-
 
         {/* 3. TOP SECTION: Provider, Facility, DOS, Page No */}
         <div className="bg-white border border-blue-200 rounded-xl p-2 shadow-sm mb-2">
@@ -226,7 +204,7 @@ export default function EKGPanel() {
         {/* 4. EKG READINGS SECTION */}
         <div className="bg-white border border-blue-200 rounded-xl p-2 shadow-sm mb-2">
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-sm font-medium px-1  text-black">EKG Readings</h2>
+            <h2 className="text-sm font-medium px-1 text-black">EKG Readings</h2>
             <button
               onClick={handleAddTimingComment}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
@@ -238,23 +216,22 @@ export default function EKGPanel() {
           {/* Dynamic Timing/Comment Entries */}
           <div className="relative">
             {timingComments.map((item, index) => (
-              <div key={item.id} className="bg-white rounded-lg border border-gray-200 p-2">
-                <div className="flex items-center justify-between ">
-
+              <div key={item.id} className="bg-white rounded-lg border border-gray-200 p-2 mb-2">
+                <div className="flex items-center justify-between mb-2">
                   {timingComments.length > 1 && (
                     <button
                       onClick={() => handleDeleteTimingComment(item.id)}
-                      className="text-gray-400 hover:text-red-500 transition-colors"
+                      className="text-gray-400 hover:text-red-500 transition-colors ml-auto"
                     >
                       <Trash2 size={16} />
                     </button>
                   )}
                 </div>
 
-                <div className="flex flex-col- md:flex-row gap-4 items-start">
+                <div className="flex flex-col md:flex-row gap-4 items-start">
                   {/* Timing - Left side */}
-                  <div className="w-full md:w-40 ">
-                    <label className="block text-xs font-medium text-gray-600 mb-1 ">Timing</label>
+                  <div className="w-full md:w-40">
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Timing</label>
                     <div className="relative">
                       <input
                         type="time"
@@ -262,7 +239,6 @@ export default function EKGPanel() {
                         onChange={(e) => handleUpdateTimingComment(item.id, 'timing', e.target.value)}
                         className="w-full h-10 bg-white border border-gray-300 rounded-md px-3 text-sm outline-none focus:border-blue-400"
                       />
-
                     </div>
                   </div>
 
@@ -295,8 +271,6 @@ export default function EKGPanel() {
             {additionalNotes.length} characters
           </div>
         </div>
-
-       
       </div>
     </div>
   );

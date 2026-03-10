@@ -1,12 +1,14 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Index from './pages/Index';
-import OVPanel from "@/components/Datapanel/OVPanel";
-import DiagnosticsPanel from "@/components/Datapanel/DiagnosticsPanel";
-import LabsPanel from "@/components/Datapanel/LabsPanel";
-import EKGPanel from "@/components/Datapanel/EKGPanel";
-import AdminPage from './pages/AdminPage';
-import ReportPage from './pages/ReportPage';
-import SearchPage from './pages/SearchPage';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import Index from "./pages/Index";
+import AdminPage from "./pages/AdminPage";
+import ReportPage from "./pages/ReportPage";
+import SearchPage from "./pages/SearchPage";
+
+import OVPanel from "./components/Datapanel/OVPanel";
+import DiagnosticsPanel from "./components/Datapanel/DiagnosticsPanel";
+import LabsPanel from "./components/Datapanel/LabsPanel";
+import EKGPanel from "./components/Datapanel/EKGPanel";
 
 function App() {
   return (
