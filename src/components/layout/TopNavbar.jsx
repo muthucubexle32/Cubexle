@@ -102,23 +102,23 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
       <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 animate-gradient-x"></div>
 
       {/* ROW 1: Main Navigation */}
-      <div className="relative flex items-center justify-between px-4 sm:px-6 lg:px-8 py-1.5">
+      <div className="relative flex items-center justify-between px-3 sm:px-4 lg:px-6 xl:px-8 py-1.5">
         {/* Logo Section with enhanced effects */}
         <div 
-          className="flex items-center gap-3 group cursor-pointer transform transition-all duration-300 hover:scale-105" 
+          className="flex items-center gap-2 sm:gap-3 group cursor-pointer transform transition-all duration-300 hover:scale-105 flex-shrink-0" 
           onClick={() => navigate('/')}
         >
-          <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 overflow-hidden">
+          <div className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 overflow-hidden">
             <div className="absolute inset-0 bg-white/20 transform -translate-x-full group-hover:translate-x-full transition-transform duration-700 skew-x-12"></div>
-            <span className="text-sm font-bold text-white relative z-10">Logo</span>
+            <span className="text-xs sm:text-sm font-bold text-white relative z-10">Logo</span>
           </div>
-          <span className="text-base sm:text-lg font-semibold text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-blue-200 transition-all duration-300">
+          <span className="text-sm sm:text-base lg:text-lg font-semibold text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-blue-200 transition-all duration-300 hidden xs:inline">
             Logo Name
           </span>
         </div>
 
         {/* Desktop Navigation - Main Menu with modern effects */}
-        <div className="hidden lg:flex items-center gap-10">
+        <div className="hidden lg:flex items-center gap-2 xl:gap-10">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
@@ -126,18 +126,19 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className={`relative px-5 py-2 text-sm font-medium rounded-xl transition-all duration-300 group overflow-hidden ${
+                className={`relative px-3 xl:px-5 py-2 text-xs xl:text-sm font-medium rounded-xl transition-all duration-300 group overflow-hidden ${
                   isActive 
                     ? 'text-white bg-white/15 shadow-lg shadow-white/5' 
                     : 'text-white/70 hover:text-white hover:bg-white/10'
                 }`}
               >
-                <span className="relative z-10 flex items-center gap-2">
-                  <Icon className="w-4 h-4" />
-                  {item.label}
+                <span className="relative z-10 flex items-center gap-1 xl:gap-2">
+                  <Icon className="w-3 h-3 xl:w-4 xl:h-4" />
+                  <span className="hidden xl:inline">{item.label}</span>
+                  <span className="xl:hidden">{item.label.charAt(0)}</span>
                 </span>
                 {isActive && (
-                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-8 h-0.5 bg-gradient-to-r from-blue-400 to-indigo-400 rounded-full"></div>
+                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-6 xl:w-8 h-0.5 bg-gradient-to-r from-blue-400 to-indigo-400 rounded-full"></div>
                 )}
                 {/* Hover shimmer effect */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
@@ -147,35 +148,37 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
         </div>
 
         {/* Right Actions */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           {/* User Name - Desktop */}
-          <div className="hidden lg:flex items-center gap-3">
+          <div className="hidden lg:flex items-center gap-2 xl:gap-3">
             <div className="flex flex-col items-end">
-              <span className="text-sm font-semibold text-white">User Name</span>
+              <span className="text-xs xl:text-sm font-semibold text-white truncate max-w-[100px] xl:max-w-[150px]">User Name</span>
             </div>
-            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 flex items-center justify-center">
-              <User className="w-5 h-5 text-white" />
+            <div className="w-8 h-8 xl:w-10 xl:h-10 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 flex items-center justify-center flex-shrink-0">
+              <User className="w-4 h-4 xl:w-5 xl:h-5 text-white" />
             </div>
           </div>
 
           {/* Logout Button with enhanced effects */}
           <button
             onClick={() => navigate("/login")}
-            className="relative group px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-white rounded-xl transition-all duration-300 border border-red-500/30 hover:border-red-500/50 overflow-hidden"
+            className="relative group p-2 xl:px-4 xl:py-2 bg-red-500/20 hover:bg-red-500/30 text-white rounded-xl transition-all duration-300 border border-red-500/30 hover:border-red-500/50 overflow-hidden flex-shrink-0"
+            title="Logout"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-red-500/0 to-red-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <LogOut className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" />
+            <LogOut className="w-4 h-4 xl:w-4 xl:h-4 group-hover:rotate-180 transition-transform duration-500" />
+           
           </button>
 
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="lg:hidden relative w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 transition-all duration-300"
+            className="lg:hidden relative w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 transition-all duration-300 flex-shrink-0"
           >
             {isMobileMenuOpen ? (
-              <X className="w-5 h-5 text-white animate-spin" />
+              <X className="w-4 h-4 sm:w-5 sm:h-5 text-white animate-spin" />
             ) : (
-              <Menu className="w-5 h-5 text-white" />
+              <Menu className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             )}
           </button>
         </div>
@@ -183,20 +186,20 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
 
       {/* ROW 2: Search/Filter Bar - All data in one row */}
       <div className="border-t border-white/10 bg-black/20 backdrop-blur-sm">
-        <div className="px-4 sm:px-6 lg:px-8 py-1">
-          <div className="flex flex-wrap items-center gap-2 justify-end">
+        <div className="px-2 sm:px-4 lg:px-6 xl:px-8 py-1">
+          <div className="flex flex-wrap items-center gap-1 sm:gap-2 justify-end">
             {/* Provider Name */}
-            <div className="relative">
+            <div className=" flex-0 min-w-[120px] sm:min-w-[140px] md:min-w-[240px] lg:flex-none ">
               <input
                 type="text"
-                placeholder="Provider Name"
-                className="w-36 sm:w-80 px-4 py-2 bg-white/10 border border-white/20 rounded-sm text-white placeholder-white/50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-transparent transition-all duration-300 group-hover:bg-white/15"
+                placeholder="Provider"
+                className="w-full px-3 sm:px-4 py-1.5 sm:py-2 bg-white/10 border border-white/20 rounded-sm text-white placeholder-white/50 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-transparent transition-all duration-300 group-hover:bg-white/15"
               />
               <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/0 to-purple-500/0 group-hover:from-blue-500/10 group-hover:to-purple-500/10 pointer-events-none transition-all duration-300"></div>
             </div>
 
             {/* DOB with Calendar */}
-            <div className="relative w-48" ref={calendarRef}>
+            <div className="relative w-32 sm:w-36 md:w-40 lg:w-44 xl:w-48" ref={calendarRef}>
               <div className="relative group">
                 <input
                   type="text"
@@ -204,14 +207,14 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
                   value={selectedDate}
                   onClick={() => setShowCalendar(!showCalendar)}
                   readOnly
-                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-sm text-white placeholder-white/50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400/50 cursor-pointer transition-all duration-300 group-hover:bg-white/15"
+                  className="w-full px-3 sm:px-4 py-1.5 sm:py-2 bg-white/10 border border-white/20 rounded-sm text-white placeholder-white/50 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-400/50 cursor-pointer transition-all duration-300 group-hover:bg-white/15"
                 />
-                <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/40 group-hover:text-white/60 transition-colors" />
+                <Calendar className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 w-3 h-3 sm:w-4 sm:h-4 text-white/40 group-hover:text-white/60 transition-colors" />
               </div>
 
-              {/* Calendar Popup */}
+              {/* Calendar Popup - Responsive positioning */}
               {showCalendar && (
-                <div className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-4 z-50 animate-slideDown">
+                <div className="fixed sm:absolute left-1/2 sm:left-auto sm:right-0 transform -translate-x-1/2 sm:translate-x-0 top-1/2 sm:top-full sm:mt-2 w-72 sm:w-64 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-4 z-50 animate-slideDown">
                   <div className="flex items-center justify-between mb-3">
                     <button
                       onClick={handlePrevMonth}
@@ -240,7 +243,7 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
 
                   <div className="grid grid-cols-7 gap-1">
                     {Array.from({ length: getFirstDayOfMonth(currentMonth) }).map((_, i) => (
-                      <div key={`empty-${i}`} className="h-8" />
+                      <div key={`empty-${i}`} className="h-8 w-8" />
                     ))}
                     {Array.from({ length: getDaysInMonth(currentMonth) }).map((_, i) => {
                       const day = i + 1;
@@ -286,22 +289,22 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
             </div>
 
             {/* Gender Dropdown */}
-            <div className="relative group">
-              <select className="w-32 px-4 py-2 bg-white/10 border border-white/20 rounded-sm text-white appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400/50 text-sm transition-all duration-300 group-hover:bg-white/15">
+            <div className="relative w-24 sm:w-28 md:w-32">
+              <select className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 bg-white/10 border border-white/20 rounded-sm text-white appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400/50 text-xs sm:text-sm transition-all duration-300 group-hover:bg-white/15">
                 <option value="" className="bg-slate-800 text-white">Gender</option>
                 <option value="male" className="bg-slate-800 text-white">Male</option>
                 <option value="female" className="bg-slate-800 text-white">Female</option>
                 <option value="other" className="bg-slate-800 text-white">Other</option>
               </select>
-              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/40 group-hover:text-white/60 transition-colors pointer-events-none" />
+              <ChevronDown className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 w-3 h-3 sm:w-4 sm:h-4 text-white/40 group-hover:text-white/60 transition-colors pointer-events-none" />
             </div>
 
             {/* Page Number */}
-            <div className="relative">
+            <div className="relative w-16 sm:w-20 md:w-24">
               <input
                 type="text"
                 placeholder="Pg No"
-                className="w-24 px-4 py-2 bg-white/10 border border-white/20 rounded-sm text-white placeholder-white/50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all duration-300 group-hover:bg-white/15"
+                className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 bg-white/10 border border-white/20 rounded-sm text-white placeholder-white/50 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all duration-300 group-hover:bg-white/15"
               />
             </div>
 
@@ -309,15 +312,16 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
             <div className="relative" ref={entryDropdownRef}>
               <button
                 onClick={() => setShowEntryDropdown(!showEntryDropdown)}
-                className="group flex items-center gap-2 px-5 py-2 bg-white/10 border border-white/20 rounded-sm text-white text-sm hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all duration-300"
+                className="group flex items-center gap-1 sm:gap-2 px-2 sm:px-3 md:px-4 lg:px-5 py-1.5 sm:py-2 bg-white/10 border border-white/20 rounded-sm text-white text-xs sm:text-sm hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all duration-300 whitespace-nowrap"
               >
-                <span>Entry Pages</span>
-                <ChevronDown className={`w-4 h-4 text-white/60 transition-transform duration-300`} />
+                <span className="hidden xs:inline">Entry Pages</span>
+                <span className="xs:hidden">Pages</span>
+                <ChevronDown className={`w-3 h-3 sm:w-4 sm:h-4 text-white/60 transition-transform duration-300 ${showEntryDropdown ? 'rotate-180' : ''}`} />
               </button>
 
-              {/* Entry Pages Dropdown Menu */}
+              {/* Entry Pages Dropdown Menu - Responsive positioning */}
               {showEntryDropdown && (
-                <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700 py-2 z-50 animate-slideDown">
+                <div className="fixed sm:absolute left-1/2 sm:left-auto sm:right-0 transform -translate-x-1/2 sm:translate-x-0 top-1/2 sm:top-full sm:mt-2 w-56 sm:w-48 bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700 py-2 z-50 animate-slideDown">
                   {entryItems.map((item) => {
                     const Icon = item.icon;
                     const isActive = activePanel === item.panelId;
@@ -330,7 +334,7 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
                         }`}
                       >
                         <div className={`p-1.5 rounded-lg bg-gradient-to-r ${item.color} bg-opacity-10 group-hover:scale-110 transition-transform duration-300`}>
-                          <Icon className={`w-4 h-4 text-${item.color.split('-')[1]}-500`} />
+                          <Icon className={`w-4 h-4`} />
                         </div>
                         <span className={`flex-1 text-left ${isActive ? 'font-medium text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'}`}>
                           {item.label}
@@ -346,27 +350,37 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu - Enhanced for better mobile experience */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 top-[73px] bg-gradient-to-b from-slate-900 to-slate-800 dark:from-gray-900 dark:to-gray-800 z-40 animate-slideDown">
-          <div className="h-full overflow-y-auto pb-20">
-            <div className="p-6 space-y-6">
+        <div className="lg:hidden fixed inset-0 top-[57px] sm:top-[61px] bg-gradient-to-b from-slate-900 to-slate-800 dark:from-gray-900 dark:to-gray-800 z-40 animate-slideDown overflow-y-auto">
+          <div className="min-h-full pb-20">
+            <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
               {/* User Profile */}
-              <div className="relative bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-6 text-white overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full transform translate-x-16 -translate-y-16"></div>
-                <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full transform -translate-x-12 translate-y-12"></div>
+              <div className="relative bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-4 sm:p-6 text-white overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 sm:w-32 h-24 sm:h-32 bg-white/10 rounded-full transform translate-x-16 -translate-y-16"></div>
+                <div className="absolute bottom-0 left-0 w-20 sm:w-24 h-20 sm:h-24 bg-black/10 rounded-full transform -translate-x-12 translate-y-12"></div>
                 <div className="relative z-10">
-                  <input
-                    type="text"
-                    placeholder="User Name"
-                    defaultValue="User Name"
-                    className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-xl text-white placeholder-white/80 text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-white/50 mb-3"
-                  />
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 flex items-center justify-center flex-shrink-0">
+                      <User className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <input
+                        type="text"
+                        placeholder="User Name"
+                        defaultValue="User Name"
+                        className="w-full px-3 sm:px-4 py-2 bg-white/20 border border-white/30 rounded-xl text-white placeholder-white/80 text-base sm:text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-white/50"
+                      />
+                    </div>
+                  </div>
                   <button
-                    onClick={() => navigate("/login")}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-500/30 hover:bg-red-500/40 rounded-xl transition-colors"
+                    onClick={() => {
+                      navigate("/login");
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-500/30 hover:bg-red-500/40 rounded-xl transition-colors text-sm sm:text-base"
                   >
-                    <LogOut className="w-4 h-4" />
+                    <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
                     <span>Logout</span>
                   </button>
                 </div>
@@ -385,17 +399,17 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
                         navigate(item.path);
                         setIsMobileMenuOpen(false);
                       }}
-                      className={`w-full flex items-center gap-4 px-4 py-4 rounded-xl transition-all duration-300 transform active:scale-95 ${
+                      className={`w-full flex items-center gap-4 px-4 py-3 sm:py-4 rounded-xl transition-all duration-300 transform active:scale-95 ${
                         isActive 
                           ? 'bg-white/20 text-white shadow-lg' 
                           : 'text-white/70 hover:bg-white/10 hover:text-white'
                       }`}
                     >
                       <div className={`p-2 rounded-lg ${isActive ? 'bg-white/20' : 'bg-white/5'}`}>
-                        <Icon className="w-5 h-5" />
+                        <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
                       </div>
-                      <span className="font-medium flex-1 text-left">{item.label}</span>
-                      {isActive && <Sparkles className="w-4 h-4 text-blue-300 animate-pulse" />}
+                      <span className="font-medium flex-1 text-left text-sm sm:text-base">{item.label}</span>
+                      {isActive && <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-blue-300 animate-pulse" />}
                     </button>
                   );
                 })}
@@ -414,16 +428,16 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
                         handleEntrySelect(item.panelId);
                         setIsMobileMenuOpen(false);
                       }}
-                      className={`w-full flex items-center gap-4 px-4 py-4 rounded-xl transition-all duration-300 transform active:scale-95 ${
+                      className={`w-full flex items-center gap-4 px-4 py-3 sm:py-4 rounded-xl transition-all duration-300 transform active:scale-95 ${
                         isActive 
                           ? `bg-gradient-to-r ${item.color} text-white shadow-lg` 
                           : 'text-white/70 hover:bg-white/10'
                       }`}
                     >
                       <div className={`p-2 rounded-lg ${isActive ? 'bg-white/20' : 'bg-white/5'}`}>
-                        <Icon className="w-5 h-5" />
+                        <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
                       </div>
-                      <span className="font-medium flex-1 text-left">{item.label}</span>
+                      <span className="font-medium flex-1 text-left text-sm sm:text-base">{item.label}</span>
                     </button>
                   );
                 })}
@@ -433,8 +447,17 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
         </div>
       )}
 
-      {/* Animation keyframes */}
-      <style>{`
+      {/* Custom CSS for xs breakpoint and animations */}
+      <style jsx>{`
+        @media (min-width: 480px) {
+          .xs\\:inline {
+            display: inline;
+          }
+          .xs\\:hidden {
+            display: none;
+          }
+        }
+        
         @keyframes gradient-x {
           0%, 100% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }

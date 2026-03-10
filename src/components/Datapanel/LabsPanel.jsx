@@ -222,48 +222,49 @@ export default function LaboratoryReport() {
     <div className="min-h-screen bg-white pb-24 font-sans text-gray-800">
       
       {/* 1. Top Status & Action Bar */}
-      <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-2 px-4 py-2 bg-white border-b border-gray-200 sticky top-0 z-20">
+      <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-3 px-3 sm:px-4 py-2 bg-white border-b border-gray-200 sticky top-0 z-20">
         <div className="flex items-center gap-1 w-full sm:w-auto">
           {/* 2. Title Header */}
-          <h1 className="block text-lg font-semibold text-black mb-1">Laboratory Report</h1>
+          <h1 className="block text-base sm:text-lg font-semibold text-black">Laboratory Report</h1>
         </div>
 
-        <div className="flex gap-3 sm:ml-auto w-full sm:w-auto justify-end">
-          <button onClick={handleSave} className="flex items-center justify-center gap-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium text-xs transition-all duration-200 shadow-sm">
-            <Save size={14} /> Save
+        <div className="flex gap-2 sm:gap-3 w-full sm:w-auto justify-end">
+          <button onClick={handleSave} className="flex items-center justify-center gap-1 bg-green-600 hover:bg-green-700 text-white px-3 sm:px-4 py-2 rounded-lg font-medium text-xs transition-all duration-200 shadow-sm flex-1 sm:flex-none">
+            <Save size={14} /> <span className="hidden xs:inline">Save</span>
           </button>
           
-          <button onClick={handleReset} className="flex items-center justify-center gap-1 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium text-xs transition-all duration-200 shadow-sm">
-            <RotateCcw size={14} /> Reset
+          <button onClick={handleReset} className="flex items-center justify-center gap-1 bg-gray-600 hover:bg-gray-700 text-white px-3 sm:px-4 py-2 rounded-lg font-medium text-xs transition-all duration-200 shadow-sm flex-1 sm:flex-none">
+            <RotateCcw size={14} /> <span className="hidden xs:inline">Reset</span>
           </button>
           
-          <button onClick={handleDelete} className="flex items-center justify-center gap-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium text-xs transition-all duration-200 shadow-sm">
-            <Trash2 size={14} /> Delete
+          <button onClick={handleDelete} className="flex items-center justify-center gap-1 bg-red-600 hover:bg-red-700 text-white px-3 sm:px-4 py-2 rounded-lg font-medium text-xs transition-all duration-200 shadow-sm flex-1 sm:flex-none">
+            <Trash2 size={14} /> <span className="hidden xs:inline">Delete</span>
           </button>
         </div>
       </div>
 
-      <div className="px-2 sm:px-2 py-4 max-w-[1400px] mx-auto space-y-2">
+      <div className="px-2 sm:px-3 py-4 max-w-[1400px] mx-auto space-y-2">
         
+       
         {/* 4. Provider & Facility */}
-        <div className="bg-white border border-blue-300 rounded-xl p-2 shadow-sm">
+        <div className="bg-white border border-blue-300 rounded-xl p-2 sm:p-3 shadow-sm">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-2 items-end">
-            <div>
+            <div className="col-span-1">
               <label className={labelClass}>Provider name</label>
               <input type="text" value={providerName} onChange={(e) => setProviderName(e.target.value)} placeholder="Provider name" className={inputClass} />
             </div>
-            <div className="relative">
+            <div className="col-span-1">
               <label className={labelClass}>Facility</label>
               <input type="text" value={facility} onChange={(e) => setFacility(e.target.value)} placeholder="Enter Facility" className={inputClass} />
             </div>
-            <div className="relative">
+            <div className="col-span-1">
               <label className={labelClass}>(DOS)Date of service</label>
               <div className="relative cursor-pointer" onClick={() => triggerDatePicker(dosRef)}>
                 <input ref={dosRef} type="date" value={dos} onChange={(e) => setDos(e.target.value)} className={`${inputClass} pr-10 cursor-pointer [&::-webkit-calendar-picker-indicator]:hidden`} />
                 <Calendar size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
               </div>
             </div>
-            <div>
+            <div className="col-span-1">
               <label className={labelClass}>Page No</label>
               <input type="number" value={pageNo} onChange={(e) => setPageNo(e.target.value)} className={inputClass} />
             </div>
@@ -271,12 +272,12 @@ export default function LaboratoryReport() {
         </div>
 
         {/* 5. Panel Selection & Parameters with Select All Button */}
-        <div className="bg-white border border-blue-300 rounded-xl p-2 shadow-sm">
-          <div className="flex flex-col md:flex-row gap-6">
+        <div className="bg-white border border-blue-300 rounded-xl p-2 sm:p-3 shadow-sm">
+          <div className="flex flex-col lg:flex-row gap-4">
             {/* Panel Select */}
-            <div className="flex-1">
+            <div className="w-full lg:w-1/3">
               <label className={labelClass}>Panel Name</label>
-              <div className="relative py-4">
+              <div className="relative">
                 <select 
                   value={panelName}
                   onChange={(e) => setPanelName(e.target.value)}
@@ -289,12 +290,12 @@ export default function LaboratoryReport() {
             </div>
 
             {/* Parameters List with Select All */}
-            <div className="flex-[1.5]">
-              <div className="flex items-center justify-between mb-1">
+            <div className="w-full lg:w-2/3">
+              <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-2 mb-2">
                 <label className="block text-sm font-semibold text-[#030303]">Select Parameters</label>
                 <button
                   onClick={handleSelectAll}
-                  className={`text-xs font-medium px-3 py-1.5 rounded-md transition-colors ${
+                  className={`text-xs font-medium px-3 py-1.5 rounded-md transition-colors w-full xs:w-auto ${
                     allParametersSelected 
                       ? 'bg-amber-100 text-amber-700 hover:bg-amber-200 border border-amber-300' 
                       : 'bg-blue-100 text-blue-700 hover:bg-blue-200 border border-blue-300'
@@ -304,15 +305,15 @@ export default function LaboratoryReport() {
                 </button>
               </div>
               <div className="bg-[#bae6fd] bg-opacity-40 rounded-lg p-2">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-2">
                   {availableParams.map((param) => {
                     const isChecked = results.some(r => r.parameter === param);
                     return (
-                      <div key={param} className="flex items-center gap-2 cursor-pointer" onClick={() => handleParameterToggle(param)}>
+                      <div key={param} className="flex items-center gap-2 cursor-pointer min-w-0" onClick={() => handleParameterToggle(param)}>
                         <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${isChecked ? 'bg-blue-500 border-blue-500 text-white' : 'bg-white border-blue-300'}`}>
                           {isChecked && <Check size={12} strokeWidth={4} />}
                         </div>
-                        <span className="text-sm font-medium text-gray-700 select-none">{param}</span>
+                        <span className="text-sm font-medium text-gray-700 select-none truncate">{param}</span>
                       </div>
                     );
                   })}
@@ -330,126 +331,146 @@ export default function LaboratoryReport() {
         </div>
 
         {/* 6. Lab Results Table */}
-        <div className="bg-white border border-blue-300 rounded-xl p-2 shadow-sm">
-          <div className="flex items-center justify-between mb-1">
+        <div className="bg-white border border-blue-300 rounded-xl p-2 sm:p-3 shadow-sm">
+          <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-2 mb-2">
             <h2 className="text-sm font-bold text-[#020202]">Lab Results</h2>
-            <div className="flex gap-4 text-xs font-medium text-gray-500">
-              <span className="text-red-600">High</span>
-              <span className="text-green-600">Normal</span>
-              <span className="text-blue-600">Low</span>
+            <div className="flex gap-3 text-xs font-medium">
+              <span className="text-red-600 flex items-center gap-1"><ArrowUp size={12} /> High</span>
+              <span className="text-green-600 flex items-center gap-1"><CheckCircle2 size={12} /> Normal</span>
+              <span className="text-blue-600 flex items-center gap-1"><ArrowDown size={12} /> Low</span>
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[700px]">
-              <thead>
-                <tr className="bg-gray-100 border-b border-gray-200">
-                  <th className="py-3 px-4 text-left text-xs font-bold text-gray-700 w-[30%]">Parameter</th>
-                  <th className="py-3 px-4 text-center text-xs font-bold text-gray-700 w-[15%]">Value</th>
-                  <th className="py-3 px-4 text-center text-xs font-bold text-gray-700 w-[10%]">Unit</th>
-                  <th className="py-3 px-4 text-center text-xs font-bold text-gray-700 w-[15%]">Flag</th>
-                  <th className="py-3 px-4 text-center text-xs font-bold text-gray-700 w-[20%]">Reference Range</th>
-                  <th className="py-3 px-4 text-center text-xs font-bold text-gray-700 w-[5%]">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {results.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="py-8 text-center text-gray-500 text-sm italic">
-                      No parameters selected. Please select parameters above.
-                    </td>
+          <div className="overflow-x-auto -mx-2 sm:-mx-3">
+            <div className="inline-block min-w-full align-middle px-2 sm:px-3">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th scope="col" className="py-3 px-2 sm:px-4 text-left text-xs font-bold text-gray-700 whitespace-nowrap">Parameter</th>
+                    <th scope="col" className="py-3 px-2 sm:px-4 text-center text-xs font-bold text-gray-700 whitespace-nowrap">Value</th>
+                    <th scope="col" className="py-3 px-2 sm:px-4 text-center text-xs font-bold text-gray-700 whitespace-nowrap">Unit</th>
+                    <th scope="col" className="py-3 px-2 sm:px-4 text-center text-xs font-bold text-gray-700 whitespace-nowrap">Flag</th>
+                    <th scope="col" className="py-3 px-2 sm:px-4 text-center text-xs font-bold text-gray-700 whitespace-nowrap">Reference Range</th>
+                    <th scope="col" className="py-3 px-2 sm:px-4 text-center text-xs font-bold text-gray-700 whitespace-nowrap">Action</th>
                   </tr>
-                ) : (
-                  results.map((row) => (
-                    <tr key={row.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="py-2 px-4 text-sm font-medium text-gray-700">{row.parameter}</td>
-                      <td className="py-2 px-4">
-                        <input
-                          value={row.value}
-                          onChange={(e) => updateResultRow(row.id, "value", e.target.value)}
-                          className="w-full h-8 bg-white border border-gray-300 rounded px-2 text-center text-sm outline-none focus:border-blue-400"
-                        />
-                      </td>
-                      <td className="py-2 px-4">
-                        <input
-                          value={row.unit}
-                          onChange={(e) => updateResultRow(row.id, "unit", e.target.value)}
-                          className="w-full h-8 bg-white border border-gray-300 rounded px-2 text-center text-sm outline-none focus:border-blue-400"
-                          placeholder="mg/dL"
-                        />
-                      </td>
-                      <td className="py-2 px-4 text-center">
-                        <div className="relative inline-block w-full">
-                          <select
-                            value={row.flag}
-                            onChange={(e) => updateResultRow(row.id, "flag", e.target.value)}
-                            className={`
-                              w-full h-8 px-2 text-xs font-bold rounded border outline-none appearance-none cursor-pointer
-                              ${row.flag === 'High' ? 'bg-red-50 text-red-600 border-red-200' : 
-                                row.flag === 'Low' ? 'bg-blue-50 text-blue-600 border-blue-200' :
-                                row.flag === 'Normal' ? 'bg-green-50 text-green-600 border-green-200' : 
-                                row.flag === 'No Ref Range' ? 'bg-gray-50 text-gray-600 border-gray-200' :
-                                'bg-white text-gray-600 border-gray-300'}
-                            `}
-                          >
-                            <option value="">Select</option>
-                            <option value="Normal">Normal</option>
-                            <option value="High">High</option>
-                            <option value="Low">Low</option>
-                            <option value="No Ref Range">No Ref Range</option>
-                          </select>
-                          <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
-                            {row.flag === 'High' && <ArrowUp size={12} className="text-red-600" />}
-                            {row.flag === 'Low' && <ArrowDown size={12} className="text-blue-600" />}
-                            {row.flag === 'Normal' && <CheckCircle2 size={12} className="text-green-600" />}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-2 px-4">
-                        <input
-                          value={row.referenceRange}
-                          onChange={(e) => updateResultRow(row.id, "referenceRange", e.target.value)}
-                          className="w-full h-8 bg-white border border-gray-300 rounded px-2 text-center text-sm outline-none focus:border-blue-400"
-                        />
-                      </td>
-                      <td className="py-2 px-4 text-center">
-                        <button 
-                          onClick={() => handleParameterToggle(row.parameter)}
-                          className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
-                          title="Remove parameter"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {results.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="py-8 px-2 text-center text-gray-500 text-sm italic">
+                        No parameters selected. Please select parameters above.
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-            
-            {/* Results Summary */}
-            {results.length > 0 && (
-              <div className="mt-4 text-xs text-gray-500 text-right border-t border-gray-200 pt-2">
-                Showing {results.length} of {availableParams.length} parameters
-              </div>
-            )}
+                  ) : (
+                    results.map((row) => (
+                      <tr key={row.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="py-2 px-2 sm:px-4 text-sm font-medium text-gray-700 whitespace-nowrap">{row.parameter}</td>
+                        <td className="py-2 px-2 sm:px-4">
+                          <input
+                            value={row.value}
+                            onChange={(e) => updateResultRow(row.id, "value", e.target.value)}
+                            className="w-full min-w-[60px] h-8 bg-white border border-gray-300 rounded px-2 text-center text-sm outline-none focus:border-blue-400"
+                          />
+                        </td>
+                        <td className="py-2 px-2 sm:px-4">
+                          <input
+                            value={row.unit}
+                            onChange={(e) => updateResultRow(row.id, "unit", e.target.value)}
+                            className="w-full min-w-[60px] h-8 bg-white border border-gray-300 rounded px-2 text-center text-sm outline-none focus:border-blue-400"
+                            placeholder="mg/dL"
+                          />
+                        </td>
+                        <td className="py-2 px-2 sm:px-4">
+                          <div className="relative w-full min-w-[90px]">
+                            <select
+                              value={row.flag}
+                              onChange={(e) => updateResultRow(row.id, "flag", e.target.value)}
+                              className={`
+                                w-full h-8 px-2 text-xs font-bold rounded border outline-none appearance-none cursor-pointer
+                                ${row.flag === 'High' ? 'bg-red-50 text-red-600 border-red-200' : 
+                                  row.flag === 'Low' ? 'bg-blue-50 text-blue-600 border-blue-200' :
+                                  row.flag === 'Normal' ? 'bg-green-50 text-green-600 border-green-200' : 
+                                  row.flag === 'No Ref Range' ? 'bg-gray-50 text-gray-600 border-gray-200' :
+                                  'bg-white text-gray-600 border-gray-300'}
+                              `}
+                            >
+                              <option value="">Select</option>
+                              <option value="Normal">Normal</option>
+                              <option value="High">High</option>
+                              <option value="Low">Low</option>
+                              <option value="No Ref Range">No Ref Range</option>
+                            </select>
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+                              {row.flag === 'High' && <ArrowUp size={12} className="text-red-600" />}
+                              {row.flag === 'Low' && <ArrowDown size={12} className="text-blue-600" />}
+                              {row.flag === 'Normal' && <CheckCircle2 size={12} className="text-green-600" />}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-2 px-2 sm:px-4">
+                          <input
+                            value={row.referenceRange}
+                            onChange={(e) => updateResultRow(row.id, "referenceRange", e.target.value)}
+                            className="w-full min-w-[90px] h-8 bg-white border border-gray-300 rounded px-2 text-center text-sm outline-none focus:border-blue-400"
+                          />
+                        </td>
+                        <td className="py-2 px-2 sm:px-4 text-center">
+                          <button 
+                            onClick={() => handleParameterToggle(row.parameter)}
+                            className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
+                            title="Remove parameter"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
+          
+          {/* Results Summary */}
+          {results.length > 0 && (
+            <div className="mt-4 text-xs text-gray-500 text-right border-t border-gray-200 pt-2">
+              Showing {results.length} of {availableParams.length} parameters
+            </div>
+          )}
         </div>
 
         {/* 7. Doctor's Comments & Footer Section */}
-        <div className="bg-white border border-blue-300 rounded-xl p-2 shadow-sm mb-1">
+        <div className="bg-white border border-blue-300 rounded-xl p-2 sm:p-3 shadow-sm">
           <h2 className="text-sm font-bold text-[#000000] mb-2">Doctor's Comments & Observations</h2>
           
-          <div className="bg-[#fcfdfd] border border-gray-300 rounded-lg p-0 mb-2 overflow-hidden">
+          <div className="bg-[#fcfdfd] border border-gray-300 rounded-lg overflow-hidden">
             <AutoResizeTextarea
               value={comments}
               onChange={(e) => setComments(e.target.value)}
               placeholder="Enter clinical observations, interpretations, and recommendations..."
-              className="w-full min-h-[100px] bg-transparent p-4 text-sm text-gray-700"
+              className="w-full min-h-[100px] bg-transparent p-3 sm:p-4 text-sm text-gray-700"
             />
           </div>
         </div>
       </div>
+
+      {/* Add custom CSS for xs breakpoint */}
+      <style jsx>{`
+        @media (min-width: 480px) {
+          .xs\\:inline {
+            display: inline;
+          }
+          .xs\\:flex-row {
+            flex-direction: row;
+          }
+          .xs\\:w-auto {
+            width: auto;
+          }
+          .xs\\:grid-cols-2 {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
+      `}</style>
     </div>
   );
 }
