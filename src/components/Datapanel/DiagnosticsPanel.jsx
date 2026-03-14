@@ -12,6 +12,8 @@ import {
   GitCompare,
   Search,
   FileCheck,
+  HeartPulse,
+  X,
 } from "lucide-react";
 
 // --- Auto-Resizing Textarea Component ---
@@ -47,14 +49,9 @@ const AutoResizeTextarea = ({
 
 // --- Main Component ---
 export default function DiagnosticReport() {
-  /* STATUS */
-  const [status, setStatus] = useState("pending");
+ 
+ 
 
-  /* PATIENT INFORMATION */
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [dob, setDob] = useState("");
-  const [gender, setGender] = useState("");
 
   /* PROVIDER / FACILITY / DOS */
   const [providerName, setProviderName] = useState("");
@@ -66,20 +63,20 @@ export default function DiagnosticReport() {
   const dobRef = useRef(null);
   const dosRef = useRef(null);
 
-  /* VITALS STATE (Main + Extra Rows) */
+  /* VITALS STATE - Two separate rows like OV panel */
+  // Box 1 - Height/Weight measurements (multiple rows)
+  const [vitalsRowsBox1, setVitalsRowsBox1] = useState([
+    { id: Date.now(), height: '', heightUnit: 'CM', weight: '', weightUnit: 'KG', bmi: '', pageNo: '' }
+  ]);
+
+  // Box 2 - BP & Pulse measurements (multiple rows)
   const [vitalsRows, setVitalsRows] = useState([
     {
       id: 1,
-      height: "",
-      heightUnit: "CM",
-      weight: "",
-      weightUnit: "KG",
-      bmi: "",
       dia: "",
       sys: "",
       pulse: "",
-      pageNo1: 0,
-      pageNo2: 0,
+      pageNo2: "",
     },
   ]);
 
@@ -93,40 +90,53 @@ export default function DiagnosticReport() {
   const [recommendation, setRecommendation] = useState("");
   const [specialComments, setSpecialComments] = useState("");
 
-  /* ACTIONS */
+  /* ACTIONS for Box 1 - Height/Weight */
+  const addVitalsRowBox1 = () => {
+    const newRow = {
+      id: Date.now() + Math.random(),
+      height: '',
+      heightUnit: 'CM',
+      weight: '',
+      weightUnit: 'KG',
+      bmi: '',
+      pageNo: ''
+    };
+    setVitalsRowsBox1([...vitalsRowsBox1, newRow]);
+  };
+
+  const removeVitalsRowBox1 = (id) => {
+    if (vitalsRowsBox1.length > 1) {
+      if (window.confirm("Are you sure you want to remove this vitals entry?")) {
+        setVitalsRowsBox1(vitalsRowsBox1.filter(row => row.id !== id));
+      }
+    }
+  };
+
+  const updateVitalsBox1 = (id, field, value) => {
+    setVitalsRowsBox1(vitalsRowsBox1.map(row =>
+      row.id === id ? { ...row, [field]: value } : row
+    ));
+  };
+
+  /* ACTIONS for Box 2 - BP & Pulse */
   const addVitalsRow = () => {
     setVitalsRows([
       ...vitalsRows,
       {
         id: Date.now(),
-        height: "",
-        heightUnit: "CM",
-        weight: "",
-        weightUnit: "KG",
-        bmi: "",
         dia: "",
         sys: "",
         pulse: "",
-        pageNo1: 0,
-        pageNo2: 0,
+        pageNo2: "",
       },
     ]);
   };
 
   const removeVitalsRow = (id) => {
     if (vitalsRows.length > 1) {
-      setVitalsRows(vitalsRows.filter((row) => row.id !== id));
-    } else {
-      const resetRow = {
-        ...vitalsRows[0],
-        height: "",
-        weight: "",
-        bmi: "",
-        dia: "",
-        sys: "",
-        pulse: "",
-      };
-      setVitalsRows([resetRow]);
+      if (window.confirm("Are you sure you want to remove this vitals entry?")) {
+        setVitalsRows(vitalsRows.filter((row) => row.id !== id));
+      }
     }
   };
 
@@ -155,19 +165,16 @@ export default function DiagnosticReport() {
       setImpression("");
       setRecommendation("");
       setSpecialComments("");
+      setVitalsRowsBox1([
+        { id: Date.now(), height: '', heightUnit: 'CM', weight: '', weightUnit: 'KG', bmi: '', pageNo: '' }
+      ]);
       setVitalsRows([
         {
           id: 1,
-          height: "",
-          heightUnit: "CM",
-          weight: "",
-          weightUnit: "KG",
-          bmi: "",
           dia: "",
           sys: "",
           pulse: "",
-          pageNo1: 0,
-          pageNo2: 0,
+          pageNo2: "",
         },
       ]);
     }
@@ -180,23 +187,24 @@ export default function DiagnosticReport() {
   };
 
   const handleSave = () => {
+    const allData = {
+      patientInfo: { firstName, lastName, dob, gender },
+      provider: { providerName, facility, dos, pageNoHeader },
+      vitals: { vitalsRowsBox1, vitalsRows },
+      diagnostic: {
+        radiologyReport,
+        procedureName,
+        indication,
+        comparison,
+        findings,
+        impression,
+        recommendation,
+        specialComments
+      }
+    };
     alert("Data Saved Successfully!");
-    console.log({
-      firstName,
-      lastName,
-      dob,
-      facility,
-      dos,
-      vitalsRows,
-      findings,
-      status,
-    });
+    console.log(allData);
   };
-
-  // --- Helper Styles ---
-  const inputBaseClass =
-    "w-full h-8 bg-[#CFE8F2] rounded px-3 text-sm text-gray-700 outline-none focus:ring-1 focus:ring-blue-400 border-none placeholder-gray-400";
-  const labelClass = "block text-xs font-semibold text-black mb-1";
 
   // Function to trigger native date picker
   const triggerDatePicker = (ref) => {
@@ -205,29 +213,29 @@ export default function DiagnosticReport() {
     }
   };
 
+  // --- Helper Styles ---
+  const inputBaseClass = "w-full h-8 bg-[#CFE8F2] rounded px-3 text-sm text-gray-700 outline-none focus:ring-1 focus:ring-blue-400 border-none placeholder-gray-400";
+  const labelClass = "block text-xs font-semibold text-black mb-1";
+
   return (
     <div className="w-full gap-3 bg-white min-h-screen pb-12">
       {/* 1. Header Bar */}
-      <div className="w-full flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-2 pb-2 pt-2 border-b border-gray-200 px-2"> 
-        {/* 2. Diagnostic Report Title */}
+      <div className="w-full flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-2 pb-2 pt-2 border-b border-gray-200 px-4">
         <h1 className="block text-lg font-semibold text-black">Diagnostic Report</h1>
-          <div className="flex gap-3 sm:ml-auto w-full sm:w-auto justify-end">
-          
+        <div className="flex gap-2 sm:ml-auto w-full sm:w-auto justify-end">
           <button
             onClick={handleSave}
             className="flex items-center justify-center gap-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium text-xs transition-all duration-200 shadow-sm"
           >
-           <Save size={16} strokeWidth={2} /> Save 
+            <Save size={16} strokeWidth={2} /> Save
           </button>
-            
           <button
             onClick={handleReset}
             className="flex items-center justify-center gap-1 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium text-xs transition-all duration-200 shadow-sm"
           >
             <RotateCcw size={16} strokeWidth={2} /> Reset
           </button>
-        
-           <button
+          <button
             onClick={handleDelete}
             className="flex items-center justify-center gap-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium text-xs transition-all duration-200 shadow-sm"
           >
@@ -236,39 +244,34 @@ export default function DiagnosticReport() {
         </div>
       </div>
 
-      <div className="sm:px-2 space-y-2 max-w-[1400px] ">
-       
-        {/* 4. Provider / Facility Row */}
-        <div className="border border-blue-300 rounded-xl p-2 bg-white shadow-sm">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols- gap-4 items-end">
-            <div className="col-span-1">
+      <div className="px-4 space-y-3 max-w-[1400px] mx-auto">
+        
+
+        {/* Provider / Facility Row */}
+        <div className="border border-blue-300 rounded-xl p-3 bg-white shadow-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3">
+            <div>
               <label className={labelClass}>Provider name</label>
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Provider name"
-                  value={providerName}
-                  onChange={(e) => setProviderName(e.target.value)}
-                  className={inputBaseClass}
-                />
-              </div>
+              <input
+                type="text"
+                placeholder="Provider name"
+                value={providerName}
+                onChange={(e) => setProviderName(e.target.value)}
+                className={inputBaseClass}
+              />
             </div>
-            {/* Facility - Manual Typing */}
-            <div className="col-span-1">
+            <div>
               <label className={labelClass}>Facility</label>
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Enter Facility"
-                  value={facility}
-                  onChange={(e) => setFacility(e.target.value)}
-                  className={inputBaseClass}
-                />
-              </div>
+              <input
+                type="text"
+                placeholder="Enter Facility"
+                value={facility}
+                onChange={(e) => setFacility(e.target.value)}
+                className={inputBaseClass}
+              />
             </div>
-            {/* DOS Date Picker */}
-            <div className="col-span-1">
-              <label className={labelClass}>(DOS)Date of service</label>
+            <div>
+              <label className={labelClass}>Date of Service</label>
               <div
                 className="relative cursor-pointer"
                 onClick={() => triggerDatePicker(dosRef)}
@@ -276,7 +279,6 @@ export default function DiagnosticReport() {
                 <input
                   ref={dosRef}
                   type="date"
-                  placeholder="mm/dd/yyyy"
                   value={dos}
                   onChange={(e) => setDos(e.target.value)}
                   className={`${inputBaseClass} pr-10 cursor-pointer [&::-webkit-calendar-picker-indicator]:hidden`}
@@ -287,189 +289,201 @@ export default function DiagnosticReport() {
                 />
               </div>
             </div>
-            <div className="col-span-1">
+            <div>
               <label className={labelClass}>Page No</label>
               <input
                 type="number"
                 value={pageNoHeader}
                 onChange={(e) => setPageNoHeader(e.target.value)}
                 className={inputBaseClass}
+                placeholder="0"
               />
             </div>
           </div>
         </div>
 
-        {/* 5. VITALS Section */}
-        <div className="border border-blue-300 rounded-xl p-2 mb-4 bg-white relative shadow-sm ">
-          <div className="flex justify-between items-center mb-1">
-            <h2 className="text-sm font-bold uppercase">
-              VITALS
-            </h2>
-            <button
-              onClick={addVitalsRow}
-              className="bg-blue-500 hover:bg-blue-600 text-[#ffffff] px-3 py-1.5 rounded text-xs font-bold flex items-center gap-1 transition-colors"
-            >
-              <Plus size={14} /> ADD VITALS
-            </button>
+        {/* VITALS Section - Two Separate Rows (like OV panel) */}
+        <div className="border border-blue-300 rounded-xl p-1 bg-white shadow-sm">
+          <h2 className="text-sm font-bold uppercase flex items-center gap-2 ">
+            <HeartPulse size={18} className="text-blue-600" />
+            VITALS
+          </h2>
+
+          {/* ROW 1: Height & Weight Measurements */}
+          <div className="mb-1">
+            <div className="border border-blue-200 rounded-lg bg-blue-50/30">
+              <div className="flex justify-end items-center px-2 pt-1">
+                <button
+                  onClick={addVitalsRowBox1}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs font-bold flex items-center gap-1 transition-colors shadow-sm"
+                >
+                  <Plus size={14} /> ADD
+                </button>
+              </div>
+
+              <div className="p-1  space-y-2 max-h-[250px] overflow-y-auto pr-1 custom-scrollbar">
+                {vitalsRowsBox1.map((row) => (
+                  <div key={row.id} className="relative bg-white rounded p-2 border border-blue-100">
+                    {vitalsRowsBox1.length > 1 && (
+                      <button
+                        onClick={() => removeVitalsRowBox1(row.id)}
+                        className="absolute -top-0.5 -right-0.5 bg-red-400 hover:bg-red-500 text-white p-1 rounded-full shadow-md z-10"
+                        title="Remove"
+                      >
+                        <X size={12} />
+                      </button>
+                    )}
+
+                    <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-4 gap-2">
+                      {/* Height */}
+                      <div className="min-w-0">
+                        <label className="block text-[12px] font-semibold text-gray-600 mb-1">Height</label>
+                        <div className="flex">
+                          <input
+                            value={row.height}
+                            onChange={(e) => updateVitalsBox1(row.id, "height", e.target.value)}
+                            className="flex-1 min-w-0 h-8 bg-[#CFE8F2] rounded-l px-2 text-xs outline-none focus:ring-1 focus:ring-blue-400"
+                            placeholder="0"
+                          />
+                          <select
+                            value={row.heightUnit}
+                            onChange={(e) => updateVitalsBox1(row.id, "heightUnit", e.target.value)}
+                            className="w-12 h-8 bg-[#CFE8F2] rounded-r text-xs outline-none appearance-none px-1 border-l border-blue-200"
+                          >
+                            <option>CM</option>
+                            <option>INCH</option>
+                            <option>FT</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Weight */}
+                      <div className="min-w-0">
+                        <label className="block text-[12px] font-semibold text-gray-600 mb-1">Weight</label>
+                        <div className="flex">
+                          <input
+                            value={row.weight}
+                            onChange={(e) => updateVitalsBox1(row.id, "weight", e.target.value)}
+                            className="flex-1 min-w-0 h-8 bg-[#CFE8F2] rounded-l px-2 text-xs outline-none focus:ring-1 focus:ring-blue-400"
+                            placeholder="0"
+                          />
+                          <select
+                            value={row.weightUnit}
+                            onChange={(e) => updateVitalsBox1(row.id, "weightUnit", e.target.value)}
+                            className="w-12 h-8 bg-[#CFE8F2] rounded-r text-xs outline-none appearance-none px-1 border-l border-blue-200"
+                          >
+                            <option>KG</option>
+                            <option>LBS</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* BMI */}
+                      <div className="min-w-0">
+                        <label className="block text-[12px] font-semibold text-gray-600 mb-1">BMI</label>
+                        <input
+                          value={row.bmi}
+                          onChange={(e) => updateVitalsBox1(row.id, "bmi", e.target.value)}
+                          className="w-full h-8 bg-[#CFE8F2] rounded px-2 text-xs outline-none focus:ring-1 focus:ring-blue-400"
+                          placeholder="0.0"
+                        />
+                      </div>
+
+                      {/* Page No */}
+                      <div className="min-w-0">
+                        <label className="block text-[12px] font-semibold text-gray-600 mb-1">Page</label>
+                        <input
+                          type="number"
+                          value={row.pageNo}
+                          onChange={(e) => updateVitalsBox1(row.id, "pageNo", e.target.value)}
+                          className="w-full h-8 bg-[#CFE8F2] rounded px-2 text-xs outline-none focus:ring-1 focus:ring-blue-400 appearance-none"
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-2 md:space-y-2">
-            {vitalsRows.map((row, index) => (
-              <div
-                key={row.id}
-                className="flex flex-wrap md:flex-nowrap gap-x-2 gap-y-4 items-end pb-4 border-b border-gray-100 last:border-0 md:pb-0 md:border-none"
-              >
-                {/* Height */}
-                <div className="w-[48%] md:w-[14%] shrink-0">
-                  <label className={labelClass}>Height</label>
-                  <div className="flex gap-1">
-                    <input
-                      value={row.height}
-                      onChange={(e) =>
-                        updateVitals(row.id, "height", e.target.value)
-                      }
-                      className={`${inputBaseClass} rounded-r-none`}
-                    />
-                    <div className="relative w-10 shrink-0">
-                      <select
-                        value={row.heightUnit}
-                        onChange={(e) =>
-                          updateVitals(row.id, "heightUnit", e.target.value)
-                        }
-                        className={`${inputBaseClass} rounded-l-none appearance-none px-1 justify-center pl-1 bg-[#CFE8F2]`}
-                      >
-                        <option>CM</option>
-                        <option>INCH</option>
-                        <option>FT</option>
-                      </select>
-                      <ChevronDown
-                        size={12}
-                        className="absolute right-1 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 "
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Weight */}
-                <div className="w-[48%] md:w-[14%] shrink-0">
-                  <label className={labelClass}>Weight</label>
-                  <div className="flex gap-1">
-                    <input
-                      value={row.weight}
-                      onChange={(e) =>
-                        updateVitals(row.id, "weight", e.target.value)
-                      }
-                      className={`${inputBaseClass} rounded-r-none`}
-                    />
-                    <div className="relative w-10 shrink-0">
-                      <select
-                        value={row.weightUnit}
-                        onChange={(e) =>
-                          updateVitals(row.id, "weightUnit", e.target.value)
-                        }
-                        className={`${inputBaseClass} rounded-l-none appearance-none px-1 justify-center pl-1 bg-[#CFE8F2]`}
-                      >
-                        <option>KG</option>
-                        <option>LBS</option>
-                      </select>
-                      <ChevronDown
-                        size={12}
-                        className="absolute right-1 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500"
-                      />
-                    </div>
-                  </div>
-                </div>
-                
-                {/* BMI */}
-                <div className="w-[30%] md:w-[12%] shrink-0">
-                  <label className={labelClass}>BMI</label>
-                  <input
-                    value={row.bmi}
-                    onChange={(e) =>
-                      updateVitals(row.id, "bmi", e.target.value)
-                    }
-                    className={inputBaseClass}
-                  />
-                </div>
-
-                {/* Page No 1 */}
-                <div className="w-[30%] md:w-[8%] shrink-0">
-                  <label className={labelClass}>Page No</label>
-                  <input
-                    type="number"
-                    value={row.pageNo1 || ""}
-                    onChange={(e) =>
-                      updateVitals(row.id, "pageNo1", e.target.value)
-                    }
-                    className={inputBaseClass}
-                  />
-                </div>
-
-                {/* Blood Pressure */}
-                <div className="w-[66%] md:w-[20%] shrink-0">
-                  <label className={labelClass}>Blood Pressure(BP)</label>
-                  <div className="flex gap-2">
-                    <input
-                      placeholder="Dia"
-                      value={row.dia}
-                      onChange={(e) =>
-                        updateVitals(row.id, "dia", e.target.value)
-                      }
-                      className={`${inputBaseClass} text-center`}
-                    />
-                    <input
-                      placeholder="Sys"
-                      value={row.sys}
-                      onChange={(e) =>
-                        updateVitals(row.id, "sys", e.target.value)
-                      }
-                      className={`${inputBaseClass} text-center`}
-                    />
-                  </div>
-                </div>
-
-                {/* Pulse */}
-                <div className="w-[30%] md:w-[12%] shrink-0">
-                  <label className={labelClass}>HR/Pulse</label>
-                  <input
-                    value={row.pulse}
-                    onChange={(e) =>
-                      updateVitals(row.id, "pulse", e.target.value)
-                    }
-                    className={inputBaseClass}
-                  />
-                </div>
-
-                {/* Page No 2 */}
-                <div className="w-[30%] md:w-[8%] shrink-0">
-                  <label className={labelClass}>Page No</label>
-                  <input
-                    type="number"
-                    value={row.pageNo2 || ""}
-                    onChange={(e) =>
-                      updateVitals(row.id, "pageNo2", e.target.value)
-                    }
-                    className={inputBaseClass}
-                  />
-                </div>
-
-                {/* Delete Button */}
-                {index > 0 && (
-                  <div className="w-full md:w-auto flex justify-end pl-1 ">
-                    <button
-                      onClick={() => removeVitalsRow(row.id)}
-                      className="bg-red-400 hover:bg-red-500 text-white p-2 rounded shadow-sm transition-colors"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                )}
+          {/* ROW 2: BP & Pulse Measurements */}
+          <div>
+            <div className="border border-blue-200 rounded-lg bg-blue-50/30">
+              <div className="flex justify-end items-center px-2 pt-2 ">
+                <button
+                  onClick={addVitalsRow}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs font-bold flex items-center gap-1 transition-colors shadow-sm"
+                >
+                  <Plus size={14} /> ADD
+                </button>
               </div>
-            ))}
+
+              <div className="p-1  space-y-2 max-h-[250px] overflow-y-auto pr-1 custom-scrollbar">
+                {vitalsRows.map((row) => (
+                  <div key={row.id} className="relative bg-white rounded p-2 border border-blue-100">
+                    {vitalsRows.length > 1 && (
+                      <button
+                        onClick={() => removeVitalsRow(row.id)}
+                        className="absolute -top-0.5 -right-0.5  bg-red-400 hover:bg-red-500 text-white p-1 rounded-full shadow-md z-10"
+                        title="Remove"
+                      >
+                        <X size={12} />
+                      </button>
+                    )}
+
+                    <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-2">
+                      {/* Blood Pressure */}
+                      <div className="min-w-0 col-span-1 xs:col-span-2 sm:col-span-1">
+                        <label className="block text-[12px] font-semibold text-gray-600 mb-1">Blood Pressure/BP</label>
+                        <div className="flex items-center gap-1">
+                          <input
+                            placeholder="Dia"
+                            value={row.dia}
+                            onChange={(e) => updateVitals(row.id, "dia", e.target.value)}
+                            className="flex-1 min-w-0 h-8 bg-[#CFE8F2] rounded px-2 text-xs text-center outline-none focus:ring-1 focus:ring-blue-400"
+                          />
+                         
+                          <input
+                            placeholder="Sys"
+                            value={row.sys}
+                            onChange={(e) => updateVitals(row.id, "sys", e.target.value)}
+                            className="flex-1 min-w-0 h-8 bg-[#CFE8F2] rounded px-2 text-xs text-center outline-none focus:ring-1 focus:ring-blue-400"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Pulse */}
+                      <div className="min-w-0">
+                        <label className="block text-[12px] font-semibold text-gray-600 mb-1">Pulse (bpm)</label>
+                        <input
+                          value={row.pulse}
+                          onChange={(e) => updateVitals(row.id, "pulse", e.target.value)}
+                          className="w-full h-8 bg-[#CFE8F2] rounded px-2 text-xs outline-none focus:ring-1 focus:ring-blue-400"
+                          placeholder="0"
+                        />
+                      </div>
+
+                      {/* Page No */}
+                      <div className="min-w-0">
+                        <label className="block text-[12px] font-semibold text-gray-600 mb-1">Page</label>
+                        <input
+                          type="number"
+                          value={row.pageNo2}
+                          onChange={(e) => updateVitals(row.id, "pageNo2", e.target.value)}
+                          className="w-full h-8 bg-[#CFE8F2] rounded px-2 text-xs outline-none focus:ring-1 focus:ring-blue-400 appearance-none"
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* 6. Text Area Sections */}
+        {/* Text Area Sections */}
         {[
           {
             icon: Activity,
@@ -510,48 +524,65 @@ export default function DiagnosticReport() {
         ].map((item, idx) => (
           <div key={idx} className="w-full">
             <div className="flex items-center gap-2 mb-1">
-              <item.icon size={18} className=" text-[#1e3a8a]" />
-              <h3 className="text-sm font-bold ">{item.label}</h3>
+              <item.icon size={18} className="text-blue-600" />
+              <h3 className="text-sm font-semibold text-gray-700">{item.label}</h3>
             </div>
-            <div className="w-full border border-blue-300 rounded-xl bg-white overflow-hidden p-1 shadow-sm">
+            <div className="w-full border border-blue-300 rounded-lg bg-white overflow-hidden shadow-sm">
               <AutoResizeTextarea
                 value={item.state}
                 onChange={(e) => item.set(e.target.value)}
-                className="w-full min-h-[100px] p-3 text-sm text-gray-700 bg-white"
+                placeholder={`Enter ${item.label.toLowerCase()}...`}
+                className="w-full min-h-[80px] p-3 text-sm text-gray-700 bg-white"
               />
             </div>
           </div>
         ))}
 
-        {/* 7. Footer: Recommendation & Special Comments */}
-        <div className="grid grid-cols-1 md:grid-cols-1 gap-2 pt-2 pb-1">
+        {/* Footer: Recommendation & Special Comments */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 pb-4">
           <div>
-            <h3 className="text-sm font-bold mb-1">
-              Recommendation
-            </h3>
-            <div className="border border-blue-300 rounded-xl bg-white p-1 shadow-sm">
+            <h3 className="text-sm font-semibold text-gray-700 mb-1">Recommendation</h3>
+            <div className="border border-blue-300 rounded-lg bg-white p-1 shadow-sm">
               <AutoResizeTextarea
                 value={recommendation}
                 onChange={(e) => setRecommendation(e.target.value)}
+                placeholder="Enter recommendation..."
                 className="w-full min-h-[80px] p-3 text-sm text-gray-700 bg-white"
               />
             </div>
           </div>
 
           <div>
-            <h3 className="text-sm font-bold mb-1">
-              Special Comments
-            </h3>
-            <div className="border border-blue-300 rounded-xl bg-white p-1 shadow-sm">
+            <h3 className="text-sm font-semibold text-gray-700 mb-1">Special Comments</h3>
+            <div className="border border-blue-300 rounded-lg bg-white p-1 shadow-sm">
               <AutoResizeTextarea
                 value={specialComments}
                 onChange={(e) => setSpecialComments(e.target.value)}
+                placeholder="Enter special comments..."
                 className="w-full min-h-[80px] p-3 text-sm text-gray-700 bg-white"
               />
             </div>
           </div>
         </div>
       </div>
+
+      {/* Custom scrollbar styles */}
+      <style jsx>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #f1f1f1;
+          border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #cbd5e0;
+          border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #94a3b8;
+        }
+      `}</style>
     </div>
   );
 }

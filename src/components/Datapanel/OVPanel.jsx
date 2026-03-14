@@ -3,7 +3,6 @@ import {
   ChevronDown,
   Trash2,
   Plus,
-  CalendarDays,
   Save,
   RotateCcw,
   Clock,
@@ -15,6 +14,8 @@ import {
   MessageSquare,
   NotebookTabs,
   Scale,
+  HeartPulse,
+  X,
 } from "lucide-react";
 
 // --- Components ---
@@ -24,8 +25,8 @@ const PageBox = ({ value, setValue, id }) => (
       id={id}
       type="number"
       min=""
-      value={value}
-      onChange={(e) => setValue(Number(e.target.value) || 0)}
+      value={value || ""}
+      onChange={(e) => setValue(e.target.value === "" ? "" : Number(e.target.value))}
       className="w-full text-center bg-transparent outline-none text-sm px-1 text-gray-800 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:ring-1 focus:ring-blue-400"
       aria-label="Page number"
     />
@@ -93,9 +94,9 @@ const Block = ({ title, value, onChange, icon: Icon, minHeight = 60, hideIcon })
 // --- Main UI Component ---
 export default function MedicalUI() {
   /* PAGE NUMBERS for sections */
-  const [pageVitals1, setPageVitals1] = useState(); // First page no (after Weight)
-  const [pageVitals2, setPageVitals2] = useState(); // Second page no (after Pulse)
-  const [pageTop, setPageTop] = useState(); // Add this line
+  const [pageVitals1, setPageVitals1] = useState("");
+  const [pageVitals2, setPageVitals2] = useState("");
+  const [pageTop, setPageTop] = useState("");
 
   /* TOP PANEL FIELDS */
   const [notesType, setNotesType] = useState("select");
@@ -104,15 +105,12 @@ export default function MedicalUI() {
   const [provider, setProvider] = useState("");
   const [facility, setFacility] = useState("");
 
-  /* VITALS */
+  /* VITALS - Consistent Measurements */
   const [height, setHeight] = useState("");
   const [heightUnit, setHeightUnit] = useState("CM");
   const [weight, setWeight] = useState("");
   const [weightUnit, setWeightUnit] = useState("KG");
   const [bmi, setBmi] = useState("");
-  const [dia, setDia] = useState("");
-  const [sys, setSys] = useState("");
-  const [pulse, setPulse] = useState("");
 
   /* TEXT SECTIONS - Main blocks */
   const fields = [
@@ -129,18 +127,11 @@ export default function MedicalUI() {
   const [data, setData] = useState(
     Object.fromEntries(fields.map((f) => [f, ""]))
   );
-  const [blockPageNumbers, setBlockPageNumbers] = useState(
-    Object.fromEntries(fields.map((f) => []))
-  );
 
   /* PLAN, WORK STATUS, SPECIAL COMMENTS */
   const [planRecommendation, setPlanRecommendation] = useState("");
   const [workStatus, setWorkStatus] = useState("");
   const [specialComments, setSpecialComments] = useState("");
-
-  const setBlockPage = (title, value) => {
-    setBlockPageNumbers((prev) => ({ ...prev, [title]: value }));
-  };
 
   /* MEDICATION */
   const [rows, setRows] = useState([]);
@@ -161,6 +152,76 @@ export default function MedicalUI() {
     setRows(copy);
   };
 
+  /* ADDITIONAL VITALS ROWS - BP & Pulse only */
+  const [vitalsRows, setVitalsRows] = useState([
+    {
+      id: 1,
+      dia: "",
+      sys: "",
+      pulse: "",
+      pageNo2: "",
+    },
+  ]);
+
+  const addVitalsRow = () => {
+    setVitalsRows([
+      ...vitalsRows,
+      {
+        id: Date.now(),
+        dia: "",
+        sys: "",
+        pulse: "",
+        pageNo2: "",
+      },
+    ]);
+  };
+
+  const updateVitals = (id, field, value) => {
+    setVitalsRows((prev) =>
+      prev.map((row) => (row.id === id ? { ...row, [field]: value } : row))
+    );
+  };
+
+  const removeVitalsRow = (id) => {
+    if (vitalsRows.length > 1) {
+      if (window.confirm("Are you sure you want to remove this vitals entry?")) {
+        setVitalsRows(vitalsRows.filter((row) => row.id !== id));
+      }
+    }
+  };
+
+  /* BOX 1 - Height/Weight Vitals Rows */
+  const [vitalsRowsBox1, setVitalsRowsBox1] = useState([
+    { id: Date.now(), height: '', heightUnit: 'CM', weight: '', weightUnit: 'KG', bmi: '', pageNo: '' }
+  ]);
+
+  const addVitalsRowBox1 = () => {
+    const newRow = {
+      id: Date.now() + Math.random(),
+      height: '',
+      heightUnit: 'CM',
+      weight: '',
+      weightUnit: 'KG',
+      bmi: '',
+      pageNo: ''
+    };
+    setVitalsRowsBox1([...vitalsRowsBox1, newRow]);
+  };
+
+  const removeVitalsRowBox1 = (id) => {
+    if (vitalsRowsBox1.length > 1) {
+      if (window.confirm("Are you sure you want to remove this vitals entry?")) {
+        setVitalsRowsBox1(vitalsRowsBox1.filter(row => row.id !== id));
+      }
+    }
+  };
+
+  const updateVitalsBox1 = (id, field, value) => {
+    setVitalsRowsBox1(vitalsRowsBox1.map(row =>
+      row.id === id ? { ...row, [field]: value } : row
+    ));
+  };
+
   /* ACTIONS */
   const deleteAll = () => {
     if (window.confirm("Delete ALL data? This action cannot be undone.")) {
@@ -174,15 +235,26 @@ export default function MedicalUI() {
       setWeight("");
       setWeightUnit("KG");
       setBmi("");
-      setDia("");
-      setSys("");
-      setPulse("");
+      setPageVitals1("");
+      setPageVitals2("");
+      setPageTop("");
       setRows([]);
       setData(Object.fromEntries(fields.map((f) => [f, ""])));
-      setBlockPageNumbers(Object.fromEntries(fields.map((f) => [])));
       setPlanRecommendation("");
       setWorkStatus("");
       setSpecialComments("");
+      setVitalsRows([
+        {
+          id: 1,
+          dia: "",
+          sys: "",
+          pulse: "",
+          pageNo2: "",
+        },
+      ]);
+      setVitalsRowsBox1([
+        { id: Date.now(), height: '', heightUnit: 'CM', weight: '', weightUnit: 'KG', bmi: '', pageNo: '' }
+      ]);
     }
   };
 
@@ -198,15 +270,26 @@ export default function MedicalUI() {
       setWeight("");
       setWeightUnit("KG");
       setBmi("");
-      setDia("");
-      setSys("");
-      setPulse("");
+      setPageVitals1("");
+      setPageVitals2("");
+      setPageTop("");
       setRows([]);
       setData(Object.fromEntries(fields.map((f) => [f, ""])));
-      setBlockPageNumbers(Object.fromEntries(fields.map((f) => [])));
       setPlanRecommendation("");
       setWorkStatus("");
       setSpecialComments("");
+      setVitalsRows([
+        {
+          id: 1,
+          dia: "",
+          sys: "",
+          pulse: "",
+          pageNo2: "",
+        },
+      ]);
+      setVitalsRowsBox1([
+        { id: Date.now(), height: '', heightUnit: 'CM', weight: '', weightUnit: 'KG', bmi: '', pageNo: '' }
+      ]);
     }
   };
 
@@ -217,9 +300,18 @@ export default function MedicalUI() {
       doi,
       provider,
       facility,
-      pageVitals1,
-      pageVitals2,
-      vitals: { height, heightUnit, weight, weightUnit, bmi, dia, sys, pulse },
+      pageTop,
+      vitals: {
+        height,
+        heightUnit,
+        weight,
+        weightUnit,
+        bmi,
+        pageVitals1,
+        pageVitals2,
+        vitalsRows,
+        vitalsRowsBox1,
+      },
       notes: {
         ...data,
         "Plan/Recommendation": planRecommendation,
@@ -232,35 +324,9 @@ export default function MedicalUI() {
     alert("Data saved successfully!");
   };
 
-  /* ADDITIONAL VITALS ROWS */
-  const [vitalsRows, setVitalsRows] = useState([]);
-
-  const addVitalsRow = () => {
-    setVitalsRows([...vitalsRows, {
-      height: "",
-      heightUnit: "CM",
-      weight: "",
-      weightUnit: "KG",
-      bmi: "",
-      dia: "",
-      sys: "",
-      pulse: "",
-      pageNo1: 0,
-      pageNo2: 0,
-    }]);
-  };
-
-  const updateVitalsRow = (index, key, value) => {
-    const copy = [...vitalsRows];
-    copy[index] = { ...copy[index], [key]: value };
-    setVitalsRows(copy);
-  };
-
-  const removeVitalsRow = (index) => {
-    if (window.confirm("Are you sure you want to remove this vitals entry?")) {
-      setVitalsRows(vitalsRows.filter((_, idx) => idx !== index));
-    }
-  };
+  // Helper class
+  const inputBaseClass = "w-full h-8 bg-[#CFE8F2] rounded px-3 text-sm text-gray-700 outline-none focus:ring-1 focus:ring-blue-400 border-none placeholder-gray-400";
+  const labelClass = "block text-xs font-semibold text-black mb-1";
 
   return (
     <div className="w-full gap-3">
@@ -297,7 +363,7 @@ export default function MedicalUI() {
       </div>
 
       {/* Scrollable Content */}
-      <div className="overflow-y-auto space-y-1 custom-scroll pr-2" style={{ maxHeight: 'calc(100vh - 250px)' }}>
+      <div className="overflow-y-auto space-y-1 custom-scroll pr-2" style={{ maxHeight: 'calc(110vh - 260px)' }}>
         {/* Top Panel */}
         <div className="border border-blue-400 rounded-lg p-2 bg-white shadow-sm">
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2z gap-2">
@@ -373,247 +439,208 @@ export default function MedicalUI() {
                 />
               </div>
             </div>
-            <div className="items-center gap-1 h-[30px]">
-              <label className="text-sm font-medium text-gray-700">Page no</label>
-              <div className="[&>div]:!w-[435px] [&>div]:!h-[30px] flex items-center gap-1">
-                <PageBox value={pageTop} setValue={setPageTop} />
+            <div className="space-y-1">
+              <label className="font-semibold text-sm text-gray-800 block">Page no</label>
+              <div className="flex items-center bg-[#b6d3dc] rounded h-[30px] border border-[#a6c3cc]">
+                <input
+                  type="number"
+                  value={pageTop}
+                  onChange={(e) => setPageTop(e.target.value)}
+                  placeholder="Page No"
+                  className="w-full bg-transparent outline-none text-sm text-gray-800 px-2 h-full placeholder-gray-600"
+                />
               </div>
             </div>
           </div>
         </div>
-        {/* Vitals */}
-        <div className="border border-blue-400 rounded-lg p-2 sm:p-2 bg-white shadow-sm">
-          <div className="flex grid-cols-2 md:grid-cols-2 flex-col sm:flex-row justify-between items-start sm:items-center">
-            <div className="flex items-center gap-2">
-              <Scale size={16} className="text-gray-600 flex-shrink-0" />
-              <span className="font-semibold text-sm sm:text-[20px] text-gray-800">Vitals</span>
-            </div>
-            <div className="flex items-center w-full sm:w-auto">
-              <button
-                type="button"
-                onClick={addVitalsRow}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-3 sm:px-4 py-1.5 rounded text-xs sm:text-sm font-medium flex items-center gap-1 h-[30px] w-full sm:w-auto justify-center"
-              >
-                <Plus size={14} /> Add vitals
-              </button>
+
+        {/* VITALS Section - Two Separate Rows */}
+        <div className="border border-blue-300 rounded-xl p-1 bg-white shadow-sm">
+          <h2 className="text-sm font-bold uppercase flex items-center gap-1 mb-1">
+            <HeartPulse size={18} className="text-blue-600" />
+            VITALS
+          </h2>
+
+          {/* ROW 1: Height & Weight Measurements */}
+          <div className="mb-1">
+            <div className="border pr-1 border-blue-200 rounded-lg  bg-blue-50/30">
+              {/* Header with Add Button - Clean alignment */}
+              <div className="flex justify-end items-center px-2 pt-1 ">
+                <button
+                  onClick={addVitalsRowBox1}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs font-bold flex items-center gap-1 transition-colors shadow-sm"
+                >
+                  <Plus size={14} /> ADD
+                </button>
+              </div>
+
+              {/* Scrollable container */}
+              <div className="p-2  space-y-2 max-h-[250px] overflow-y-auto pr-1 custom-scrollbar ">
+                {vitalsRowsBox1.map((row) => (
+                  <div key={row.id} className="relative bg-white rounded p-1 border border-blue-100">
+                    {/* Delete button - positioned without affecting layout */}
+                    {vitalsRowsBox1.length > 1 && (
+                      <button
+                        onClick={() => removeVitalsRowBox1(row.id)}
+                        className="absolute -top-0.5 -right-0.5 bg-red-400 hover:bg-red-500 text-white p-1 rounded-full shadow-md z-10"
+                        title="Remove"
+                      >
+                        <X size={12} />
+                      </button>
+                    )}
+
+                    {/* Responsive grid layout */}
+                    <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-4 gap-2">
+                      {/* Height */}
+                      <div className="min-w-0">
+                        <label className="block text-[10px] font-semibold text-gray-600 mb-1">Height</label>
+                        <div className="flex">
+                          <input
+                            value={row.height}
+                            onChange={(e) => updateVitalsBox1(row.id, "height", e.target.value)}
+                            className="flex-1 min-w-0 h-8 bg-[#CFE8F2] rounded-l px-2 text-xs outline-none focus:ring-1 focus:ring-blue-400"
+                            placeholder="0"
+                          />
+                          <select
+                            value={row.heightUnit}
+                            onChange={(e) => updateVitalsBox1(row.id, "heightUnit", e.target.value)}
+                            className="w-10 h-8 bg-[#CFE8F2] rounded-r text-xs outline-none appearance-none px-1 border-l border-blue-200"
+                          >
+                            <option>CM</option>
+                            <option>INCH</option>
+                            <option>FT</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Weight */}
+                      <div className="min-w-0">
+                        <label className="block text-[10px] font-semibold text-gray-600 mb-1">Weight</label>
+                        <div className="flex">
+                          <input
+                            value={row.weight}
+                            onChange={(e) => updateVitalsBox1(row.id, "weight", e.target.value)}
+                            className="flex-1 min-w-0 h-8 bg-[#CFE8F2] rounded-l px-2 text-xs outline-none focus:ring-1 focus:ring-blue-400"
+                            placeholder="0"
+                          />
+                          <select
+                            value={row.weightUnit}
+                            onChange={(e) => updateVitalsBox1(row.id, "weightUnit", e.target.value)}
+                            className="w-10 h-8 bg-[#CFE8F2] rounded-r text-xs outline-none appearance-none px-1 border-l border-blue-200"
+                          >
+                            <option>KG</option>
+                            <option>LBS</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* BMI */}
+                      <div className="min-w-0">
+                        <label className="block text-[10px] font-semibold text-gray-600 mb-1">BMI</label>
+                        <input
+                          value={row.bmi}
+                          onChange={(e) => updateVitalsBox1(row.id, "bmi", e.target.value)}
+                          className="w-full h-8 bg-[#CFE8F2] rounded px-2 text-xs outline-none focus:ring-1 focus:ring-blue-400"
+                          placeholder="0.0"
+                        />
+                      </div>
+
+                      {/* Page No */}
+                      <div className="min-w-0">
+                        <label className="block text-[10px] font-semibold text-gray-600 mb-1">Page</label>
+                        <input
+                          type="number"
+                          value={row.pageNo}
+                          onChange={(e) => updateVitalsBox1(row.id, "pageNo", e.target.value)}
+                          className="w-full h-8 bg-[#CFE8F2] rounded px-2 text-xs outline-none focus:ring-1 focus:ring-blue-400 appearance-none"
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* Original Vitals Row - WITH TWO INDEPENDENT PAGE NO FIELDS */}
-          <div className="flex flex-wrap items-end sm:gap-3 md:gap-4 pb-2 relative group rounded-lg">
-            {/* Height */}
-            <div className="space-y-1">
-              <label className="text-[10px] sm:text-xs font-medium text-gray-700">Height</label>
-              <div className="flex items-center gap-1">
-                <input
-                  value={height}
-                  onChange={(e) => setHeight(e.target.value)}
-                  className=" sm:w-[70px] sm:h-[30px] bg-[#b6d3dc] rounded px-1 sm:px-2 text-xs sm:text-sm outline-none border border-[#a6c3cc]"
-                />
-                <select
-                  value={heightUnit}
-                  onChange={(e) => setHeightUnit(e.target.value)}
-                  className=" sm:w-[50px] sm:h-[30px] bg-[#b6d3dc] rounded px-1 text-xs sm:text-sm outline-none border border-[#a6c3cc]"
+          {/* ROW 2: BP & Pulse Measurements */}
+          <div>
+            <div className="border border-blue-200 rounded-lg bg-blue-50/30 ">
+              {/* Header with Add Button - Clean alignment */}
+              <div className="flex justify-end items-center px-2 pt-1">
+                <button
+                  onClick={addVitalsRow}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs font-bold flex items-center gap-1 transition-colors shadow-sm"
                 >
-                  <option>CM</option>
-                  <option>INCH</option>
-                  <option>FT</option>
-                </select>
+                  <Plus size={14} /> ADD
+                </button>
               </div>
-            </div>
 
-            {/* Weight */}
-            <div className="space-y-1">
-              <label className="text-[10px] sm:text-xs font-medium text-gray-700">Weight</label>
-              <div className="flex items-center gap-1">
-                <input
-                  value={weight}
-                  onChange={(e) => setWeight(e.target.value)}
-                  className="sm:w-[70px] h-[28px] sm:h-[30px] bg-[#b6d3dc] rounded px-1 sm:px-2 text-xs sm:text-sm outline-none border border-[#a6c3cc]"
-                />
-                <select
-                  value={weightUnit}
-                  onChange={(e) => setWeightUnit(e.target.value)}
-                  className=" sm:w-[50px] h-[28px] sm:h-[30px] bg-[#b6d3dc] rounded px-1 text-xs sm:text-sm outline-none border border-[#a6c3cc]"
-                >
-                  <option>KG</option>
-                  <option>LBS</option>
-                </select>
+              {/* Scrollable container */}
+              <div className="p-1  space-y-2 max-h-[250px] overflow-y-auto pr-1 custom-scrollbar">
+                {vitalsRows.map((row) => (
+                  <div key={row.id} className="relative bg-white rounded p-2 border border-blue-100 ">
+                    {/* Delete button - positioned without affecting layout */}
+                    {vitalsRows.length > 1 && (
+                      <button
+                        onClick={() => removeVitalsRow(row.id)}
+                        className="absolute -top-0.5 -right-0.5 bg-red-400 hover:bg-red-500 text-white p-1 rounded-full shadow-md z-10"
+                        title="Remove"
+                      >
+                        <X size={12} />
+                      </button>
+                    )}
+
+                    {/* Responsive grid layout */}
+                    <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-2">
+                      {/* Blood Pressure */}
+                      <div className="min-w-0 col-span-1 xs:col-span-2 sm:col-span-1">
+                        <label className="block text-[10px] font-semibold text-gray-600 mb-1">Blood Pressure</label>
+                        <div className="flex items-center gap-1">
+                          <input
+                            placeholder="Dia"
+                            value={row.dia}
+                            onChange={(e) => updateVitals(row.id, "dia", e.target.value)}
+                            className="flex-1 min-w-0 h-8 bg-[#CFE8F2] rounded px-2 text-xs text-center outline-none focus:ring-1 focus:ring-blue-400"
+                          />
+                        
+                          <input
+                            placeholder="Sys"
+                            value={row.sys}
+                            onChange={(e) => updateVitals(row.id, "sys", e.target.value)}
+                            className="flex-1 min-w-0 h-8 bg-[#CFE8F2] rounded px-2 text-xs text-center outline-none focus:ring-1 focus:ring-blue-400"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Pulse */}
+                      <div className="min-w-0">
+                        <label className="block text-[10px] font-semibold text-gray-600 mb-1">Pulse (bpm)</label>
+                        <input
+                          value={row.pulse}
+                          onChange={(e) => updateVitals(row.id, "pulse", e.target.value)}
+                          className="w-full h-8 bg-[#CFE8F2] rounded px-2 text-xs outline-none focus:ring-1 focus:ring-blue-400"
+                          placeholder="0"
+                        />
+                      </div>
+
+                      {/* Page No */}
+                      <div className="min-w-0">
+                        <label className="block text-[10px] font-semibold text-gray-600 mb-1">Page</label>
+                        <input
+                          type="number"
+                          value={row.pageNo2}
+                          onChange={(e) => updateVitals(row.id, "pageNo2", e.target.value)}
+                          className="w-full h-8 bg-[#CFE8F2] rounded px-2 text-xs outline-none focus:ring-1 focus:ring-blue-400 appearance-none"
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
-
-            {/* BMI */}
-            <div className="space-y-1">
-              <label className="text-[10px] sm:text-xs font-medium text-gray-700">BMI</label>
-              <div className="[&>div]:!w-[80px] [&>div]:!h-[30px]"></div>
-              <input
-                value={bmi}
-                onChange={(e) => setBmi(e.target.value)}
-                className="w-[60px] xs:w-[65px] sm:w-[70px] h-[28px] sm:h-[30px] bg-[#b6d3dc] rounded px-1 sm:px-2 text-xs sm:text-sm outline-none border border-[#a6c3cc]"
-              />
-            </div>
-
-            {/* FIRST PAGE NO - AFTER WEIGHT (independent) */}
-            <div className="space-y-1">
-              <label className="text-[10px] sm:text-xs font-medium text-gray-700">Page no</label>
-              <PageBox value={pageVitals1} setValue={setPageVitals1} />
-            </div>
-            {/* BP */}
-            <div className="space-y-1">
-              <label className="text-[10px] sm:text-xs font-medium text-gray-700">Blood Pressure / BP</label>
-              <div className="flex items-center gap-1">
-                <input
-                  value={dia}
-                  onChange={(e) => setDia(e.target.value)}
-                  placeholder="Dia"
-                  className="w-[55px] xs:w-[60px] sm:w-[70px] h-[28px] sm:h-[30px] bg-[#b6d3dc] rounded px-1 sm:px-2 text-xs sm:text-sm outline-none border border-[#a6c3cc]"
-                />
-                <input
-                  value={sys}
-                  onChange={(e) => setSys(e.target.value)}
-                  placeholder="Sys"
-                  className="w-[55px] xs:w-[60px] sm:w-[60px] h-[28px] sm:h-[30px] bg-[#b6d3dc] rounded px-1 sm:px-2 text-xs sm:text-sm outline-none border border-[#a6c3cc]"
-                />
-              </div>
-            </div>
-
-            {/* Pulse */}
-            <div className="space-y-1">
-              <label className="text-[10px] sm:text-xs font-medium text-gray-700">Pulse</label>
-              <div className="[&>div]:!w-[60px] [&>div]:!h-[30px]"></div>
-              <input
-                value={pulse}
-                onChange={(e) => setPulse(e.target.value)}
-                className="w-[60px] xs:w-[60px] sm:w-[70px] h-[28px] sm:h-[30px] bg-[#b6d3dc] rounded px-1 sm:px-2 text-xs sm:text-sm outline-none border border-[#a6c3cc]"
-              />
-            </div>
-
-            {/* SECOND PAGE NO - AFTER PULSE (independent) */}
-            <div className="space-y-1">
-              <label className="text-[10px] sm:text-xs font-medium text-gray-700">Page no</label>
-              <PageBox value={pageVitals2} setValue={setPageVitals2} />
             </div>
           </div>
-
-          {/* Additional Vitals Rows - WITH TWO INDEPENDENT PAGE NO FIELDS PER ROW */}
-          {vitalsRows.map((row, index) => (
-            <div key={index} className="flex flex-wrap items-end gap-2 sm:gap-3 md:gap-4 pb-2 relative group rounded-lg">
-              {/* Height */}
-              <div className="space-y-1">
-                <label className="text-[10px] sm:text-xs font-medium text-gray-700">Height</label>
-                <div className="flex items-center gap-1">
-                  <input
-                    value={row.height}
-                    onChange={(e) => updateVitalsRow(index, "height", e.target.value)}
-                    className="sm:w-[70px] sm:h-[30px] bg-[#b6d3dc] rounded px-1 sm:px-2 text-xs sm:text-sm outline-none border border-[#a6c3cc]"
-                  />
-                  <select
-                    value={row.heightUnit}
-                    onChange={(e) => updateVitalsRow(index, "heightUnit", e.target.value)}
-                    className="w-[45px] xs:w-[48px] sm:w-[50px] h-[28px] sm:h-[30px] bg-[#b6d3dc] rounded px-1 text-xs sm:text-sm outline-none border border-[#a6c3cc]"
-                  >
-                    <option>CM</option>
-                    <option>INCH</option>
-                    <option>FT</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Weight */}
-              <div className="space-y-1">
-                <label className="text-[10px] sm:text-xs font-medium text-gray-700">Weight</label>
-                <div className="flex items-center gap-1">
-                  <input
-                    value={row.weight}
-                    onChange={(e) => updateVitalsRow(index, "weight", e.target.value)}
-                    className="sm:w-[70px] sm:h-[30px] bg-[#b6d3dc] rounded px-1 sm:px-2 text-xs sm:text-sm outline-none border border-[#a6c3cc]"
-                  />
-                  <select
-                    value={row.weightUnit}
-                    onChange={(e) => updateVitalsRow(index, "weightUnit", e.target.value)}
-                    className="w-[45px] xs:w-[48px] sm:w-[50px] h-[28px] sm:h-[30px] bg-[#b6d3dc] rounded px-1 text-xs sm:text-sm outline-none border border-[#a6c3cc]"
-                  >
-                    <option>KG</option>
-                    <option>LB</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* BMI */}
-              <div className="space-y-1">
-                <label className="text-[10px] sm:text-xs font-medium text-gray-700">BMI</label>
-                <div className="[&>div]:!w-[80px] [&>div]:!h-[30px]"></div>
-                <input
-                  value={row.bmi}
-                  onChange={(e) => updateVitalsRow(index, "bmi", e.target.value)}
-                  className="w-[60px] xs:w-[65px] sm:w-[70px] h-[28px] sm:h-[30px] bg-[#b6d3dc] rounded px-1 sm:px-2 text-xs sm:text-sm outline-none border border-[#a6c3cc]"
-                />
-              </div>
-
-              {/* FIRST PAGE NO - AFTER WEIGHT (independent for this row) */}
-              <div className="space-y-1">
-                <label className="text-[10px] sm:text-xs font-medium text-gray-700">Page no</label>
-                <PageBox
-                  value={row.pageNo1}
-                  setValue={(val) => {
-                    const newValue = typeof val === 'function' ? val(row.pageNo1) : val;
-                    updateVitalsRow(index, "pageNo1", newValue);
-                  }}
-                />
-              </div>
-
-              {/* BP */}
-              <div className="space-y-1">
-                <label className="text-[10px] sm:text-xs font-medium text-gray-700">Blood Pressure / BP</label>
-                <div className="flex items-center gap-1">
-                  <input
-                    value={row.dia}
-                    onChange={(e) => updateVitalsRow(index, "dia", e.target.value)}
-                    placeholder="Dia"
-                    className="w-[55px] xs:w-[60px] sm:w-[65px] h-[28px] sm:h-[30px] bg-[#b6d3dc] rounded px-1 sm:px-2 text-xs sm:text-sm outline-none border border-[#a6c3cc]"
-                  />
-                  <input
-                    value={row.sys}
-                    onChange={(e) => updateVitalsRow(index, "sys", e.target.value)}
-                    placeholder="Sys"
-                    className="w-[55px] xs:w-[60px] sm:w-[65px] h-[28px] sm:h-[30px] bg-[#b6d3dc] rounded px-1 sm:px-2 text-xs sm:text-sm outline-none border border-[#a6c3cc]"
-                  />
-                </div>
-              </div>
-
-              {/* Pulse */}
-              <div className="space-y-1">
-                <label className="text-[10px] sm:text-xs font-medium text-gray-700">Pulse</label>
-                <div className="[&>div]:!w-[80px] [&>div]:!h-[30px]"></div>
-                <input
-                  value={row.pulse}
-                  onChange={(e) => updateVitalsRow(index, "pulse", e.target.value)}
-                  className="w-[60px] xs:w-[65px] sm:w-[70px] h-[28px] sm:h-[30px] bg-[#b6d3dc] rounded px-1 sm:px-2 text-xs sm:text-sm outline-none border border-[#a6c3cc]"
-                />
-              </div>
-
-              {/* SECOND PAGE NO - AFTER PULSE (independent for this row) */}
-              <div className="space-y-1">
-                <label className="text-[10px] sm:text-xs font-medium text-gray-700">Page no</label>
-                <PageBox
-                  value={row.pageNo2}
-                  setValue={(val) => {
-                    const newValue = typeof val === 'function' ? val(row.pageNo2) : val;
-                    updateVitalsRow(index, "pageNo2", newValue);
-                  }}
-                />
-              </div>
-              {/* Delete Row Button */}
-              <button
-                type="button"
-                onClick={() => removeVitalsRow(index)}
-                className="absolute -top-3 right-2 sm:right-4 p-1.5 hover:bg-red-100 text-red-600 rounded-full transition-all duration-200 bg-white shadow-sm border border-gray-200 z-10"
-                title="Remove vitals row"
-              >
-                <Trash2 size={16} />
-              </button>
-            </div>
-          ))}
         </div>
 
         {/* Text Blocks */}
@@ -629,12 +656,12 @@ export default function MedicalUI() {
             />
           ))}
         </div>
+
         {/* Medication */}
         <div className="border border-blue-400 rounded-lg p-2 bg-white shadow-sm">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
             <span className="font-semibold text-[15px] text-gray-800">Medication</span>
             <div className="flex items-center gap-2 sm:mt-0">
-              <div className="flex items-center gap-1"></div>
               <button
                 type="button"
                 onClick={addRow}
@@ -683,12 +710,6 @@ export default function MedicalUI() {
                         textarea.style.height = 'auto';
                         textarea.style.height = textarea.scrollHeight + 'px';
                       }}
-                      ref={(el) => {
-                        if (el) {
-                          el.style.height = 'auto';
-                          el.style.height = el.scrollHeight + 'px';
-                        }
-                      }}
                       className="bg-white px-3 py-1.5 rounded text-sm outline-none border border-gray-300 w-full sm:flex-1 resize-none overflow-hidden min-h-[36px]"
                       placeholder="Comments"
                       rows={1}
@@ -734,6 +755,24 @@ export default function MedicalUI() {
           hideIcon={true}
         />
       </div>
+
+      {/* Custom scrollbar styles */}
+      <style jsx>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #f1f1f1;
+          border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #cbd5e0;
+          border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #94a3b8;
+        }
+      `}</style>
     </div>
   );
 }

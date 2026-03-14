@@ -56,10 +56,10 @@ const PAGE_SIZE_DIMENSIONS = {
 const PdfViewerPanel = () => {
   // Document Info State with manual entry
   const [documentInfo, setDocumentInfo] = useState({
-    docName: "Annual Report 2025.pdf",
+    docName: "Annual Report ",
     docNo: "DOC-2025-001",
     status: "pending",
-    pageNo: 1,
+    pages: 1,
     totalPages: 11,
     fileSize: "2.4 MB",
     createdDate: new Date().toLocaleDateString(),
@@ -377,17 +377,17 @@ const PdfViewerPanel = () => {
         ) : (
           // View Mode - Responsive
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-6">
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-10">
               <div className="flex items-center gap-1 sm:gap-2">
                 <File className="w-4 h-4 sm:w-5 sm:h-4 text-blue-500 flex-shrink-0" />
-                <span className="text-sm sm:text-base lg:text-xl font-semibold truncate max-w-[100px] sm:max-w-[150px] md:max-w-[200px] lg:max-w-[300px]">
+                <span className="text-sm sm:text-base lg:text-sm font-semibold truncate max-w-[100px] sm:max-w-[150px] md:max-w-[200px] lg:max-w-[300px]">
                   {documentInfo.docName}
                 </span>
               </div>
 
               <div className="flex items-center gap-1 sm:gap-2">
                 <Tag className="w-3 h-3 sm:w-4 sm:h-4 text-purple-500 flex-shrink-0" />
-                <span className="text-xs sm:text-sm lg:text-base font-semibold">{documentInfo.docNo}</span>
+                <span className="text-xs sm:text-sm lg:text-sm font-semibold">{documentInfo.docNo}</span>
               </div>
 
               <div className="flex items-center gap-1 sm:gap-2">

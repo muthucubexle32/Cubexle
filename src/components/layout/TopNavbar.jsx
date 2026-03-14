@@ -1,6 +1,6 @@
 import { LogOut, Home, Search, FileText, User, ChevronDown, Menu, X, Calendar, Settings, Activity, Microscope, HeartPulse, Stethoscope, Sparkles } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react"; 
 
 const TopNavbar = ({ onPanelChange, activePanel }) => {
   const navigate = useNavigate();
@@ -14,6 +14,14 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
   const [showEntryDropdown, setShowEntryDropdown] = useState(false);
   const calendarRef = useRef(null);
   const entryDropdownRef = useRef(null);
+
+  // Demo data for display (this would come from your backend/state management)
+  const [filterData] = useState({
+    provider: "Provider Name/ID",
+    dob: "Date of Birth",
+    gender: "Gender",
+    pageNo: "Pages"
+  });
 
   // Handle scroll effect
   useEffect(() => {
@@ -74,8 +82,7 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
     setShowEntryDropdown(false);
   };
 
-  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  const weekDays = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+  
 
   const navItems = [
     { label: "Home", path: "/", icon: Home },
@@ -91,12 +98,15 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
     { label: "EKG", icon: HeartPulse, panelId: "ekg", color: "from-rose-500 to-red-400" },
   ];
 
+  // Check if current page is home/landing page
+  const isHomePage = location.pathname === "/";
+
   return (
-    <div className={`sticky top-0 z-50 w-full transition-all duration-500 ${
-      isScrolled 
-        ? 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.12)]' 
-        : 'bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900'
-    }`}>
+    <div className={`w-full transition-all duration-500 ${
+    isScrolled 
+      ? 'bg-gray-800/95 dark:bg-black/95 backdrop-blur-xl' 
+      : 'bg-[#031724] dark:bg-black'
+  }`}>
       
       {/* Animated gradient line */}
       <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 animate-gradient-x"></div>
@@ -184,171 +194,180 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
         </div>
       </div>
 
-      {/* ROW 2: Search/Filter Bar - All data in one row */}
-      <div className="border-t border-white/10 bg-black/20 backdrop-blur-sm">
-        <div className="px-2 sm:px-4 lg:px-6 xl:px-8 py-1">
-          <div className="flex flex-wrap items-center gap-1 sm:gap-2 justify-end">
-            {/* Provider Name */}
-            <div className=" flex-0 min-w-[120px] sm:min-w-[140px] md:min-w-[240px] lg:flex-none ">
-              <input
-                type="text"
-                placeholder="Provider"
-                className="w-full px-3 sm:px-4 py-1.5 sm:py-2 bg-white/10 border border-white/20 rounded-sm text-white placeholder-white/50 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-transparent transition-all duration-300 group-hover:bg-white/15"
-              />
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/0 to-purple-500/0 group-hover:from-blue-500/10 group-hover:to-purple-500/10 pointer-events-none transition-all duration-300"></div>
+      {/* ROW 2: Search/Filter Bar - Label Method with API Data - Only visible on Home Page */}
+      {isHomePage && (
+        <div className="border-t border-white/30 bg-current ">
+          <div className="px-1 xs:px-2 sm:px-3 md:px-4 lg:px-5 xl:px-6 py-1 sm:py-1.5">
+            
+            {/* Mobile: Horizontal scroll for small screens */}
+            <div className="block sm:hidden w-full overflow-x-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent pb-1">
+              <div className="flex items-center gap-1.5 min-w-max">
+                {/* Provider - Mobile */}
+                <div className="w-[140px] flex-none">
+                  <div className="w-full px-2 py-1.5 bg-white/5 border border-white/30 rounded-sm text-white text-xs">
+                    {filterData.provider || 'Provider Name/ID'}
+                  </div>
+                </div>
+
+                {/* DOB - Mobile */}
+                <div className="relative w-[100px] flex-none" ref={calendarRef}>
+                  <div 
+                    onClick={() => setShowCalendar(!showCalendar)}
+                    className="w-full px-2 py-1.5 bg-white/5 border border-white/30 rounded-sm text-white text-xs cursor-pointer"
+                  >
+                    {filterData.dob || 'DOB'}
+                  </div>
+                </div>
+
+                {/* Gender - Mobile */}
+                <div className="w-[80px] flex-none">
+                  <div className="w-full px-2 py-1.5 bg-white/5 border border-white/30 rounded-sm text-white text-xs">
+                    {filterData.gender || 'Gender'}
+                  </div>
+                </div>
+
+                {/* Page No - Mobile */}
+                <div className="w-[70px] flex-none">
+                  <div className="w-full px-2 py-1.5 bg-white/5 border border-white/30 rounded-sm text-white text-xs">
+                    {filterData.pageNo || 'Pages'}
+                  </div>
+                </div>
+
+                {/* Entry Pages - Mobile */}
+                <div className="relative flex-none" ref={entryDropdownRef}>
+                  <button
+                    onClick={() => setShowEntryDropdown(!showEntryDropdown)}
+                    className="flex items-center gap-1 px-2 py-1.5 bg-white/30 border border-white/20 rounded-sm text-white text-xs hover:bg-white/15 focus:outline-none focus:ring-1 focus:ring-blue-400/50 whitespace-nowrap"
+                  >
+                    <span>{activePanel ? entryItems.find(item => item.panelId === activePanel)?.label || 'Entry' : 'Entry'}</span>
+                    <ChevronDown className={`w-3 h-3 text-white/60 transition-transform ${showEntryDropdown ? 'rotate-180' : ''}`} />
+                  </button>
+                </div>
+              </div>
             </div>
 
-            {/* DOB with Calendar */}
-            <div className="relative w-32 sm:w-36 md:w-40 lg:w-44 xl:w-48" ref={calendarRef}>
-              <div className="relative group">
-                <input
-                  type="text"
-                  placeholder="DOB"
-                  value={selectedDate}
-                  onClick={() => setShowCalendar(!showCalendar)}
-                  readOnly
-                  className="w-full px-3 sm:px-4 py-1.5 sm:py-2 bg-white/10 border border-white/20 rounded-sm text-white placeholder-white/50 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-400/50 cursor-pointer transition-all duration-300 group-hover:bg-white/15"
-                />
-                <Calendar className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 w-3 h-3 sm:w-4 sm:h-4 text-white/40 group-hover:text-white/60 transition-colors" />
+            {/* Tablet & Desktop: Normal flex layout */}
+            <div className="hidden sm:flex sm:flex-wrap items-center gap-1 md:gap-2 justify-start">
+              
+              {/* Provider Name - Label Method */}
+              <div className="w-auto flex-1 min-w-[140px] md:min-w-[180px] lg:min-w-[220px] xl:min-w-[260px] max-w-[340px]">
+                <div className="w-full px-2 md:px-3 py-1.5 md:py-2 bg-white/5 border border-white/20 rounded-sm text-white text-xs md:text-sm">
+                  {filterData.provider || 'Provider Name / ID'}
+                </div>
               </div>
 
-              {/* Calendar Popup - Responsive positioning */}
-              {showCalendar && (
-                <div className="fixed sm:absolute left-1/2 sm:left-auto sm:right-0 transform -translate-x-1/2 sm:translate-x-0 top-1/2 sm:top-full sm:mt-2 w-72 sm:w-64 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-4 z-50 animate-slideDown">
-                  <div className="flex items-center justify-between mb-3">
-                    <button
-                      onClick={handlePrevMonth}
-                      className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                    >
-                      <ChevronDown className="w-4 h-4 rotate-90 text-gray-600 dark:text-gray-400" />
-                    </button>
-                    <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">
-                      {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
-                    </span>
-                    <button
-                      onClick={handleNextMonth}
-                      className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                    >
-                      <ChevronDown className="w-4 h-4 -rotate-90 text-gray-600 dark:text-gray-400" />
-                    </button>
+              {/* DOB with Calendar - Label Method */}
+              <div className="relative w-24 md:w-28 lg:w-32 xl:w-36" ref={calendarRef}>
+                <div className="relative group">
+                  <div 
+                    onClick={() => setShowCalendar(!showCalendar)}
+                    className="w-full px-2 md:px-3 py-1.5 md:py-2 bg-white/5 border border-white/20 rounded-sm text-white text-xs md:text-sm cursor-pointer pr-7 transition-all duration-300 hover:bg-white/50"
+                  >
+                    {filterData.dob || 'Date of Birth'}
                   </div>
-
-                  <div className="grid grid-cols-7 gap-1 mb-2">
-                    {weekDays.map(day => (
-                      <div key={day} className="text-center text-xs font-medium text-gray-500 dark:text-gray-400">
-                        {day}
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="grid grid-cols-7 gap-1">
-                    {Array.from({ length: getFirstDayOfMonth(currentMonth) }).map((_, i) => (
-                      <div key={`empty-${i}`} className="h-8 w-8" />
-                    ))}
-                    {Array.from({ length: getDaysInMonth(currentMonth) }).map((_, i) => {
-                      const day = i + 1;
-                      const dateStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                      const isSelected = selectedDate === dateStr;
-                      const isToday = dateStr === new Date().toISOString().split('T')[0];
-                      
-                      return (
-                        <button
-                          key={day}
-                          onClick={() => handleDateSelect(day)}
-                          className={`h-8 w-8 flex items-center justify-center text-sm rounded-lg transition-all duration-200 ${
-                            isSelected
-                              ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-md'
-                              : isToday
-                              ? 'border border-blue-500 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10'
-                              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                          }`}
-                        >
-                          {day}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                    <button
-                      onClick={() => {
-                        const today = new Date();
-                        const year = today.getFullYear();
-                        const month = String(today.getMonth() + 1).padStart(2, '0');
-                        const day = String(today.getDate()).padStart(2, '0');
-                        setSelectedDate(`${year}-${month}-${day}`);
-                        setShowCalendar(false);
-                      }}
-                      className="w-full px-3 py-1.5 text-sm bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:from-gray-200 hover:to-gray-300 dark:hover:from-gray-600 dark:hover:to-gray-500 transition-all duration-300"
-                    >
-                      Today
-                    </button>
-                  </div>
+                  <Calendar className="absolute right-2 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 md:w-4 md:h-4 text-white/40 group-hover:text-white/60 transition-colors" />
                 </div>
-              )}
-            </div>
 
-            {/* Gender Dropdown */}
-            <div className="relative w-24 sm:w-28 md:w-32">
-              <select className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 bg-white/10 border border-white/20 rounded-sm text-white appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400/50 text-xs sm:text-sm transition-all duration-300 group-hover:bg-white/15">
-                <option value="" className="bg-slate-800 text-white">Gender</option>
-                <option value="male" className="bg-slate-800 text-white">Male</option>
-                <option value="female" className="bg-slate-800 text-white">Female</option>
-                <option value="other" className="bg-slate-800 text-white">Other</option>
-              </select>
-              <ChevronDown className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 w-3 h-3 sm:w-4 sm:h-4 text-white/40 group-hover:text-white/60 transition-colors pointer-events-none" />
-            </div>
+                
+              </div>
 
-            {/* Page Number */}
-            <div className="relative w-16 sm:w-20 md:w-24">
-              <input
-                type="text"
-                placeholder="Pg No"
-                className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 bg-white/10 border border-white/20 rounded-sm text-white placeholder-white/50 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all duration-300 group-hover:bg-white/15"
-              />
-            </div>
+              {/* Gender - Label Method */}
+              <div className="relative w-20 md:w-24 lg:w-32">
+                <div className="w-full px-2 md:px-3 py-1.5 md:py-2 bg-white/5 border border-white/20 rounded-sm text-white text-xs md:text-sm">
+                  {filterData.gender || 'Gender'}
+                </div>
+              </div>
 
-            {/* Entry Pages Dropdown with OV, Diagnostics, Labs, EKG */}
-            <div className="relative" ref={entryDropdownRef}>
-              <button
-                onClick={() => setShowEntryDropdown(!showEntryDropdown)}
-                className="group flex items-center gap-1 sm:gap-2 px-2 sm:px-3 md:px-4 lg:px-5 py-1.5 sm:py-2 bg-white/10 border border-white/20 rounded-sm text-white text-xs sm:text-sm hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all duration-300 whitespace-nowrap"
-              >
-                <span className="hidden xs:inline">Entry Pages</span>
-                <span className="xs:hidden">Pages</span>
-                <ChevronDown className={`w-3 h-3 sm:w-4 sm:h-4 text-white/60 transition-transform duration-300 ${showEntryDropdown ? 'rotate-180' : ''}`} />
-              </button>
+              {/* Page Number - Label Method */}
+              <div className="relative w-16 md:w-20 lg:w-32">
+                <div className="w-full px-2 md:px-3 py-1.5 md:py-2 bg-white/5 border border-white/20 rounded-sm text-white text-xs md:text-sm">
+                  {filterData.pageNo || 'Pages'}
+                </div>
+              </div>
 
-              {/* Entry Pages Dropdown Menu - Responsive positioning */}
-              {showEntryDropdown && (
-                <div className="fixed sm:absolute left-1/2 sm:left-auto sm:right-0 transform -translate-x-1/2 sm:translate-x-0 top-1/2 sm:top-full sm:mt-2 w-56 sm:w-48 bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700 py-2 z-50 animate-slideDown">
-                  {entryItems.map((item) => {
-                    const Icon = item.icon;
-                    const isActive = activePanel === item.panelId;
-                    return (
-                      <button
-                        key={item.panelId}
-                        onClick={() => handleEntrySelect(item.panelId)}
-                        className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-all duration-300 group hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                          isActive ? 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-600' : ''
-                        }`}
-                      >
-                        <div className={`p-1.5 rounded-lg bg-gradient-to-r ${item.color} bg-opacity-10 group-hover:scale-110 transition-transform duration-300`}>
-                          <Icon className={`w-4 h-4`} />
+              {/* Entry Pages Dropdown - Interactive */}
+              <div className="relative " ref={entryDropdownRef}>
+                <button
+                  onClick={() => setShowEntryDropdown(!showEntryDropdown)}
+                  className="flex items-center gap-1 md:gap-1.5 px-2 md:px-3 lg:px-4 py-1.5 md:py-2 bg-white/10 border border-white/20 rounded-sm text-white text-xs md:text-sm hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all duration-300 whitespace-nowrap"
+                >
+                  <span className="hidden xs:inline">{activePanel ? entryItems.find(item => item.panelId === activePanel)?.label || 'Entry Pages' : 'Entry Pages'}</span>
+                  <span className="xs:hidden">{activePanel ? entryItems.find(item => item.panelId === activePanel)?.label || 'Pages' : 'Pages'}</span>
+                  <ChevronDown className={`w-3 h-3 md:w-3.5 md:h-3.5 text-white/60 transition-transform duration-300 ${showEntryDropdown ? 'rotate-180' : ''}`} />
+                </button>
+
+                {/* Entry Pages Dropdown - Mobile optimized */}
+                {showEntryDropdown && (
+                  <>
+                    {/* Mobile full-screen dropdown */}
+                    <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:hidden">
+                      <div className="w-full bg-white dark:bg-gray-800 rounded-t-xl p-4 animate-slideUp">
+                        <div className="flex justify-between items-center mb-3">
+                          <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Select Entry</h3>
+                          <button onClick={() => setShowEntryDropdown(false)} className="p-2">
+                            <X className="w-5 h-5 text-gray-500" />
+                          </button>
                         </div>
-                        <span className={`flex-1 text-left ${isActive ? 'font-medium text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'}`}>
-                          {item.label}
-                        </span>
-                        {isActive && <Sparkles className="w-3 h-3 text-blue-500 animate-pulse" />}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
+                        <div className="space-y-2 max-h-96 overflow-y-auto">
+                          {entryItems.map((item) => {
+                            const Icon = item.icon;
+                            const isActive = activePanel === item.panelId;
+                            return (
+                              <button
+                                key={item.panelId}
+                                onClick={() => {
+                                  handleEntrySelect(item.panelId);
+                                  setShowEntryDropdown(false);
+                                }}
+                                className={`w-full flex items-center gap-3 p-3 rounded-lg transition-all ${
+                                  isActive 
+                                    ? 'bg-gradient-to-r from-blue-500/10 to-indigo-500/10 dark:from-gray-700 dark:to-gray-600 border border-blue-500/20' 
+                                    : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+                                }`}
+                              >
+                                <div className={`p-2 rounded-lg bg-gradient-to-r ${item.color} bg-opacity-20`}>
+                                  <Icon className="w-5 h-5" />
+                                </div>
+                                <span className={`flex-1 text-left text-base ${isActive ? 'font-medium text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'}`}>
+                                  {item.label}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Desktop dropdown */}
+                    <div className="hidden sm:block absolute left-0 top-full mt-1 w-48 bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700 py-1 rounded-lg z-50">
+                      {entryItems.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = activePanel === item.panelId;
+                        return (
+                          <button
+                            key={item.panelId}
+                            onClick={() => handleEntrySelect(item.panelId)}
+                            className={`w-full flex items-center gap-2 px-3 py-2 text-sm transition-all hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                              isActive ? 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-600' : ''
+                            }`}
+                          >
+                            <div className={`p-1 rounded-lg bg-gradient-to-r ${item.color} bg-opacity-20`}>
+                              <Icon className="w-3.5 h-3.5" />
+                            </div>
+                            <span className={`flex-1 text-left ${isActive ? 'font-medium text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'}`}>
+                              {item.label}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Mobile Menu - Enhanced for better mobile experience */}
       {isMobileMenuOpen && (
@@ -365,12 +384,9 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
                       <User className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                     </div>
                     <div className="flex-1">
-                      <input
-                        type="text"
-                        placeholder="User Name"
-                        defaultValue="User Name"
-                        className="w-full px-3 sm:px-4 py-2 bg-white/20 border border-white/30 rounded-xl text-white placeholder-white/80 text-base sm:text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-white/50"
-                      />
+                      <div className="w-full px-3 sm:px-4 py-2 bg-white/20 border border-white/30 rounded-xl text-white text-base sm:text-lg font-semibold">
+                        User Name
+                      </div>
                     </div>
                   </div>
                   <button
@@ -442,6 +458,31 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
                   );
                 })}
               </div>
+
+              {/* Filter Data Display - Only on Home Page */}
+              {isHomePage && (
+                <div className="space-y-2 pt-4 border-t border-white/10">
+                  <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4">Current Filters</div>
+                  <div className="bg-white/5 rounded-xl p-4 space-y-2">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-white/60">Provider:</span>
+                      <span className="text-white font-medium">{filterData.provider || '—'}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-white/60">DOB:</span>
+                      <span className="text-white font-medium">{filterData.dob || '—'}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-white/60">Gender:</span>
+                      <span className="text-white font-medium">{filterData.gender || '—'}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-white/60">Page No:</span>
+                      <span className="text-white font-medium">{filterData.pageNo || '—'}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
