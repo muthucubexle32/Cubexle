@@ -18,6 +18,73 @@ import {
   X,
 } from "lucide-react";
 
+// Tooltip Component - Fixed z-index and positioning
+const Tooltip = ({ children, text, position = "bottom" }) => {
+  const [show, setShow] = useState(false);
+  const tooltipRef = useRef(null);
+  
+  const positionClasses = {
+    top: "bottom-full left-1/2 -translate-x-1/2 mb-2",
+    bottom: "top-full left-1/2 -translate-x-1/2 mt-2",
+    left: "right-full top-1/2 -translate-y-1/2 mr-2",
+    right: "left-full top-1/2 -translate-y-1/2 ml-2"
+  };
+
+  // Calculate arrow position based on tooltip position
+  const getArrowClasses = (pos) => {
+    switch(pos) {
+      case "top":
+        return "top-full -translate-y-1/2 left-1/2 -translate-x-1/2";
+      case "bottom":
+        return "bottom-full translate-y-1/2 left-1/2 -translate-x-1/2";
+      case "left":
+        return "left-full -translate-x-1/2 top-1/2 -translate-y-1/2";
+      case "right":
+        return "right-full translate-x-1/2 top-1/2 -translate-y-1/2";
+      default:
+        return "top-full -translate-y-1/2 left-1/2 -translate-x-1/2";
+    }
+  };
+
+  return (
+    <div 
+      className="relative inline-block"
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+      ref={tooltipRef}
+    >
+      {children}
+      
+      {/* Tooltip with high z-index and backdrop blur */}
+      {show && (
+        <div 
+          className={`absolute z-[9999] ${positionClasses[position]} px-2 py-1 
+                     bg-gray-900 text-white text-xs rounded shadow-lg 
+                     whitespace-nowrap pointer-events-none animate-fadeIn
+                     backdrop-blur-sm bg-opacity-95 border border-gray-700`}
+          style={{
+            filter: 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3))'
+          }}
+        >
+          {text}
+          
+          {/* Arrow */}
+          <div className={`absolute w-2 h-2 bg-gray-900 transform rotate-45 
+                          border border-gray-700 ${getArrowClasses(position)}`}
+               style={{
+                 background: 'linear-gradient(135deg, #111827 0%, #1F2937 100%)',
+                 borderWidth: position === 'top' ? '0 1px 1px 0' :
+                             position === 'bottom' ? '1px 0 0 1px' :
+                             position === 'left' ? '1px 1px 0 0' :
+                             '0 0 1px 1px'
+               }}>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // --- Components ---
 const PageBox = ({ value, setValue, id }) => (
   <div className="flex bg-[#b6d3dc] rounded overflow-hidden w-[70px] h-[30px] border border-[#a6c3cc] shadow-sm">
@@ -334,23 +401,27 @@ export default function MedicalUI() {
         <span className="block text-lg font-semibold text-black mb-1">OV</span>
         {/* Action Buttons - Positioned to the right */}
         <div className="flex gap-2 ml-auto">
-          <button
-            type="button"
-            onClick={saveData}
-            className="flex items-center justify-center gap-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium text-xs transition-all duration-200 shadow-sm"
-            aria-label="Save current record"
-          >
-            <Save size={16} strokeWidth={2} /> Save
-          </button>
-          <button
-            type="button"
-            onClick={resetAll}
-            className="flex items-center justify-center gap-1 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium text-xs transition-all duration-200 shadow-sm"
-            aria-label="Reset all fields"
-          >
-            <RotateCcw size={16} strokeWidth={2} /> Reset
-          </button>
-
+          <Tooltip text="save" position="bottom">
+            <button
+              type="button"
+              onClick={saveData}
+              className="flex items-center justify-center gap-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium text-xs transition-all duration-200 shadow-sm"
+              aria-label="Save current record"
+            >
+              <Save size={16} strokeWidth={2} /> Save
+            </button>
+          </Tooltip>
+          <Tooltip text="Reset" position="bottom">
+            <button
+              type="button"
+              onClick={resetAll}
+              className="flex items-center justify-center gap-1 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium text-xs transition-all duration-200 shadow-sm"
+              aria-label="Reset all fields"
+            >
+              <RotateCcw size={16} strokeWidth={2} /> Reset
+            </button>
+          </Tooltip>
+            <Tooltip text="Delete All" position="bottom">
           <button
             type="button"
             onClick={deleteAll}
@@ -359,11 +430,12 @@ export default function MedicalUI() {
           >
             <Trash2 size={16} strokeWidth={2} /> Delete
           </button>
+          </Tooltip>
         </div>
       </div>
 
       {/* Scrollable Content */}
-      <div className="overflow-y-auto space-y-1 custom-scroll pr-2" style={{ maxHeight: 'calc(110vh - 260px)' }}>
+      <div className="overflow-y-auto space-y-1 custom-scroll pr-2" style={{ maxHeight: 'calc(110vh - 280px)' }}>
         {/* Top Panel */}
         <div className="border border-blue-400 rounded-lg p-2 bg-white shadow-sm">
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2z gap-2">
@@ -603,7 +675,7 @@ export default function MedicalUI() {
                             onChange={(e) => updateVitals(row.id, "dia", e.target.value)}
                             className="flex-1 min-w-0 h-8 bg-[#CFE8F2] rounded px-2 text-xs text-center outline-none focus:ring-1 focus:ring-blue-400"
                           />
-                        
+
                           <input
                             placeholder="Sys"
                             value={row.sys}

@@ -116,3 +116,14 @@
     opacity: 1;
   }
 }
+/* Add this to your global CSS file */
+.tooltip-portal {
+  position: fixed;
+  z-index: 999999 !important;
+  pointer-events: none;
+}
+
+/* Ensure tooltips always appear on top */
+[role="tooltip"] {
+  z-index: 999999 !important;
+}

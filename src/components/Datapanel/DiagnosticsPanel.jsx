@@ -16,6 +16,73 @@ import {
   X,
 } from "lucide-react";
 
+// Tooltip Component - Fixed z-index and positioning
+const Tooltip = ({ children, text, position = "bottom" }) => {
+  const [show, setShow] = useState(false);
+  const tooltipRef = useRef(null);
+  
+  const positionClasses = {
+    top: "bottom-full left-1/2 -translate-x-1/2 mb-2",
+    bottom: "top-full left-1/2 -translate-x-1/2 mt-2",
+    left: "right-full top-1/2 -translate-y-1/2 mr-2",
+    right: "left-full top-1/2 -translate-y-1/2 ml-2"
+  };
+
+  // Calculate arrow position based on tooltip position
+  const getArrowClasses = (pos) => {
+    switch(pos) {
+      case "top":
+        return "top-full -translate-y-1/2 left-1/2 -translate-x-1/2";
+      case "bottom":
+        return "bottom-full translate-y-1/2 left-1/2 -translate-x-1/2";
+      case "left":
+        return "left-full -translate-x-1/2 top-1/2 -translate-y-1/2";
+      case "right":
+        return "right-full translate-x-1/2 top-1/2 -translate-y-1/2";
+      default:
+        return "top-full -translate-y-1/2 left-1/2 -translate-x-1/2";
+    }
+  };
+
+  return (
+    <div 
+      className="relative inline-block"
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+      ref={tooltipRef}
+    >
+      {children}
+      
+      {/* Tooltip with high z-index and backdrop blur */}
+      {show && (
+        <div 
+          className={`absolute z-[9999] ${positionClasses[position]} px-2 py-1 
+                     bg-gray-900 text-white text-xs rounded shadow-lg 
+                     whitespace-nowrap pointer-events-none animate-fadeIn
+                     backdrop-blur-sm bg-opacity-95 border border-gray-700`}
+          style={{
+            filter: 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3))'
+          }}
+        >
+          {text}
+          
+          {/* Arrow */}
+          <div className={`absolute w-2 h-2 bg-gray-900 transform rotate-45 
+                          border border-gray-700 ${getArrowClasses(position)}`}
+               style={{
+                 background: 'linear-gradient(135deg, #111827 0%, #1F2937 100%)',
+                 borderWidth: position === 'top' ? '0 1px 1px 0' :
+                             position === 'bottom' ? '1px 0 0 1px' :
+                             position === 'left' ? '1px 1px 0 0' :
+                             '0 0 1px 1px'
+               }}>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // --- Auto-Resizing Textarea Component ---
 const AutoResizeTextarea = ({
   value,
@@ -223,24 +290,30 @@ export default function DiagnosticReport() {
       <div className="w-full flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-2 pb-2 pt-2 border-b border-gray-200 px-4">
         <h1 className="block text-lg font-semibold text-black">Diagnostic Report</h1>
         <div className="flex gap-2 sm:ml-auto w-full sm:w-auto justify-end">
+          <Tooltip text="save" position="bottom">
           <button
             onClick={handleSave}
             className="flex items-center justify-center gap-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium text-xs transition-all duration-200 shadow-sm"
           >
             <Save size={16} strokeWidth={2} /> Save
           </button>
+          </Tooltip>
+          <Tooltip text="Reset" position="bottom">
           <button
             onClick={handleReset}
             className="flex items-center justify-center gap-1 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium text-xs transition-all duration-200 shadow-sm"
           >
             <RotateCcw size={16} strokeWidth={2} /> Reset
           </button>
+          </Tooltip>
+          <Tooltip text="Delete All" position="bottom">
           <button
             onClick={handleDelete}
             className="flex items-center justify-center gap-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium text-xs transition-all duration-200 shadow-sm"
           >
             <Trash2 size={16} strokeWidth={2} /> Delete
           </button>
+          </Tooltip>
         </div>
       </div>
 
@@ -553,7 +626,7 @@ export default function DiagnosticReport() {
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold text-gray-700 mb-1">Special Comments</h3>
+            <h3 className="text-sm font-semibold text-gray-700 mb-2">Special Comments</h3>
             <div className="border border-blue-300 rounded-lg bg-white p-1 shadow-sm">
               <AutoResizeTextarea
                 value={specialComments}
