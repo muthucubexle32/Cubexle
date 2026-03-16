@@ -435,7 +435,7 @@ export default function MedicalUI() {
       </div>
 
       {/* Scrollable Content */}
-      <div className="overflow-y-auto space-y-1 custom-scroll pr-2" style={{ maxHeight: 'calc(110vh - 280px)' }}>
+      <div className="overflow-y-auto space-y-1 custom-scroll pr-2 pb-3" >
         {/* Top Panel */}
         <div className="border border-blue-400 rounded-lg p-2 bg-white shadow-sm">
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2z gap-2">

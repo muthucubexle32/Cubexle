@@ -180,51 +180,13 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
               >
                 <div className="flex flex-col items-end">
                   <span className="text-xs xl:text-sm font-semibold text-white">{userName}</span>
-                  <span className="text-[10px] xl:text-xs text-white/60">{userRole}</span>
+            
                 </div>
                 <div className="w-8 h-8 xl:w-10 xl:h-10 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 flex items-center justify-center flex-shrink-0">
                   <User className="w-4 h-4 xl:w-5 xl:h-5 text-white" />
                 </div>
-                <ChevronDown className={`w-3 h-3 text-white/60 transition-transform duration-300 ${showUserDropdown ? 'rotate-180' : ''}`} />
               </button>
             </Tooltip>
-
-            {/* User Dropdown */}
-            {showUserDropdown && (
-              <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 py-1 z-50">
-                <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-                  <p className="text-sm font-semibold text-gray-800 dark:text-white">{userName}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{userRole}</p>
-                </div>
-                <button
-                  onClick={() => {
-                    setShowUserDropdown(false);
-                    navigate("/profile");
-                  }}
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                  Profile
-                </button>
-                <button
-                  onClick={() => {
-                    setShowUserDropdown(false);
-                    navigate("/settings");
-                  }}
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                  Settings
-                </button>
-                <button
-                  onClick={() => {
-                    setShowUserDropdown(false);
-                    navigate("/login");
-                  }}
-                  className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-                >
-                  Logout
-                </button>
-              </div>
-            )}
           </div>
 
           {/* Logout Button with tooltip */}
@@ -265,7 +227,7 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
                 {/* Provider - Mobile with tooltip */}
                 <Tooltip text="Current Provider" position="top">
                   <div className="flex-none px-2 py-1.5 bg-white/5 rounded text-white text-xs whitespace-nowrap">
-                    <span className="text-white/60">Provider:</span> {filterData.provider}
+                    <span className="text-white/60">Patient Name:</span> {filterData.provider}
                   </div>
                 </Tooltip>
 
@@ -310,9 +272,9 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
               {/* Left side - Filter items */}
               <div className="flex items-center gap-2 md:gap-3 lg:gap-4 flex-wrap">
                 {/* Provider Name - with tooltip */}
-                <Tooltip text="Current Provider Information" position="top">
+                <Tooltip text="Current Patient Information" position="top">
                   <div className="flex items-center gap-1 px-2 md:px-3 py-1.5 md:py-2 rounded-md">
-                    <span className="text-white/60 text-xs md:text-sm">Provider:</span>
+                    <span className="text-white/60 text-xs md:text-sm">Patient Name:</span>
                     <span className="text-white text-xs md:text-sm font-medium">{filterData.provider}</span>
                   </div>
                 </Tooltip>
