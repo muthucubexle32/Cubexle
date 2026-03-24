@@ -207,10 +207,6 @@ export default function SocialHistoryPanel() {
   // Reset all fields
   const handleReset = () => {
     if (window.confirm("Reset all fields?")) {
-      setProviderName("");
-      setFacility("");
-      setDos("");
-      setPageNoHeader("");
       setSocialHistoryRows([
         { id: Date.now(), type: "Tobacco", icon: Cigarette, value: "", dateOfService: "", pageNo: "", comments: "" },
         { id: Date.now() + 1, type: "Alcohol", icon: Wine, value: "", dateOfService: "", pageNo: "", comments: "" },
@@ -235,7 +231,6 @@ export default function SocialHistoryPanel() {
   // Save data
   const handleSave = () => {
     const allData = {
-      provider: { providerName, facility, dos, pageNoHeader },
       socialHistory: socialHistoryRows,
       clinicalHistory: {
         pmhPsh,
@@ -250,200 +245,204 @@ export default function SocialHistoryPanel() {
   };
 
   // Styles - all text black
-  const inputBaseClass = "w-full h-8 bg-[#CFE8F2] rounded px-3 text-sm text-black outline-none focus:ring-1 focus:ring-blue-400 border-none placeholder-gray-500";
-  const labelClass = "block text-xs font-semibold text-black mb-1";
+  const inputBaseClass = "w-full h-9 sm:h-8 bg-[#CFE8F2] rounded px-2 sm:px-3 text-xs sm:text-sm text-black outline-none focus:ring-1 focus:ring-blue-400 border-none placeholder-gray-500";
+  const labelClass = "block text-[10px] sm:text-xs font-semibold text-black mb-1";
 
   return (
-    <div className="w-full gap-3 bg-white min-h-screen pb-12">
+    <div className="w-full bg-white min-h-screen pb-12 overflow-x-hidden">
       {/* Header Bar - Responsive */}
-      <div className="w-full flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-2 pb-2 pt-2 border-b border-gray-200 px-4">
-        <h1 className="block text-xl font-semibold text-black">Social History</h1>
-        <div className="flex gap-2 sm:ml-auto w-full sm:w-auto justify-end">
-          <Tooltip text="save" position="bottom">
-            <button
-              onClick={handleSave}
-              className="flex items-center justify-center gap-1 bg-green-600 hover:bg-green-700 text-white px-3 sm:px-4 py-2 rounded-lg font-medium text-xs transition-all duration-200 shadow-sm"
-            >
-              <Save size={16} strokeWidth={2} /> Save
-            </button>
-          </Tooltip>
-          <Tooltip text="Reset" position="bottom">
-            <button
-              onClick={handleReset}
-              className="flex items-center justify-center gap-1 bg-gray-600 hover:bg-gray-700 text-white px-3 sm:px-4 py-2 rounded-lg font-medium text-xs transition-all duration-200 shadow-sm"
-            >
-              <RotateCcw size={16} strokeWidth={2} /> Reset
-            </button>
-          </Tooltip>
-          <Tooltip text="Delete All" position="bottom">
-            <button
-              onClick={handleDelete}
-              className="flex items-center justify-center gap-1 bg-red-600 hover:bg-red-700 text-white px-3 sm:px-4 py-2 rounded-lg font-medium text-xs transition-all duration-200 shadow-sm"
-            >
-              <Trash2 size={16} strokeWidth={2} /> Delete
-            </button>
-          </Tooltip>
+      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-3 sm:px-4 py-3 shadow-sm">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 max-w-[1400px] mx-auto">
+          <h1 className="text-lg sm:text-xl font-semibold text-black">Social History</h1>
+          <div className="flex gap-2 sm:ml-auto w-full sm:w-auto">
+            <Tooltip text="Save Data" position="bottom">
+              <button
+                onClick={handleSave}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-1 bg-green-600 hover:bg-green-700 text-white px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-all duration-200 shadow-sm"
+              >
+                <Save size={14} strokeWidth={2} /> <span className="hidden xs:inline">Save</span>
+              </button>
+            </Tooltip>
+            <Tooltip text="Reset All" position="bottom">
+              <button
+                onClick={handleReset}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-1 bg-gray-600 hover:bg-gray-700 text-white px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-all duration-200 shadow-sm"
+              >
+                <RotateCcw size={14} strokeWidth={2} /> <span className="hidden xs:inline">Reset</span>
+              </button>
+            </Tooltip>
+            <Tooltip text="Delete All" position="bottom">
+              <button
+                onClick={handleDelete}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-1 bg-red-600 hover:bg-red-700 text-white px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-all duration-200 shadow-sm"
+              >
+                <Trash2 size={14} strokeWidth={2} /> <span className="hidden xs:inline">Delete</span>
+              </button>
+            </Tooltip>
+          </div>
         </div>
       </div>
 
-      <div className="px-2 sm:px-2 space-y-2 max-w-[1400px] mx-auto">
+      <div className="px-3 sm:px-4 md:px-2 py-3 sm:py-2 space-y-2 sm:space-y-2 max-w-[1400px] mx-auto">
         {/* Social History Section */}
-        <div className="border border-blue-300 rounded-xl p-2 sm:p-3 bg-white shadow-sm">
-          <div className="space-y-2">
-            {socialHistoryRows.map((row) => (
-              <div key={row.id} className="border border-blue-200 rounded-lg bg-blue-50/30 p-2 sm:p-3">
-                {/* First Row: Icon, Label, No/Yes Toggle, Date of Service & Page No */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 mb-1">
-                  {/* Icon and Label */}
-                  <div className="lg:col-span-2 flex items-center gap-3">
-                    <div className="p-2 bg-[#CFE8F2] rounded-lg flex-shrink-0">
-                      <row.icon size={18} className="text-blue-600" />
+        <div className="border border-blue-300 rounded-xl bg-white shadow-sm overflow-hidden">
+          <div className="p-2 sm:p-2">
+            <div className="space-y-2 sm:space-y-2">
+              {socialHistoryRows.map((row) => (
+                <div key={row.id} className="border border-blue-200 rounded-lg bg-blue-50/30 p-3 sm:p-4">
+                  {/* Row 1: Icon, Title, and Yes/No Toggle */}
+                  <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+                    {/* Icon and Title */}
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 sm:p-2 bg-[#CFE8F2] rounded-lg">
+                        <row.icon size={16} className="text-blue-600 sm:w-[18px] sm:h-[18px]" />
+                      </div>
+                      <span className="text-sm sm:text-base font-semibold text-black">{row.type}</span>
                     </div>
-                    <span className="text-sm font-semibold text-black">{row.type}</span>
+                    
+                    {/* Yes/No Toggle - Responsive */}
+                    <div className="flex items-center gap-3 sm:gap-4 ml-0 sm:ml-2">
+                      <label className="flex items-center gap-1.5 cursor-pointer group">
+                        <input
+                          type="radio"
+                          name={`${row.type}-${row.id}`}
+                          value="No"
+                          checked={row.value === "No"}
+                          onChange={(e) => updateSocialHistoryRow(row.id, "value", e.target.value)}
+                          className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 focus:ring-blue-500 focus:ring-1 cursor-pointer"
+                        />
+                        <span className="text-xs sm:text-sm text-black font-medium group-hover:text-blue-600 transition-colors">
+                          No
+                        </span>
+                      </label>
+                      <label className="flex items-center gap-1.5 cursor-pointer group">
+                        <input
+                          type="radio"
+                          name={`${row.type}-${row.id}`}
+                          value="Yes"
+                          checked={row.value === "Yes"}
+                          onChange={(e) => updateSocialHistoryRow(row.id, "value", e.target.value)}
+                          className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 focus:ring-blue-500 focus:ring-1 cursor-pointer"
+                        />
+                        <span className="text-xs sm:text-sm text-black font-medium group-hover:text-blue-600 transition-colors">
+                          Yes
+                        </span>
+                      </label>
+                    </div>
                   </div>
-                  
-                  {/* No/Yes Toggle */}
-                  <div className="lg:col-span-2 flex items-center gap-4">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name={`${row.type}-${row.id}`}
-                        value="No"
-                        checked={row.value === "No"}
-                        onChange={(e) => updateSocialHistoryRow(row.id, "value", e.target.value)}
-                        className="w-4 h-4 text-blue-600 focus:ring-blue-500"
-                      />
-                      <span className="text-sm text-black">No</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name={`${row.type}-${row.id}`}
-                        value="Yes"
-                        checked={row.value === "Yes"}
-                        onChange={(e) => updateSocialHistoryRow(row.id, "value", e.target.value)}
-                        className="w-4 h-4 text-blue-600 focus:ring-blue-500"
-                      />
-                      <span className="text-sm text-black">Yes</span>
-                    </label>
-                  </div>
-                  
-                  {/* Date of Service */}
-                  <div className="lg:col-span-4">
-                    <label className="block text-[12px] font-semibold text-black mb-1">Date of Service</label>
-                    <div className="relative">
+
+                  {/* Row 2: Date of Service and Page No - Responsive Grid */}
+                  <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
+                    <div>
+                      <label className={labelClass}>Date of Service</label>
                       <input
                         type="date"
                         value={row.dateOfService}
                         onChange={(e) => updateSocialHistoryRow(row.id, "dateOfService", e.target.value)}
-                        className={`${inputBaseClass} cursor-pointer`}
+                        className={inputBaseClass}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Page No</label>
+                      <input
+                        type="number"
+                        value={row.pageNo}
+                        onChange={(e) => updateSocialHistoryRow(row.id, "pageNo", e.target.value)}
+                        className={inputBaseClass}
+                        placeholder="Enter page number"
                       />
                     </div>
                   </div>
-                  
-                  {/* Page No */}
-                  <div className="lg:col-span-4">
-                    <label className="block text-[12px] font-semibold text-black mb-1">Page No</label>
-                    <input
-                      type="number"
-                      value={row.pageNo}
-                      onChange={(e) => updateSocialHistoryRow(row.id, "pageNo", e.target.value)}
-                      className={inputBaseClass}
-                      placeholder="0"
+
+                  {/* Row 3: Comments */}
+                  <div>
+                    <label className={labelClass}>Comments</label>
+                    <AutoResizeTextarea
+                      value={row.comments}
+                      onChange={(e) => updateSocialHistoryRow(row.id, "comments", e.target.value)}
+                      placeholder="Enter comments..."
+                      className="w-full min-h-[60px] p-2 text-xs sm:text-sm text-black bg-[#CFE8F2] rounded-lg focus:ring-2 focus:ring-blue-400"
                     />
                   </div>
                 </div>
-
-                {/* Second Row: Comments with Auto-Resizing Textarea */}
-                <div>
-                  <label className="block text-[12px] font-semibold text-black mb-1">Comments</label>
-                  <AutoResizeTextarea
-                    value={row.comments}
-                    onChange={(e) => updateSocialHistoryRow(row.id, "comments", e.target.value)}
-                    placeholder="Enter comments..."
-                    className="w-full min-h-[60px] p-2 text-sm text-black bg-[#CFE8F2] rounded-lg focus:ring-1 focus:ring-blue-400"
-                  />
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
 
         {/* Clinical Medical History Section */}
-        <div className="border border-blue-300 rounded-xl p-3 bg-white shadow-sm">
-          <h2 className="text-sm font-bold uppercase flex items-center gap-2 mb-1 text-black">
-            <Clipboard size={18} className="text-blue-600" />
+        <div className="border border-blue-300 rounded-xl p-3 sm:p-4 bg-white shadow-sm">
+          <h2 className="text-xs sm:text-sm font-bold uppercase flex items-center gap-2 mb-3 text-black">
+            <Clipboard size={16} className="text-blue-600 sm:w-[18px] sm:h-[18px]" />
             CLINICAL MEDICAL HISTORY
           </h2>
 
           {/* PMH/PSH */}
-          <div className="mb-1">
+          <div className="mb-2">
             <div className="border border-blue-200 rounded-lg bg-blue-50/30">
-              <div className="flex justify-between items-center px-2 pt-2">
+              <div className="flex justify-between items-center p-2 sm:p-3">
                 <div className="flex items-center gap-2">
-                  <FileText size={16} className="text-blue-600" />
+                  <FileText size={14} className="text-blue-600" />
                   <span className="text-xs font-semibold text-black">PMH/PSH</span>
                 </div>
                 <Tooltip text="Add new entry" position="bottom">
                   <button
                     onClick={() => addRow(setPmhPsh, pmhPsh)}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs font-bold flex items-center gap-1 transition-colors shadow-sm"
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-2 sm:px-3 py-1 rounded text-[10px] sm:text-xs font-bold flex items-center gap-1 transition-colors shadow-sm"
                   >
-                    <Plus size={14} /> ADD
+                    <Plus size={12} /> <span className="hidden xs:inline">ADD</span>
                   </button>
                 </Tooltip>
               </div>
 
-              <div className="p-2 space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar">
+              <div className="p-2 space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar">
                 {pmhPsh.map((row) => (
-                  <div key={row.id} className="relative bg-white rounded p-2 border border-blue-100">
+                  <div key={row.id} className="relative bg-white rounded p-3 border border-blue-100">
                     {pmhPsh.length > 1 && (
                       <Tooltip text="Remove entry" position="right">
                         <button
                           onClick={() => removeRow(row.id, setPmhPsh, pmhPsh)}
-                          className="absolute -top-4  bg-red-400 hover:bg-red-500 text-white p-1 rounded-full shadow-md z-10"
+                          className="absolute -top-4 bg-red-400 hover:bg-red-500 text-white p-1 rounded-full shadow-md z-10"
                         >
-                          <X size={12} />
+                          <X size={10} />
                         </button>
                       </Tooltip>
                     )}
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">
+                    <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 mb-2">
                       <div>
-                        <label className="block text-[10px] font-semibold text-black mb-1 uppercase tracking-wider">
+                        <label className="block text-[9px] sm:text-[10px] font-semibold text-black mb-1 uppercase tracking-wider">
                           Date of Service
                         </label>
-                        <div className="relative">
-                          <input
-                            type="date"
-                            value={row.dateOfService}
-                            onChange={(e) => updateRow(row.id, "dateOfService", e.target.value, setPmhPsh, pmhPsh)}
-                            className="w-full h-8 bg-[#CFE8F2] rounded px-2 text-sm text-black outline-none focus:ring-1 focus:ring-blue-400"
-                          />
-                        </div>
+                        <input
+                          type="date"
+                          value={row.dateOfService}
+                          onChange={(e) => updateRow(row.id, "dateOfService", e.target.value, setPmhPsh, pmhPsh)}
+                          className="w-full h-8 bg-[#CFE8F2] rounded px-2 text-xs sm:text-sm text-black outline-none focus:ring-1 focus:ring-blue-400"
+                        />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-semibold text-black mb-1 uppercase tracking-wider">
+                        <label className="block text-[9px] sm:text-[10px] font-semibold text-black mb-1 uppercase tracking-wider">
                           Page No
                         </label>
                         <input
                           type="number"
                           value={row.pageNo}
                           onChange={(e) => updateRow(row.id, "pageNo", e.target.value, setPmhPsh, pmhPsh)}
-                          className="w-full h-8 bg-[#CFE8F2] rounded px-2 text-sm text-black outline-none focus:ring-1 focus:ring-blue-400"
+                          className="w-full h-8 bg-[#CFE8F2] rounded px-2 text-xs sm:text-sm text-black outline-none focus:ring-1 focus:ring-blue-400"
                           placeholder="0"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-[10px] font-semibold text-black mb-1 uppercase tracking-wider">
+                      <label className="block text-[9px] sm:text-[10px] font-semibold text-black mb-1 uppercase tracking-wider">
                         Comments
                       </label>
                       <AutoResizeTextarea
                         value={row.comments}
                         onChange={(e) => updateRow(row.id, "comments", e.target.value, setPmhPsh, pmhPsh)}
                         placeholder="Enter comments..."
-                        className="w-full min-h-[50px] p-2 text-sm text-black bg-[#CFE8F2] rounded-lg"
+                        className="w-full min-h-[50px] p-2 text-xs sm:text-sm text-black bg-[#CFE8F2] rounded-lg"
                       />
                     </div>
                   </div>
@@ -455,71 +454,69 @@ export default function SocialHistoryPanel() {
           {/* Special Attention */}
           <div className="mb-2">
             <div className="border border-blue-200 rounded-lg bg-blue-50/30">
-              <div className="flex justify-between items-center px-2 pt-2">
+              <div className="flex justify-between items-center p-2 sm:p-3">
                 <div className="flex items-center gap-2">
-                  <AlertCircle size={16} className="text-blue-600" />
+                  <AlertCircle size={14} className="text-blue-600" />
                   <span className="text-xs font-semibold text-black">Special Attention</span>
                 </div>
                 <Tooltip text="Add new entry" position="bottom">
                   <button
                     onClick={() => addRow(setSpecialAttention, specialAttention)}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs font-bold flex items-center gap-1 transition-colors shadow-sm"
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-2 sm:px-3 py-1 rounded text-[10px] sm:text-xs font-bold flex items-center gap-1 transition-colors shadow-sm"
                   >
-                    <Plus size={14} /> ADD
+                    <Plus size={12} /> <span className="hidden xs:inline">ADD</span>
                   </button>
                 </Tooltip>
               </div>
 
-              <div className="p-2 space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar">
+              <div className="p-2 space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar">
                 {specialAttention.map((row) => (
-                  <div key={row.id} className="relative bg-white rounded p-2 border border-blue-100">
+                  <div key={row.id} className="relative bg-white rounded p-3 border border-blue-100">
                     {specialAttention.length > 1 && (
                       <Tooltip text="Remove entry" position="right">
                         <button
                           onClick={() => removeRow(row.id, setSpecialAttention, specialAttention)}
-                          className="absolute -top-4  bg-red-400 hover:bg-red-500 text-white p-1 rounded-full shadow-md z-10"
+                          className="absolute -top-4 bg-red-400 hover:bg-red-500 text-white p-1 rounded-full shadow-md z-10"
                         >
-                          <X size={12} />
+                          <X size={10} />
                         </button>
                       </Tooltip>
                     )}
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">
+                    <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 mb-2">
                       <div>
-                        <label className="block text-[10px] font-semibold text-black mb-1 uppercase tracking-wider">
+                        <label className="block text-[9px] sm:text-[10px] font-semibold text-black mb-1 uppercase tracking-wider">
                           Date of Service
                         </label>
-                        <div className="relative">
-                          <input
-                            type="date"
-                            value={row.dateOfService}
-                            onChange={(e) => updateRow(row.id, "dateOfService", e.target.value, setSpecialAttention, specialAttention)}
-                            className="w-full h-8 bg-[#CFE8F2] rounded px-2 text-sm text-black outline-none focus:ring-1 focus:ring-blue-400"
-                          />
-                        </div>
+                        <input
+                          type="date"
+                          value={row.dateOfService}
+                          onChange={(e) => updateRow(row.id, "dateOfService", e.target.value, setSpecialAttention, specialAttention)}
+                          className="w-full h-8 bg-[#CFE8F2] rounded px-2 text-xs sm:text-sm text-black outline-none focus:ring-1 focus:ring-blue-400"
+                        />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-semibold text-black mb-1 uppercase tracking-wider">
+                        <label className="block text-[9px] sm:text-[10px] font-semibold text-black mb-1 uppercase tracking-wider">
                           Page No
                         </label>
                         <input
                           type="number"
                           value={row.pageNo}
                           onChange={(e) => updateRow(row.id, "pageNo", e.target.value, setSpecialAttention, specialAttention)}
-                          className="w-full h-8 bg-[#CFE8F2] rounded px-2 text-sm text-black outline-none focus:ring-1 focus:ring-blue-400"
+                          className="w-full h-8 bg-[#CFE8F2] rounded px-2 text-xs sm:text-sm text-black outline-none focus:ring-1 focus:ring-blue-400"
                           placeholder="0"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-[10px] font-semibold text-black mb-1 uppercase tracking-wider">
+                      <label className="block text-[9px] sm:text-[10px] font-semibold text-black mb-1 uppercase tracking-wider">
                         Comments
                       </label>
                       <AutoResizeTextarea
                         value={row.comments}
                         onChange={(e) => updateRow(row.id, "comments", e.target.value, setSpecialAttention, specialAttention)}
                         placeholder="Enter comments..."
-                        className="w-full min-h-[50px] p-2 text-sm text-black bg-[#CFE8F2] rounded-lg"
+                        className="w-full min-h-[50px] p-2 text-xs sm:text-sm text-black bg-[#CFE8F2] rounded-lg"
                       />
                     </div>
                   </div>
@@ -529,73 +526,71 @@ export default function SocialHistoryPanel() {
           </div>
 
           {/* Family Medical History */}
-          <div className="mb-2">
+          <div className="mb-3">
             <div className="border border-blue-200 rounded-lg bg-blue-50/30">
-              <div className="flex justify-between items-center px-2 pt-2">
+              <div className="flex justify-between items-center p-2 sm:p-3">
                 <div className="flex items-center gap-2">
-                  <Heart size={16} className="text-blue-600" />
+                  <Heart size={14} className="text-blue-600" />
                   <span className="text-xs font-semibold text-black">Family Medical History</span>
                 </div>
                 <Tooltip text="Add new entry" position="bottom">
                   <button
                     onClick={() => addRow(setFamilyMedicalHistory, familyMedicalHistory)}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs font-bold flex items-center gap-1 transition-colors shadow-sm"
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-2 sm:px-3 py-1 rounded text-[10px] sm:text-xs font-bold flex items-center gap-1 transition-colors shadow-sm"
                   >
-                    <Plus size={14} /> ADD
+                    <Plus size={12} /> <span className="hidden xs:inline">ADD</span>
                   </button>
                 </Tooltip>
               </div>
 
-              <div className="p-2 space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar">
+              <div className="p-2 space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar">
                 {familyMedicalHistory.map((row) => (
-                  <div key={row.id} className="relative bg-white rounded p-2 border border-blue-100">
+                  <div key={row.id} className="relative bg-white rounded p-3 border border-blue-100">
                     {familyMedicalHistory.length > 1 && (
                       <Tooltip text="Remove entry" position="right">
                         <button
                           onClick={() => removeRow(row.id, setFamilyMedicalHistory, familyMedicalHistory)}
-                          className="absolute -top-4  bg-red-400 hover:bg-red-500 text-white p-1 rounded-full shadow-md z-10"
+                          className="absolute -top-4 bg-red-400 hover:bg-red-500 text-white p-1 rounded-full shadow-md z-10"
                         >
-                          <X size={12} />
+                          <X size={10} />
                         </button>
                       </Tooltip>
                     )}
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">
+                    <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 mb-2">
                       <div>
-                        <label className="block text-[10px] font-semibold text-black mb-1 uppercase tracking-wider">
+                        <label className="block text-[9px] sm:text-[10px] font-semibold text-black mb-1 uppercase tracking-wider">
                           Date of Service
                         </label>
-                        <div className="relative">
-                          <input
-                            type="date"
-                            value={row.dateOfService}
-                            onChange={(e) => updateRow(row.id, "dateOfService", e.target.value, setFamilyMedicalHistory, familyMedicalHistory)}
-                            className="w-full h-8 bg-[#CFE8F2] rounded px-2 text-sm text-black outline-none focus:ring-1 focus:ring-blue-400"
-                          />
-                        </div>
+                        <input
+                          type="date"
+                          value={row.dateOfService}
+                          onChange={(e) => updateRow(row.id, "dateOfService", e.target.value, setFamilyMedicalHistory, familyMedicalHistory)}
+                          className="w-full h-8 bg-[#CFE8F2] rounded px-2 text-xs sm:text-sm text-black outline-none focus:ring-1 focus:ring-blue-400"
+                        />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-semibold text-black mb-1 uppercase tracking-wider">
+                        <label className="block text-[9px] sm:text-[10px] font-semibold text-black mb-1 uppercase tracking-wider">
                           Page No
                         </label>
                         <input
                           type="number"
                           value={row.pageNo}
                           onChange={(e) => updateRow(row.id, "pageNo", e.target.value, setFamilyMedicalHistory, familyMedicalHistory)}
-                          className="w-full h-8 bg-[#CFE8F2] rounded px-2 text-sm text-black outline-none focus:ring-1 focus:ring-blue-400"
+                          className="w-full h-8 bg-[#CFE8F2] rounded px-2 text-xs sm:text-sm text-black outline-none focus:ring-1 focus:ring-blue-400"
                           placeholder="0"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-[10px] font-semibold text-black mb-1 uppercase tracking-wider">
+                      <label className="block text-[9px] sm:text-[10px] font-semibold text-black mb-1 uppercase tracking-wider">
                         Comments
                       </label>
                       <AutoResizeTextarea
                         value={row.comments}
                         onChange={(e) => updateRow(row.id, "comments", e.target.value, setFamilyMedicalHistory, familyMedicalHistory)}
                         placeholder="Enter comments..."
-                        className="w-full min-h-[50px] p-2 text-sm text-black bg-[#CFE8F2] rounded-lg"
+                        className="w-full min-h-[50px] p-2 text-xs sm:text-sm text-black bg-[#CFE8F2] rounded-lg"
                       />
                     </div>
                   </div>
@@ -607,71 +602,69 @@ export default function SocialHistoryPanel() {
           {/* Health Overview */}
           <div className="mb-2">
             <div className="border border-blue-200 rounded-lg bg-blue-50/30">
-              <div className="flex justify-between items-center px-2 pt-2">
+              <div className="flex justify-between items-center p-2 sm:p-3">
                 <div className="flex items-center gap-2">
-                  <Activity size={16} className="text-blue-600" />
+                  <Activity size={14} className="text-blue-600" />
                   <span className="text-xs font-semibold text-black">Health Overview</span>
                 </div>
                 <Tooltip text="Add new entry" position="bottom">
                   <button
                     onClick={() => addRow(setHealthOverview, healthOverview)}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs font-bold flex items-center gap-1 transition-colors shadow-sm"
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-2 sm:px-3 py-1 rounded text-[10px] sm:text-xs font-bold flex items-center gap-1 transition-colors shadow-sm"
                   >
-                    <Plus size={14} /> ADD
+                    <Plus size={12} /> <span className="hidden xs:inline">ADD</span>
                   </button>
                 </Tooltip>
               </div>
 
-              <div className="p-2 space-y-2 max-h-[400px] overflow-y-auto custom-scrollbar">
+              <div className="p-2 space-y-3 max-h-[400px] overflow-y-auto custom-scrollbar">
                 {healthOverview.map((row) => (
-                  <div key={row.id} className="relative bg-white rounded p-2 border border-blue-100">
+                  <div key={row.id} className="relative bg-white rounded p-3 border border-blue-100">
                     {healthOverview.length > 1 && (
                       <Tooltip text="Remove entry" position="right">
                         <button
                           onClick={() => removeRow(row.id, setHealthOverview, healthOverview)}
-                          className="absolute -top-4 bg-red-400 hover:bg-red-500 text-white p-1 rounded-full shadow-md z-10"
+                          className="absolute -top-4  bg-red-400 hover:bg-red-500 text-white p-1 rounded-full shadow-md z-10"
                         >
-                          <X size={12} />
+                          <X size={10} />
                         </button>
                       </Tooltip>
                     )}
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">
+                    <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 mb-2">
                       <div>
-                        <label className="block text-[10px] font-semibold text-black mb-1 uppercase tracking-wider">
+                        <label className="block text-[9px] sm:text-[10px] font-semibold text-black mb-1 uppercase tracking-wider">
                           Date of Service
                         </label>
-                        <div className="relative">
-                          <input
-                            type="date"
-                            value={row.dateOfService}
-                            onChange={(e) => updateRow(row.id, "dateOfService", e.target.value, setHealthOverview, healthOverview)}
-                            className="w-full h-8 bg-[#CFE8F2] rounded px-2 text-sm text-black outline-none focus:ring-1 focus:ring-blue-400"
-                          />
-                        </div>
+                        <input
+                          type="date"
+                          value={row.dateOfService}
+                          onChange={(e) => updateRow(row.id, "dateOfService", e.target.value, setHealthOverview, healthOverview)}
+                          className="w-full h-8 bg-[#CFE8F2] rounded px-2 text-xs sm:text-sm text-black outline-none focus:ring-1 focus:ring-blue-400"
+                        />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-semibold text-black mb-1 uppercase tracking-wider">
+                        <label className="block text-[9px] sm:text-[10px] font-semibold text-black mb-1 uppercase tracking-wider">
                           Page No
                         </label>
                         <input
                           type="number"
                           value={row.pageNo}
                           onChange={(e) => updateRow(row.id, "pageNo", e.target.value, setHealthOverview, healthOverview)}
-                          className="w-full h-8 bg-[#CFE8F2] rounded px-2 text-sm text-black outline-none focus:ring-1 focus:ring-blue-400"
+                          className="w-full h-8 bg-[#CFE8F2] rounded px-2 text-xs sm:text-sm text-black outline-none focus:ring-1 focus:ring-blue-400"
                           placeholder="0"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-[10px] font-semibold text-black mb-1 uppercase tracking-wider">
+                      <label className="block text-[9px] sm:text-[10px] font-semibold text-black mb-1 uppercase tracking-wider">
                         Comments
                       </label>
                       <AutoResizeTextarea
                         value={row.comments}
                         onChange={(e) => updateRow(row.id, "comments", e.target.value, setHealthOverview, healthOverview)}
                         placeholder="Enter comments..."
-                        className="w-full min-h-[50px] p-2 text-sm text-black bg-[#CFE8F2] rounded-lg"
+                        className="w-full min-h-[50px] p-2 text-xs sm:text-sm text-black bg-[#CFE8F2] rounded-lg"
                       />
                     </div>
                   </div>
@@ -682,13 +675,13 @@ export default function SocialHistoryPanel() {
         </div>
 
         {/* APS Data Range */}
-        <div className="border border-blue-300 rounded-xl p-3 bg-white shadow-sm">
-          <h2 className="text-sm font-bold uppercase flex items-center gap-2 mb-2 text-black">
-            <Calendar size={18} className="text-blue-600" />
+        <div className="border border-blue-300 rounded-xl p-3 sm:p-4 bg-white shadow-sm">
+          <h2 className="text-xs sm:text-sm font-bold uppercase flex items-center gap-2 mb-3 text-black">
+            <Calendar size={16} className="text-blue-600" />
             APS DATA RANGE
           </h2>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label className={labelClass}>Start Date</label>
               <div
@@ -700,11 +693,11 @@ export default function SocialHistoryPanel() {
                   type="date"
                   value={apsStartDate}
                   onChange={(e) => setApsStartDate(e.target.value)}
-                  className={`${inputBaseClass} pr-10 cursor-pointer [&::-webkit-calendar-picker-indicator]:hidden`}
+                  className={`${inputBaseClass} pr-8 cursor-pointer [&::-webkit-calendar-picker-indicator]:hidden`}
                 />
                 <Calendar
-                  size={16}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-900"
+                  size={14}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500"
                 />
               </div>
             </div>
@@ -720,11 +713,11 @@ export default function SocialHistoryPanel() {
                   type="date"
                   value={apsEndDate}
                   onChange={(e) => setApsEndDate(e.target.value)}
-                  className={`${inputBaseClass} pr-10 cursor-pointer [&::-webkit-calendar-picker-indicator]:hidden`}
+                  className={`${inputBaseClass} pr-8 cursor-pointer [&::-webkit-calendar-picker-indicator]:hidden`}
                 />
                 <Calendar
-                  size={16}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-900"
+                  size={14}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500"
                 />
               </div>
             </div>
@@ -732,8 +725,20 @@ export default function SocialHistoryPanel() {
         </div>
       </div>
 
-      {/* Custom scrollbar styles */}
+      {/* Custom scrollbar and responsive styles */}
       <style jsx>{`
+        @media (min-width: 480px) {
+          .xs\\:inline {
+            display: inline;
+          }
+          .xs\\:col-span-2 {
+            grid-column: span 2;
+          }
+          .xs\\:grid-cols-2 {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
+        
         .custom-scrollbar::-webkit-scrollbar {
           width: 4px;
         }
@@ -755,6 +760,12 @@ export default function SocialHistoryPanel() {
         }
         .animate-fadeIn {
           animation: fadeIn 0.2s ease-out;
+        }
+        
+        @media (max-width: 640px) {
+          input, button, textarea {
+            font-size: 16px !important;
+          }
         }
       `}</style>
     </div>
