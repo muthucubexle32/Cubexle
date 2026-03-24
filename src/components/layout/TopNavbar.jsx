@@ -1,4 +1,4 @@
-import { LogOut, Home, Search, FileText, User, ChevronDown, Menu, X, Calendar, Settings, Activity, Microscope, HeartPulse, Stethoscope, Sparkles, Info } from "lucide-react";
+import { LogOut, Home, Search, FileText, User, ChevronDown, Menu, X, Calendar, Settings, Activity, Microscope, HeartPulse, Stethoscope, Sparkles, Info, Users } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect, useRef } from "react"; 
 
@@ -89,16 +89,18 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
 
   const navItems = [
     { label: "Home", path: "/", icon: Home, tooltip: "Go to Dashboard" },
-    { label: "Admin", path: "/admin", icon: Settings, tooltip: "Admin " },
+    { label: "Admin", path: "/admin", icon: Settings, tooltip: "Admin Panel" },
     { label: "Report", path: "/report", icon: FileText, tooltip: "View Reports" },
     { label: "Search", path: "/search", icon: Search, tooltip: "Search Records" },
   ];
 
+  // Updated entryItems with Social History
   const entryItems = [
     { label: "OV", icon: Stethoscope, panelId: "ov", color: "from-blue-500 to-cyan-400", tooltip: "Office Visit" },
     { label: "Diagnostics", icon: Activity, panelId: "diagnostics", color: "from-emerald-500 to-teal-400", tooltip: "Diagnostic Reports" },
     { label: "Labs", icon: Microscope, panelId: "labs", color: "from-purple-500 to-pink-400", tooltip: "Laboratory Results" },
     { label: "EKG", icon: HeartPulse, panelId: "ekg", color: "from-rose-500 to-red-400", tooltip: "Electrocardiogram" },
+    { label: "Social History", icon: Users, panelId: "socialhistory", color: "from-indigo-500 to-purple-500", tooltip: "Social History & Clinical History" }
   ];
 
   // Get selected entry label
@@ -180,7 +182,6 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
               >
                 <div className="flex flex-col items-end">
                   <span className="text-xs xl:text-sm font-semibold text-white">{userName}</span>
-            
                 </div>
                 <div className="w-8 h-8 xl:w-10 xl:h-10 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 flex items-center justify-center flex-shrink-0">
                   <User className="w-4 h-4 xl:w-5 xl:h-5 text-white" />
@@ -252,7 +253,7 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
                   </div>
                 </Tooltip>
 
-                {/* Entry Pages - Mobile with tooltip - FIXED: Tooltip now wraps the button properly */}
+                {/* Entry Pages - Mobile with tooltip */}
                 <div className="relative flex-none ml-auto" ref={entryDropdownRef}>
                   <Tooltip text="Select Entry Type" position="top">
                     <button
@@ -304,7 +305,7 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
                 </Tooltip>
               </div>
 
-              {/* Right side - Entry Pages Dropdown - FIXED: Proper button structure */}
+              {/* Right side - Entry Pages Dropdown */}
               <div className="relative ml-4" ref={entryDropdownRef}>
                 <Tooltip text="Select clinical entry" position="top">
                   <button
@@ -360,8 +361,8 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
                       </div>
                     </div>
 
-                    {/* Desktop dropdown - FIXED: Removed Tooltip wrapper from buttons */}
-                    <div className="hidden sm:block absolute right-0 top-full mt-1 w-40 bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700 py-1 rounded-lg z-50">
+                    {/* Desktop dropdown */}
+                    <div className="hidden sm:block absolute right-0 top-full mt-1 w-44 bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700 py-1 rounded-lg z-50">
                       {entryItems.map((item) => {
                         const Icon = item.icon;
                         const isActive = activePanel === item.panelId;
@@ -372,7 +373,7 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
                             className={`w-full flex items-center gap-2 px-3 py-2 text-sm transition-all hover:bg-gray-50 dark:hover:bg-gray-700 ${
                               isActive ? 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-600' : ''
                             }`}
-                            title={item.tooltip} // Using native title as fallback
+                            title={item.tooltip}
                           >
                             <div className={`p-1 rounded-lg bg-gradient-to-r ${item.color} bg-opacity-20`}>
                               <Icon className="w-4 h-4" />
@@ -456,7 +457,7 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
                 })}
               </div>
 
-              {/* Entry Pages with tooltips - FIXED: Proper button structure */}
+              {/* Entry Pages with tooltips */}
               <div className="space-y-2 pt-4 border-t border-white/10">
                 <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4">Entry Pages</div>
                 {entryItems.map((item) => {

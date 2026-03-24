@@ -1,3 +1,4 @@
+// pages/Index.js
 import { useState } from 'react';
 import AppLayout from "@/components/layout/AppLayout";
 import PdfViewerPanel from "@/components/home/PdfViewerPanel";
@@ -5,6 +6,7 @@ import OVPanel from "@/components/Datapanel/OVPanel";
 import DiagnosticsPanel from "@/components/Datapanel/DiagnosticsPanel";
 import LabsPanel from "@/components/Datapanel/LabsPanel";
 import EKGPanel from "@/components/Datapanel/EKGPanel";
+import SocialHistoryPanel from "@/components/Datapanel/SocialHistoryPanel";
 import Toggle from "@/components/home/Toggle";
 import SideMenu from "@/components/home/SideMenu";
 
@@ -28,6 +30,8 @@ const Index = () => {
         return <LabsPanel />;
       case 'ekg':
         return <EKGPanel />;
+      case 'socialhistory':
+        return <SocialHistoryPanel />;
       default:
         return <OVPanel />;
     }

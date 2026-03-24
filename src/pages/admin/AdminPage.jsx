@@ -1,49 +1,282 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
-  Users, Settings, Shield, Database, ChevronRight,
-  LogIn, Mail, Lock, Eye, EyeOff, Activity, Calendar,
-  LogOut, Bell, Search, FileText, BarChart3,
-  Layout, Construction, ArrowLeft, Clock, Sparkles,
-  Menu, X
+  LogIn,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  HeartPulse,
+  Stethoscope,
+  Shield,
+  Home,
+  Search,
+  Menu,
+  X,
+  User,
+  LogOut,
+  Sparkles,
+  Clock,
+  Construction,
+  Settings,
+  FileText
 } from "lucide-react";
 
-import TopNavbar from "../../components/layout/TopNavbar";
+// Tooltip Component
+const Tooltip = ({ children, text, position = "bottom" }) => {
+  const [show, setShow] = useState(false);
+  
+  const positionClasses = {
+    top: "bottom-full left-1/2 -translate-x-1/2 mb-2",
+    bottom: "top-full left-1/2 -translate-x-1/2 mt-2",
+    left: "right-full top-1/2 -translate-y-1/2 mr-2",
+    right: "left-full top-1/2 -translate-y-1/2 ml-2"
+  };
 
-const ADMIN_CREDENTIALS = {
-  email: "admin@cubexletool.com",
-  password: "Admin@2024"
+  return (
+    <div 
+      className="relative inline-block"
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+    >
+      {children}
+      {show && (
+        <div className={`absolute z-50 ${positionClasses[position]} px-2 py-1 bg-gray-900 text-white text-xs rounded shadow-lg whitespace-nowrap pointer-events-none animate-fadeIn`}>
+          {text}
+          <div className={`absolute w-2 h-2 bg-gray-900 transform rotate-45 ${
+            position === "top" ? "top-full -translate-y-1/2 left-1/2 -translate-x-1/2" :
+            position === "bottom" ? "bottom-full translate-y-1/2 left-1/2 -translate-x-1/2" :
+            position === "left" ? "left-full -translate-x-1/2 top-1/2 -translate-y-1/2" :
+            "right-full translate-x-1/2 top-1/2 -translate-y-1/2"
+          }`}></div>
+        </div>
+      )}
+    </div>
+  );
 };
 
-// --- Responsive "Coming Soon" Placeholder ---
-const FeatureComingSoon = ({ title, icon: Icon }) => (
-  <div className="flex flex-col items-center justify-center min-h-[40vh] sm:min-h-[50vh] text-center p-4 sm:p-8 animate-in fade-in zoom-in duration-700">
-    <div className="relative mb-6 sm:mb-8">
-      <div className="absolute inset-0 bg-blue-500/20 blur-[60px] sm:blur-[100px] rounded-full animate-pulse"></div>
-      <div className="relative bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-[1.5rem] sm:rounded-[2rem] shadow-2xl border border-slate-100 dark:border-slate-800">
-        <Icon className="w-12 h-12 sm:w-16 sm:h-16 text-blue-600 animate-float" />
-      </div>
-    </div>
-
-    <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-800 dark:text-white mb-2 tracking-tight">
-      {title} <span className="text-blue-600">Module</span>
-    </h2>
-
-    <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-4 sm:py-1.5 bg-slate-900 text-white rounded-md text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider mb-4 sm:mb-6 shadow-xl">
-      <Clock size={12} className="text-blue-400" />
-      Engineering Phase
-    </div>
-
-    <p className="max-w-[250px] sm:max-w-xs text-slate-500 dark:text-slate-400 leading-relaxed text-xs sm:text-sm font-medium">
-      This clinical module is currently being optimized for high-precision data analysis.
-    </p>
-  </div>
-);
-
-// --- Adaptive Admin Login ---
-const AdminLogin = ({ onLogin }) => {
+// Navbar Component - Persistent across all pages
+const Navbar = ({ onLogout }) => {
   const navigate = useNavigate();
-  const [credentials, setCredentials] = useState({ email: '', password: '' });
+  const location = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [userName] = useState("Guest User");
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const navItems = [
+    { label: "Home", path: "/", icon: Home, tooltip: "Go to Dashboard" },
+    { label: "Admin", path: "/admin", icon: Settings, tooltip: "Admin Panel" },
+    { label: "Report", path: "/report", icon: FileText, tooltip: "View Reports" },
+    { label: "Search", path: "/search", icon: Search, tooltip: "Search Records" },
+  ];
+
+  const handleLogoutClick = () => {
+    if (onLogout) {
+      onLogout();
+    }
+    setIsMobileMenuOpen(false);
+  };
+
+  return (
+    <div className={`w-full transition-all duration-500 ${
+      isScrolled 
+        ? 'bg-gray-800/95 backdrop-blur-xl shadow-lg' 
+        : 'bg-[#031724]'
+    }`}>
+      
+      <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 animate-gradient-x"></div>
+
+      <div className="relative flex items-center justify-between px-3 sm:px-4 lg:px-6 xl:px-8 py-1.5">
+        <Tooltip text="Return to Dashboard" position="right">
+          <div 
+            className="flex items-center gap-2 sm:gap-3 group cursor-pointer transform transition-all duration-300 hover:scale-105 flex-shrink-0" 
+            onClick={() => navigate('/')}
+          >
+            <div className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 overflow-hidden">
+              <div className="absolute inset-0 bg-white/20 transform -translate-x-full group-hover:translate-x-full transition-transform duration-700 skew-x-12"></div>
+              <span className="text-xs sm:text-sm font-bold text-white relative z-10">C</span>
+            </div>
+            <span className="text-sm sm:text-base lg:text-lg font-semibold text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-blue-200 transition-all duration-300 hidden xs:inline">
+              Cubexle
+            </span>
+          </div>
+        </Tooltip>
+
+        <div className="hidden lg:flex items-center gap-2 xl:gap-10">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = location.pathname === item.path;
+            return (
+              <Tooltip key={item.path} text={item.tooltip} position="bottom">
+                <button
+                  onClick={() => navigate(item.path)}
+                  className={`relative px-3 xl:px-5 py-2 text-xs xl:text-sm font-medium rounded-xl transition-all duration-300 group overflow-hidden ${
+                    isActive 
+                      ? 'text-white bg-white/15 shadow-lg shadow-white/5' 
+                      : 'text-white/70 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  <span className="relative z-10 flex items-center gap-1 xl:gap-2">
+                    <Icon className="w-3 h-3 xl:w-4 xl:h-4" />
+                    <span className="hidden xl:inline">{item.label}</span>
+                    <span className="xl:hidden">{item.label.charAt(0)}</span>
+                  </span>
+                  {isActive && (
+                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-6 xl:w-8 h-0.5 bg-gradient-to-r from-blue-400 to-indigo-400 rounded-full"></div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                </button>
+              </Tooltip>
+            );
+          })}
+        </div>
+
+        <div className="flex items-center gap-2 sm:gap-4">
+          <div className="hidden lg:block">
+            <div className="flex items-center gap-2 xl:gap-3 hover:bg-white/5 rounded-xl px-2 py-1 transition-colors">
+              <div className="flex flex-col items-end">
+                <span className="text-xs xl:text-sm font-semibold text-white">{userName}</span>
+              </div>
+              <div className="w-8 h-8 xl:w-10 xl:h-10 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 flex items-center justify-center flex-shrink-0">
+                <User className="w-4 h-4 xl:w-5 xl:h-5 text-white" />
+              </div>
+            </div>
+          </div>
+
+          <Tooltip text="Logout" position="bottom">
+            <button
+              onClick={handleLogoutClick}
+              className="relative group p-2 xl:px-4 xl:py-2 bg-red-500/20 hover:bg-red-500/30 text-white rounded-xl transition-all duration-300 border border-red-500/30 hover:border-red-500/50 overflow-hidden flex-shrink-0"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-red-500/0 to-red-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <LogOut className="w-4 h-4 xl:w-4 xl:h-4 group-hover:rotate-180 transition-transform duration-500" />
+            </button>
+          </Tooltip>
+
+          <Tooltip text={isMobileMenuOpen ? "Close Menu" : "Open Menu"} position="bottom">
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="lg:hidden relative w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 transition-all duration-300 flex-shrink-0"
+            >
+              {isMobileMenuOpen ? (
+                <X className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              ) : (
+                <Menu className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              )}
+            </button>
+          </Tooltip>
+        </div>
+      </div>
+
+      {isMobileMenuOpen && (
+        <div className="lg:hidden fixed inset-0 top-[57px] sm:top-[61px] bg-gradient-to-b from-slate-900 to-slate-800 z-40 animate-slideDown overflow-y-auto">
+          <div className="min-h-full pb-20">
+            <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+              <div className="relative bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-4 sm:p-6 text-white overflow-hidden">
+                <div className="relative z-10">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 flex items-center justify-center flex-shrink-0">
+                      <User className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-base sm:text-lg font-semibold">{userName}</div>
+                      <div className="text-xs sm:text-sm text-white/80">Guest User</div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleLogoutClick}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-500/30 hover:bg-red-500/40 rounded-xl transition-colors text-sm sm:text-base"
+                  >
+                    <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span>Logout</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4">Main Menu</div>
+                {navItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = location.pathname === item.path;
+                  return (
+                    <button
+                      key={item.path}
+                      onClick={() => {
+                        navigate(item.path);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-4 px-4 py-3 sm:py-4 rounded-xl transition-all duration-300 ${
+                        isActive 
+                          ? 'bg-white/20 text-white shadow-lg' 
+                          : 'text-white/70 hover:bg-white/10 hover:text-white'
+                      }`}
+                    >
+                      <div className={`p-2 rounded-lg ${isActive ? 'bg-white/20' : 'bg-white/5'}`}>
+                        <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                      </div>
+                      <span className="font-medium flex-1 text-left text-sm sm:text-base">{item.label}</span>
+                      {isActive && <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-blue-300 animate-pulse" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style jsx>{`
+        @keyframes gradient-x {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+        .animate-gradient-x {
+          background-size: 200% 200%;
+          animation: gradient-x 3s ease infinite;
+        }
+        .animate-slideDown {
+          animation: slideDown 0.3s ease-out;
+        }
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.2s ease-out;
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @media (min-width: 480px) {
+          .xs\\:inline {
+            display: inline;
+          }
+        }
+      `}</style>
+    </div>
+  );
+};
+
+// Simple Login Component - No Errors
+const SimpleLogin = ({ onLogin }) => {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -51,73 +284,105 @@ const AdminLogin = ({ onLogin }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
+    
     setTimeout(() => {
-      if (credentials.email === ADMIN_CREDENTIALS.email && credentials.password === ADMIN_CREDENTIALS.password) {
+      if (email.trim() !== '' && password.trim() !== '') {
         onLogin(true);
       } else {
-        setError('Invalid Admin Credentials');
+        setError('Please enter both email and password');
         setLoading(false);
       }
-    }, 1200);
+    }, 800);
   };
 
+  const currentYear = new Date().getFullYear();
+
   return (
-    <div className="min-h-[calc(100vh-70px)] flex items-center justify-center p-4 sm:p-6 bg-slate-50 dark:bg-black/95">
-      <div className="w-full max-w-[95%] sm:max-w-md md:max-w-lg lg:max-w-md">
-        <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
-          <div className="p-6 sm:p-8 md:p-10">
-            <div className="text-center mb-6 sm:mb-8">
-              <div className="inline-flex p-3 sm:p-4 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl mb-3 sm:mb-4 text-white shadow-lg">
-                <Shield size={24} className="sm:w-7 sm:h-7" />
+    <div className="min-h-[calc(100vh-65px)] flex items-center justify-center p-4 sm:p-6 bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500/5 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
+      </div>
+
+      <div className="absolute inset-0 pointer-events-none">
+        {[...Array(8)].map((_, i) => {
+          const icons = [HeartPulse, Stethoscope, Shield];
+          const Icon = icons[i % icons.length];
+          return (
+            <div
+              key={i}
+              className="absolute animate-float"
+              style={{
+                top: `${Math.random() * 100}%`,
+                left: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 5}s`,
+                animationDuration: `${10 + Math.random() * 10}s`,
+                opacity: 0.1
+              }}
+            >
+              <Icon size={24 + Math.random() * 30} />
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="w-full max-w-md relative z-10">
+        <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200 overflow-hidden transition-all duration-500">
+          <div className="p-8 sm:p-10">
+            <div className="text-center mb-8">
+              <div className="inline-flex p-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mb-5 text-white shadow-xl">
+                <Stethoscope size={32} />
               </div>
-              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Admin Portal</h2>
-              <p className="text-slate-500 text-[8px] sm:text-[9px] md:text-[10px] font-semibold uppercase tracking-wider mt-1">Secure Core Access</p>
+              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Login
+              </h1>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5 md:space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-5">
               {error && (
-                <div className="p-2 sm:p-3 bg-red-50 text-red-600 rounded-lg text-[9px] sm:text-[10px] font-bold border border-red-100 animate-shake text-center">
+                <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm text-center">
                   {error}
                 </div>
               )}
 
-              <div className="space-y-1">
-                <label className="text-[8px] sm:text-[9px] md:text-[10px] font-semibold text-slate-400 uppercase tracking-wider ml-1">
-                  Admin Email
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 ml-1">
+                  Email Address
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                   <input
                     type="email"
-                    className="w-full pl-9 sm:pl-11 pr-3 sm:pr-4 py-2.5 sm:py-3 md:py-3.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all dark:text-white text-xs sm:text-sm font-medium"
-                    placeholder="admin@cubexletool.com"
-                    value={credentials.email}
-                    onChange={(e) => setCredentials({ ...credentials, email: e.target.value })}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                    placeholder="your@email.com"
                     required
                   />
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-[8px] sm:text-[9px] md:text-[10px] font-semibold text-slate-400 uppercase tracking-wider ml-1">
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 ml-1">
                   Password
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                   <input
                     type={showPassword ? "text" : "password"}
-                    className="w-full pl-9 sm:pl-11 pr-9 sm:pr-11 py-2.5 sm:py-3 md:py-3.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all dark:text-white text-xs sm:text-sm font-medium"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full pl-10 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                     placeholder="••••••••"
-                    value={credentials.password}
-                    onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
                     required
                   />
-                  <button 
-                    type="button" 
-                    onClick={() => setShowPassword(!showPassword)} 
-                    className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-slate-400"
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
-                    {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
               </div>
@@ -125,325 +390,152 @@ const AdminLogin = ({ onLogin }) => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 sm:py-3.5 md:py-4 bg-slate-900 dark:bg-blue-600 hover:bg-black text-white rounded-xl font-semibold shadow-xl transition-all flex items-center justify-center gap-2 text-xs sm:text-sm tracking-wide"
+                className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 group"
               >
                 {loading ? (
-                  <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
-                  <LogIn size={14} className="sm:w-4 sm:h-4" />
+                  <>
+                    <LogIn size={18} className="group-hover:translate-x-1 transition-transform" />
+                    Sign In
+                  </>
                 )}
-                Unlock Admin Dashboard
               </button>
             </form>
 
-            <div className="mt-6 sm:mt-8 pt-5 sm:pt-6 border-t border-slate-100 dark:border-slate-800 text-center">
+            <div className="mt-6">
               <button
                 onClick={() => navigate("/")}
-                className="inline-flex items-center gap-1.5 sm:gap-2 text-[8px] sm:text-[9px] md:text-[10px] font-semibold text-slate-400 hover:text-blue-600 uppercase tracking-wider transition-all"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition-all duration-300 group"
               >
-                <ArrowLeft size={12} className="sm:w-3.5 sm:h-3.5" />
-                Return to home page
+                <Home size={16} className="group-hover:-translate-x-1 transition-transform" />
+                <span className="text-sm font-medium">Return to Home Page</span>
               </button>
-              <div className="mt-3 sm:mt-4 text-[8px] sm:text-[9px] md:text-[10px] text-slate-400 bg-slate-50 dark:bg-slate-800/50 p-2 sm:p-2.5 rounded-lg border border-dashed border-slate-200 dark:border-slate-700">
-                <span className="opacity-60 uppercase">Debug:</span> admin@cubexletool.com / Admin@2024
+            </div>
+
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <div className="text-center space-y-2">
+                <p className="text-xs text-gray-500">
+                  © {currentYear} Cubexle. All rights reserved.
+                </p>
+                <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs text-gray-400">
+                  <span>Version 2.0.0</span>
+                  <span className="hidden sm:inline">•</span>
+                  <span>Build 24.03.2026</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  );
-};
 
-// --- Responsive Dashboard with No Overlay Sidebar ---
-const AdminDashboard = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [activeTab, setActiveTab] = useState('Overview');
-  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
-
-  useEffect(() => {
-    const handleResize = () => {
-      const width = window.innerWidth;
-      setWindowWidth(width);
-      // Auto-adjust sidebar based on screen size
-      if (width < 768) {
-        setSidebarOpen(false);
-      } else if (width >= 768 && width < 1024) {
-        setSidebarOpen(false);
-      } else {
-        setSidebarOpen(true);
-      }
-    };
-    
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const menuItems = [
-    { id: 'Overview', icon: Layout },
-    { id: 'User Management', icon: Users },
-    { id: 'Clinical Analytics', icon: BarChart3 },
-    { id: 'Security Central', icon: Shield },
-    { id: 'Database Config', icon: Database },
-    { id: 'System Settings', icon: Settings },
-  ];
-
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
-
-  return (
-    <div className="flex h-[calc(100vh-65px)] overflow-hidden bg-slate-50 dark:bg-black">
-      {/* Sidebar - Responsive without overlay */}
-      <aside 
-        className={`
-          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
-          fixed lg:relative lg:translate-x-0
-          w-64 sm:w-72 md:w-64
-          bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800
-          transition-transform duration-300 ease-in-out
-          flex flex-col z-30 h-full shadow-xl lg:shadow-none
-          ${sidebarOpen ? 'lg:flex' : 'lg:flex'}
-        `}
-      >
-        <div className="p-5 sm:p-6 flex items-center justify-between border-b border-slate-200 dark:border-slate-800">
-          <div>
-            <span className="text-[10px] sm:text-xs font-semibold text-blue-600 uppercase tracking-[0.2em]">
-              Management
-            </span>
-            <p className="text-[8px] sm:text-[9px] text-slate-400 mt-1 hidden sm:block">Admin Control Panel</p>
-          </div>
-          <button
-            onClick={toggleSidebar}
-            className="lg:hidden p-1.5 sm:p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-500"
-          >
-            <X size={18} className="sm:w-5 sm:h-5" />
-          </button>
-          <button
-            onClick={toggleSidebar}
-            className="hidden lg:block p-1.5 sm:p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-500"
-          >
-            <ChevronRight className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-300 ${!sidebarOpen ? 'rotate-180' : ''}`} />
-          </button>
-        </div>
-
-        <nav className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-1">
-          {menuItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`
-                w-full flex items-center gap-3 sm:gap-4 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all duration-200
-                ${activeTab === item.id
-                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
-                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'}
-              `}
-            >
-              <item.icon size={18} className="sm:w-5 sm:h-5 flex-shrink-0" />
-              <span className="font-medium text-xs sm:text-sm">{item.id}</span>
-            </button>
-          ))}
-        </nav>
-        
-        <div className="p-4 sm:p-5 md:p-6 border-t border-slate-200 dark:border-slate-800">
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-800/50 p-3 sm:p-4 rounded-xl">
-            <p className="text-[8px] sm:text-[9px] md:text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-center">
-              Cubexle Medical Admin
-            </p>
-            <p className="text-[7px] sm:text-[8px] text-slate-400 dark:text-slate-500 text-center mt-1">
-              v2.0.0
-            </p>
-          </div>
-        </div>
-      </aside>
-
-      {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto w-full">
-        {/* Mobile Header with Menu Button */}
-        <div className="lg:hidden sticky top-0 z-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 p-3 sm:p-4">
-          <button
-            onClick={toggleSidebar}
-            className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition-colors"
-          >
-            <Menu size={18} />
-            <span className="text-sm font-medium">Menu</span>
-          </button>
-        </div>
-
-        <div className="p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8">
-          <div className="bg-white/80 dark:bg-slate-900/50 backdrop-blur-xl min-h-[calc(100vh-130px)] lg:min-h-[calc(100vh-100px)] rounded-xl sm:rounded-2xl md:rounded-3xl border border-white dark:border-slate-800 shadow-sm flex items-center justify-center">
-            <FeatureComingSoon title={activeTab} icon={Layout} />
-          </div>
-        </div>
-      </main>
-
-      {/* Responsive CSS for sidebar animations */}
       <style jsx>{`
-        @keyframes slideIn {
-          from {
-            transform: translateX(-100%);
-          }
-          to {
-            transform: translateX(0);
-          }
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-20px) rotate(5deg); }
         }
-        
-        @keyframes slideOut {
-          from {
-            transform: translateX(0);
-          }
-          to {
-            transform: translateX(-100%);
-          }
-        }
-        
-        /* Responsive transitions */
-        @media (max-width: 1023px) {
-          aside {
-            animation: slideIn 0.3s ease-out;
-          }
-        }
-        
-        /* Custom scrollbar for sidebar */
-        aside::-webkit-scrollbar {
-          width: 4px;
-        }
-        
-        aside::-webkit-scrollbar-track {
-          background: #f1f1f1;
-        }
-        
-        aside::-webkit-scrollbar-thumb {
-          background: #cbd5e1;
-          border-radius: 4px;
-        }
-        
-        .dark aside::-webkit-scrollbar-track {
-          background: #1e293b;
-        }
-        
-        .dark aside::-webkit-scrollbar-thumb {
-          background: #475569;
+        .animate-float {
+          animation: float 8s ease-in-out infinite;
         }
       `}</style>
     </div>
   );
 };
 
-// --- Main Entry ---
-const AdminPage = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const navigate = useNavigate();
+// Simple Dashboard - Only Coming Soon Text
+const SimpleDashboard = ({ onLogout }) => {
+  const currentYear = new Date().getFullYear();
 
-  useEffect(() => {
-    const session = sessionStorage.getItem('adminSession');
-    if (session === 'authenticated') setIsAuthenticated(true);
-  }, []);
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <Navbar onLogout={onLogout} />
+      
+      <div className="container mx-auto px-4 py-16 md:py-24">
+        <div className="flex flex-col items-center justify-center text-center">
+          {/* Animated Construction Icon */}
+          <div className="relative mb-8">
+            <div className="absolute inset-0 bg-blue-500/20 blur-3xl rounded-full animate-pulse"></div>
+            <div className="relative bg-white/90 backdrop-blur-xl p-8 rounded-full shadow-2xl border border-gray-200">
+              <Construction size={80} className="text-blue-600 animate-float-slow" />
+            </div>
+          </div>
+
+          {/* Coming Soon Text */}
+          <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
+            Coming Soon
+          </h1>
+          
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 rounded-full mb-6">
+            <Clock size={16} className="text-blue-600" />
+            <span className="text-sm font-medium text-blue-700">Under Development</span>
+          </div>
+          
+          <p className="text-gray-600 max-w-md mb-8">
+            We're working hard to bring you an amazing healthcare management experience. 
+            Stay tuned for exciting features coming your way!
+          </p>
+
+          {/* Decorative Elements */}
+          <div className="flex gap-4 mt-4">
+            <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+            <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse delay-200"></div>
+            <div className="w-2 h-2 bg-indigo-400 rounded-full animate-pulse delay-400"></div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <footer className="mt-16 pt-6 border-t border-gray-200">
+          <div className="text-center space-y-2">
+            <p className="text-xs text-gray-500">
+              © {currentYear} Cubexle . All rights reserved.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs text-gray-400">
+              <span>Version 1.0.0</span>
+              <span className="hidden sm:inline">•</span>
+              <span>Build 24.03.2026</span>
+            
+            </div>
+          </div>
+        </footer>
+      </div>
+
+      <style jsx>{`
+        @keyframes float-slow {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-15px); }
+        }
+        .animate-float-slow {
+          animation: float-slow 3s ease-in-out infinite;
+        }
+      `}</style>
+    </div>
+  );
+};
+
+// Main Component
+const SimpleAdminPage = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const handleLogin = (status) => {
+    setIsAuthenticated(status);
+  };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
-    sessionStorage.removeItem('adminSession');
-    navigate("/admin");
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-black overflow-x-hidden">
-      {/* Global Navbar Integration */}
-      <div onClick={(e) => {
-        const btn = e.target.closest('button');
-        if (btn && (btn.textContent?.toLowerCase().includes('logout') || btn.querySelector('.lucide-log-out'))) {
-          e.preventDefault();
-          handleLogout();
-        }
-      }}>
-        <TopNavbar activePanel="admin" />
-      </div>
-
+    <div>
       {!isAuthenticated ? (
-        <AdminLogin onLogin={(status) => {
-          setIsAuthenticated(status);
-          if (status) sessionStorage.setItem('adminSession', 'authenticated');
-        }} />
+        <div>
+          <Navbar onLogout={handleLogout} />
+          <SimpleLogin onLogin={handleLogin} />
+        </div>
       ) : (
-        <AdminDashboard />
+        <SimpleDashboard onLogout={handleLogout} />
       )}
-
-      <style jsx global>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-10px); }
-        }
-        .animate-float { animation: float 4s ease-in-out infinite; }
-        
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-4px); }
-          75% { transform: translateX(4px); }
-        }
-        .animate-shake { animation: shake 0.2s ease-in-out 0s 2; }
-        
-        /* Responsive scrollbar */
-        ::-webkit-scrollbar {
-          width: 4px;
-          height: 4px;
-        }
-        
-        @media (min-width: 768px) {
-          ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-          }
-        }
-        
-        ::-webkit-scrollbar-track {
-          background: #f1f1f1;
-          border-radius: 3px;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-          background: #888;
-          border-radius: 3px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-          background: #555;
-        }
-        
-        .dark ::-webkit-scrollbar-track {
-          background: #1f2937;
-        }
-        
-        .dark ::-webkit-scrollbar-thumb {
-          background: #4b5563;
-        }
-        
-        /* Responsive text selection */
-        ::selection {
-          background: rgba(59, 130, 246, 0.2);
-        }
-        
-        /* Prevent zoom on mobile inputs */
-        @media (max-width: 480px) {
-          input, button {
-            font-size: 16px !important;
-          }
-        }
-        
-        /* Smooth transitions */
-        * {
-          -webkit-tap-highlight-color: transparent;
-        }
-        
-        /* Responsive container queries */
-        @media (max-width: 640px) {
-          .backdrop-blur-xl {
-            backdrop-filter: blur(8px);
-          }
-        }
-      `}</style>
     </div>
   );
 };
 
-export default AdminPage;
+export default SimpleAdminPage;

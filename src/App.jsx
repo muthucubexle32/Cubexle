@@ -1,5 +1,5 @@
+// App.js
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-
 import Index from "./pages/Index";
 import AdminPage from "./pages/admin/AdminPage";
 import ReportPage from "./pages/ReportPage";
@@ -9,6 +9,7 @@ import OVPanel from "./components/Datapanel/OVPanel";
 import DiagnosticsPanel from "./components/Datapanel/DiagnosticsPanel";
 import LabsPanel from "./components/Datapanel/LabsPanel";
 import EKGPanel from "./components/Datapanel/EKGPanel";
+import SocialHistoryPanel from "./components/Datapanel/SocialHistoryPanel";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/diagnostics" element={<DiagnosticsPanel />} />
         <Route path="/labs" element={<LabsPanel />} />
         <Route path="/ekg" element={<EKGPanel />} />
+        <Route path="/socialhistory" element={<SocialHistoryPanel />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/report" element={<ReportPage />} />
         <Route path="/search" element={<SearchPage />} />
