@@ -283,7 +283,7 @@ export default function SocialHistoryPanel() {
         </div>
       </div>
 
-      <div className="px-3 sm:px-4 md:px-2 py-3 sm:py-2 space-y-2 sm:space-y-2 max-w-[1400px] mx-auto">
+      <div className="px-2 sm:px-2 md:px-2 py-3 sm:py-2 space-y-2 sm:space-y-2 max-w-[1400px] mx-auto">
         {/* Social History Section */}
         <div className="border border-blue-300 rounded-xl bg-white shadow-sm overflow-hidden">
           <div className="p-2 sm:p-2">
@@ -371,8 +371,8 @@ export default function SocialHistoryPanel() {
         </div>
 
         {/* Clinical Medical History Section */}
-        <div className="border border-blue-300 rounded-xl p-3 sm:p-4 bg-white shadow-sm">
-          <h2 className="text-xs sm:text-sm font-bold uppercase flex items-center gap-2 mb-3 text-black">
+        <div className="border border-blue-300 rounded-xl p-2 sm:p-2 bg-white shadow-sm">
+          <h2 className="text-xs sm:text-sm font-bold uppercase flex items-center gap-2 mb-2 text-black">
             <Clipboard size={16} className="text-blue-600 sm:w-[18px] sm:h-[18px]" />
             CLINICAL MEDICAL HISTORY
           </h2>
@@ -380,7 +380,7 @@ export default function SocialHistoryPanel() {
           {/* PMH/PSH */}
           <div className="mb-2">
             <div className="border border-blue-200 rounded-lg bg-blue-50/30">
-              <div className="flex justify-between items-center p-2 sm:p-3">
+              <div className="flex justify-between items-center p-2 sm:p-2">
                 <div className="flex items-center gap-2">
                   <FileText size={14} className="text-blue-600" />
                   <span className="text-xs font-semibold text-black">PMH/PSH</span>
@@ -395,9 +395,9 @@ export default function SocialHistoryPanel() {
                 </Tooltip>
               </div>
 
-              <div className="p-2 space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar">
+              <div className="p-2 space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar">
                 {pmhPsh.map((row) => (
-                  <div key={row.id} className="relative bg-white rounded p-3 border border-blue-100">
+                  <div key={row.id} className="relative bg-white rounded p-2 border border-blue-100">
                     {pmhPsh.length > 1 && (
                       <Tooltip text="Remove entry" position="right">
                         <button
@@ -454,7 +454,7 @@ export default function SocialHistoryPanel() {
           {/* Special Attention */}
           <div className="mb-2">
             <div className="border border-blue-200 rounded-lg bg-blue-50/30">
-              <div className="flex justify-between items-center p-2 sm:p-3">
+              <div className="flex justify-between items-center p-2 sm:p-2">
                 <div className="flex items-center gap-2">
                   <AlertCircle size={14} className="text-blue-600" />
                   <span className="text-xs font-semibold text-black">Special Attention</span>
@@ -462,16 +462,16 @@ export default function SocialHistoryPanel() {
                 <Tooltip text="Add new entry" position="bottom">
                   <button
                     onClick={() => addRow(setSpecialAttention, specialAttention)}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-2 sm:px-3 py-1 rounded text-[10px] sm:text-xs font-bold flex items-center gap-1 transition-colors shadow-sm"
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-2 sm:px-2 py-1 rounded text-[10px] sm:text-xs font-bold flex items-center gap-1 transition-colors shadow-sm"
                   >
                     <Plus size={12} /> <span className="hidden xs:inline">ADD</span>
                   </button>
                 </Tooltip>
               </div>
 
-              <div className="p-2 space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar">
+              <div className="p-2 space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar">
                 {specialAttention.map((row) => (
-                  <div key={row.id} className="relative bg-white rounded p-3 border border-blue-100">
+                  <div key={row.id} className="relative bg-white rounded  border border-blue-100">
                     {specialAttention.length > 1 && (
                       <Tooltip text="Remove entry" position="right">
                         <button
@@ -526,9 +526,9 @@ export default function SocialHistoryPanel() {
           </div>
 
           {/* Family Medical History */}
-          <div className="mb-3">
+          <div className="mb-2">
             <div className="border border-blue-200 rounded-lg bg-blue-50/30">
-              <div className="flex justify-between items-center p-2 sm:p-3">
+              <div className="flex justify-between items-center p-2 sm:p-2">
                 <div className="flex items-center gap-2">
                   <Heart size={14} className="text-blue-600" />
                   <span className="text-xs font-semibold text-black">Family Medical History</span>
@@ -536,16 +536,16 @@ export default function SocialHistoryPanel() {
                 <Tooltip text="Add new entry" position="bottom">
                   <button
                     onClick={() => addRow(setFamilyMedicalHistory, familyMedicalHistory)}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-2 sm:px-3 py-1 rounded text-[10px] sm:text-xs font-bold flex items-center gap-1 transition-colors shadow-sm"
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-2 sm:px-2 py-1 rounded text-[10px] sm:text-xs font-bold flex items-center gap-1 transition-colors shadow-sm"
                   >
                     <Plus size={12} /> <span className="hidden xs:inline">ADD</span>
                   </button>
                 </Tooltip>
               </div>
 
-              <div className="p-2 space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar">
+              <div className="p-2 space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar">
                 {familyMedicalHistory.map((row) => (
-                  <div key={row.id} className="relative bg-white rounded p-3 border border-blue-100">
+                  <div key={row.id} className="relative bg-white rounded p-2 border border-blue-100">
                     {familyMedicalHistory.length > 1 && (
                       <Tooltip text="Remove entry" position="right">
                         <button
