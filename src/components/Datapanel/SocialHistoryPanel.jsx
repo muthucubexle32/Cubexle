@@ -22,7 +22,7 @@ import {
 const Tooltip = ({ children, text, position = "bottom" }) => {
   const [show, setShow] = useState(false);
   const tooltipRef = useRef(null);
-  
+
   const positionClasses = {
     top: "bottom-full left-1/2 -translate-x-1/2 mb-2",
     bottom: "top-full left-1/2 -translate-x-1/2 mt-2",
@@ -31,7 +31,7 @@ const Tooltip = ({ children, text, position = "bottom" }) => {
   };
 
   const getArrowClasses = (pos) => {
-    switch(pos) {
+    switch (pos) {
       case "top":
         return "top-full -translate-y-1/2 left-1/2 -translate-x-1/2";
       case "bottom":
@@ -46,16 +46,16 @@ const Tooltip = ({ children, text, position = "bottom" }) => {
   };
 
   return (
-    <div 
+    <div
       className="relative inline-block"
       onMouseEnter={() => setShow(true)}
       onMouseLeave={() => setShow(false)}
       ref={tooltipRef}
     >
       {children}
-      
+
       {show && (
-        <div 
+        <div
           className={`absolute z-[9999] ${positionClasses[position]} px-2 py-1 
                      bg-gray-900 text-white text-xs rounded shadow-lg 
                      whitespace-nowrap pointer-events-none animate-fadeIn
@@ -65,16 +65,16 @@ const Tooltip = ({ children, text, position = "bottom" }) => {
           }}
         >
           {text}
-          
+
           <div className={`absolute w-2 h-2 bg-gray-900 transform rotate-45 
                           border border-gray-700 ${getArrowClasses(position)}`}
-               style={{
-                 background: 'linear-gradient(135deg, #111827 0%, #1F2937 100%)',
-                 borderWidth: position === 'top' ? '0 1px 1px 0' :
-                             position === 'bottom' ? '1px 0 0 1px' :
-                             position === 'left' ? '1px 1px 0 0' :
-                             '0 0 1px 1px'
-               }}>
+            style={{
+              background: 'linear-gradient(135deg, #111827 0%, #1F2937 100%)',
+              borderWidth: position === 'top' ? '0 1px 1px 0' :
+                position === 'bottom' ? '1px 0 0 1px' :
+                  position === 'left' ? '1px 1px 0 0' :
+                    '0 0 1px 1px'
+            }}>
           </div>
         </div>
       )}
@@ -111,27 +111,27 @@ const AutoResizeTextarea = ({ value, onChange, placeholder, className }) => {
 export default function SocialHistoryPanel() {
   // Social History Fields with dynamic rows
   const [socialHistoryRows, setSocialHistoryRows] = useState([
-    { 
-      id: Date.now(), 
-      type: "Tobacco", 
+    {
+      id: Date.now(),
+      type: "Tobacco",
       icon: Cigarette,
       value: "",
       dateOfService: "",
       pageNo: "",
       comments: ""
     },
-    { 
-      id: Date.now() + 1, 
-      type: "Alcohol", 
+    {
+      id: Date.now() + 1,
+      type: "Alcohol",
       icon: Wine,
       value: "",
       dateOfService: "",
       pageNo: "",
       comments: ""
     },
-    { 
-      id: Date.now() + 2, 
-      type: "Drug Use", 
+    {
+      id: Date.now() + 2,
+      type: "Drug Use",
       icon: Pill,
       value: "",
       dateOfService: "",
@@ -140,19 +140,23 @@ export default function SocialHistoryPanel() {
     }
   ]);
 
-  // Clinical Medical History Sections
-  const [pmhPsh, setPmhPsh] = useState([
+  // Clinical Medical History Sections - Separated PMH and PSH
+  const [pmh, setPmh] = useState([
     { id: Date.now(), dateOfService: "", pageNo: "", comments: "" }
   ]);
   
+  const [psh, setPsh] = useState([
+    { id: Date.now(), dateOfService: "", pageNo: "", comments: "" }
+  ]);
+
   const [specialAttention, setSpecialAttention] = useState([
     { id: Date.now(), dateOfService: "", pageNo: "", comments: "" }
   ]);
-  
+
   const [familyMedicalHistory, setFamilyMedicalHistory] = useState([
     { id: Date.now(), dateOfService: "", pageNo: "", comments: "" }
   ]);
-  
+
   const [healthOverview, setHealthOverview] = useState([
     { id: Date.now(), dateOfService: "", pageNo: "", comments: "" }
   ]);
@@ -212,7 +216,8 @@ export default function SocialHistoryPanel() {
         { id: Date.now() + 1, type: "Alcohol", icon: Wine, value: "", dateOfService: "", pageNo: "", comments: "" },
         { id: Date.now() + 2, type: "Drug Use", icon: Pill, value: "", dateOfService: "", pageNo: "", comments: "" }
       ]);
-      setPmhPsh([{ id: Date.now(), dateOfService: "", pageNo: "", comments: "" }]);
+      setPmh([{ id: Date.now(), dateOfService: "", pageNo: "", comments: "" }]);
+      setPsh([{ id: Date.now(), dateOfService: "", pageNo: "", comments: "" }]);
       setSpecialAttention([{ id: Date.now(), dateOfService: "", pageNo: "", comments: "" }]);
       setFamilyMedicalHistory([{ id: Date.now(), dateOfService: "", pageNo: "", comments: "" }]);
       setHealthOverview([{ id: Date.now(), dateOfService: "", pageNo: "", comments: "" }]);
@@ -233,7 +238,8 @@ export default function SocialHistoryPanel() {
     const allData = {
       socialHistory: socialHistoryRows,
       clinicalHistory: {
-        pmhPsh,
+        pmh,
+        psh,
         specialAttention,
         familyMedicalHistory,
         healthOverview
@@ -249,7 +255,7 @@ export default function SocialHistoryPanel() {
   const labelClass = "block text-[10px] sm:text-xs font-semibold text-black mb-1";
 
   return (
-    <div className="w-full bg-white min-h-screen pb-12 overflow-x-hidden">
+    <div className="w-full bg-white min-h-screen pb-2 overflow-x-hidden">
       {/* Header Bar - Responsive */}
       <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-3 sm:px-4 py-3 shadow-sm">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 max-w-[1400px] mx-auto">
@@ -258,25 +264,25 @@ export default function SocialHistoryPanel() {
             <Tooltip text="Save Data" position="bottom">
               <button
                 onClick={handleSave}
-                className="flex-1 sm:flex-none flex items-center justify-center gap-1 bg-green-600 hover:bg-green-700 text-white px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-all duration-200 shadow-sm"
+                className="flex items-center justify-center gap-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium text-xs transition-all duration-200 shadow-sm"
               >
-                <Save size={14} strokeWidth={2} /> <span className="hidden xs:inline">Save</span>
+                <Save size={14} /> <span className="hidden xs:inline">Save</span>
               </button>
             </Tooltip>
             <Tooltip text="Reset All" position="bottom">
               <button
                 onClick={handleReset}
-                className="flex-1 sm:flex-none flex items-center justify-center gap-1 bg-gray-600 hover:bg-gray-700 text-white px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-all duration-200 shadow-sm"
+                className="flex items-center justify-center gap-1 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium text-xs transition-all duration-200 shadow-sm"
               >
-                <RotateCcw size={14} strokeWidth={2} /> <span className="hidden xs:inline">Reset</span>
+                <RotateCcw size={14} /> <span className="hidden xs:inline">Reset</span>
               </button>
             </Tooltip>
             <Tooltip text="Delete All" position="bottom">
               <button
                 onClick={handleDelete}
-                className="flex-1 sm:flex-none flex items-center justify-center gap-1 bg-red-600 hover:bg-red-700 text-white px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-all duration-200 shadow-sm"
+                className="flex items-center justify-center gap-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium text-xs transition-all duration-200 shadow-sm"
               >
-                <Trash2 size={14} strokeWidth={2} /> <span className="hidden xs:inline">Delete</span>
+                <Trash2 size={14} /> <span className="hidden xs:inline">Delete</span>
               </button>
             </Tooltip>
           </div>
@@ -289,7 +295,7 @@ export default function SocialHistoryPanel() {
           <div className="p-2 sm:p-2">
             <div className="space-y-2 sm:space-y-2">
               {socialHistoryRows.map((row) => (
-                <div key={row.id} className="border border-blue-200 rounded-lg bg-blue-50/30 p-3 sm:p-4">
+                <div key={row.id} className="border border-blue-200 rounded-lg bg-blue-50/30 p-2 sm:p-2">
                   {/* Row 1: Icon, Title, and Yes/No Toggle */}
                   <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
                     {/* Icon and Title */}
@@ -299,7 +305,7 @@ export default function SocialHistoryPanel() {
                       </div>
                       <span className="text-sm sm:text-base font-semibold text-black">{row.type}</span>
                     </div>
-                    
+
                     {/* Yes/No Toggle - Responsive */}
                     <div className="flex items-center gap-3 sm:gap-4 ml-0 sm:ml-2">
                       <label className="flex items-center gap-1.5 cursor-pointer group">
@@ -332,7 +338,7 @@ export default function SocialHistoryPanel() {
                   </div>
 
                   {/* Row 2: Date of Service and Page No - Responsive Grid */}
-                  <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
+                  <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 sm:gap-4 mb-2 sm:mb-2">
                     <div>
                       <label className={labelClass}>Date of Service</label>
                       <input
@@ -377,17 +383,17 @@ export default function SocialHistoryPanel() {
             CLINICAL MEDICAL HISTORY
           </h2>
 
-          {/* PMH/PSH */}
-          <div className="mb-2">
+          {/* PMH - Past Medical History */}
+          <div className="mb-3">
             <div className="border border-blue-200 rounded-lg bg-blue-50/30">
               <div className="flex justify-between items-center p-2 sm:p-2">
                 <div className="flex items-center gap-2">
                   <FileText size={14} className="text-blue-600" />
-                  <span className="text-xs font-semibold text-black">PMH/PSH</span>
+                  <span className="text-xs font-semibold text-black">PMH (Past Medical History)</span>
                 </div>
-                <Tooltip text="Add new entry" position="bottom">
+                <Tooltip text="Add new PMH entry" position="bottom">
                   <button
-                    onClick={() => addRow(setPmhPsh, pmhPsh)}
+                    onClick={() => addRow(setPmh, pmh)}
                     className="bg-blue-500 hover:bg-blue-600 text-white px-2 sm:px-3 py-1 rounded text-[10px] sm:text-xs font-bold flex items-center gap-1 transition-colors shadow-sm"
                   >
                     <Plus size={12} /> <span className="hidden xs:inline">ADD</span>
@@ -395,14 +401,14 @@ export default function SocialHistoryPanel() {
                 </Tooltip>
               </div>
 
-              <div className="p-2 space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar">
-                {pmhPsh.map((row) => (
-                  <div key={row.id} className="relative bg-white rounded p-2 border border-blue-100">
-                    {pmhPsh.length > 1 && (
-                      <Tooltip text="Remove entry" position="right">
+              <div className="p-2 max-h-[300px] overflow-y-auto custom-scrollbar">
+                {pmh.map((row) => (
+                  <div key={row.id} className="relative bg-white rounded p-2 border border-blue-100 mb-2 last:mb-0">
+                    {pmh.length > 1 && (
+                      <Tooltip text="Remove PMH entry" position="top">
                         <button
-                          onClick={() => removeRow(row.id, setPmhPsh, pmhPsh)}
-                          className="absolute -top-4 bg-red-400 hover:bg-red-500 text-white p-1 rounded-full shadow-md z-10"
+                          onClick={() => removeRow(row.id, setPmh, pmh)}
+                          className="absolute -top-2 -right-2 bg-red-400 hover:bg-red-500 text-white p-1 rounded-full shadow-md z-10"
                         >
                           <X size={10} />
                         </button>
@@ -417,7 +423,7 @@ export default function SocialHistoryPanel() {
                         <input
                           type="date"
                           value={row.dateOfService}
-                          onChange={(e) => updateRow(row.id, "dateOfService", e.target.value, setPmhPsh, pmhPsh)}
+                          onChange={(e) => updateRow(row.id, "dateOfService", e.target.value, setPmh, pmh)}
                           className="w-full h-8 bg-[#CFE8F2] rounded px-2 text-xs sm:text-sm text-black outline-none focus:ring-1 focus:ring-blue-400"
                         />
                       </div>
@@ -428,7 +434,7 @@ export default function SocialHistoryPanel() {
                         <input
                           type="number"
                           value={row.pageNo}
-                          onChange={(e) => updateRow(row.id, "pageNo", e.target.value, setPmhPsh, pmhPsh)}
+                          onChange={(e) => updateRow(row.id, "pageNo", e.target.value, setPmh, pmh)}
                           className="w-full h-8 bg-[#CFE8F2] rounded px-2 text-xs sm:text-sm text-black outline-none focus:ring-1 focus:ring-blue-400"
                           placeholder="0"
                         />
@@ -436,12 +442,12 @@ export default function SocialHistoryPanel() {
                     </div>
                     <div>
                       <label className="block text-[9px] sm:text-[10px] font-semibold text-black mb-1 uppercase tracking-wider">
-                        Comments
+                        Medical Condition / Diagnosis
                       </label>
                       <AutoResizeTextarea
                         value={row.comments}
-                        onChange={(e) => updateRow(row.id, "comments", e.target.value, setPmhPsh, pmhPsh)}
-                        placeholder="Enter comments..."
+                        onChange={(e) => updateRow(row.id, "comments", e.target.value, setPmh, pmh)}
+                        placeholder="Enter medical history..."
                         className="w-full min-h-[50px] p-2 text-xs sm:text-sm text-black bg-[#CFE8F2] rounded-lg"
                       />
                     </div>
@@ -451,32 +457,32 @@ export default function SocialHistoryPanel() {
             </div>
           </div>
 
-          {/* Special Attention */}
-          <div className="mb-2">
+          {/* PSH - Past Surgical History */}
+          <div className="mb-3">
             <div className="border border-blue-200 rounded-lg bg-blue-50/30">
               <div className="flex justify-between items-center p-2 sm:p-2">
                 <div className="flex items-center gap-2">
-                  <AlertCircle size={14} className="text-blue-600" />
-                  <span className="text-xs font-semibold text-black">Special Attention</span>
+                  <Stethoscope size={14} className="text-blue-600" />
+                  <span className="text-xs font-semibold text-black">PSH (Past Surgical History)</span>
                 </div>
-                <Tooltip text="Add new entry" position="bottom">
+                <Tooltip text="Add new PSH entry" position="bottom">
                   <button
-                    onClick={() => addRow(setSpecialAttention, specialAttention)}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-2 sm:px-2 py-1 rounded text-[10px] sm:text-xs font-bold flex items-center gap-1 transition-colors shadow-sm"
+                    onClick={() => addRow(setPsh, psh)}
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-2 sm:px-3 py-1 rounded text-[10px] sm:text-xs font-bold flex items-center gap-1 transition-colors shadow-sm"
                   >
                     <Plus size={12} /> <span className="hidden xs:inline">ADD</span>
                   </button>
                 </Tooltip>
               </div>
 
-              <div className="p-2 space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar">
-                {specialAttention.map((row) => (
-                  <div key={row.id} className="relative bg-white rounded  border border-blue-100">
-                    {specialAttention.length > 1 && (
-                      <Tooltip text="Remove entry" position="right">
+              <div className="p-2 max-h-[300px] overflow-y-auto custom-scrollbar">
+                {psh.map((row) => (
+                  <div key={row.id} className="relative bg-white rounded p-2 border border-blue-100 mb-2 last:mb-0">
+                    {psh.length > 1 && (
+                      <Tooltip text="Remove PSH entry" position="top">
                         <button
-                          onClick={() => removeRow(row.id, setSpecialAttention, specialAttention)}
-                          className="absolute -top-4 bg-red-400 hover:bg-red-500 text-white p-1 rounded-full shadow-md z-10"
+                          onClick={() => removeRow(row.id, setPsh, psh)}
+                          className="absolute -top-2 -right-2 bg-red-400 hover:bg-red-500 text-white p-1 rounded-full shadow-md z-10"
                         >
                           <X size={10} />
                         </button>
@@ -491,7 +497,7 @@ export default function SocialHistoryPanel() {
                         <input
                           type="date"
                           value={row.dateOfService}
-                          onChange={(e) => updateRow(row.id, "dateOfService", e.target.value, setSpecialAttention, specialAttention)}
+                          onChange={(e) => updateRow(row.id, "dateOfService", e.target.value, setPsh, psh)}
                           className="w-full h-8 bg-[#CFE8F2] rounded px-2 text-xs sm:text-sm text-black outline-none focus:ring-1 focus:ring-blue-400"
                         />
                       </div>
@@ -502,7 +508,7 @@ export default function SocialHistoryPanel() {
                         <input
                           type="number"
                           value={row.pageNo}
-                          onChange={(e) => updateRow(row.id, "pageNo", e.target.value, setSpecialAttention, specialAttention)}
+                          onChange={(e) => updateRow(row.id, "pageNo", e.target.value, setPsh, psh)}
                           className="w-full h-8 bg-[#CFE8F2] rounded px-2 text-xs sm:text-sm text-black outline-none focus:ring-1 focus:ring-blue-400"
                           placeholder="0"
                         />
@@ -510,12 +516,12 @@ export default function SocialHistoryPanel() {
                     </div>
                     <div>
                       <label className="block text-[9px] sm:text-[10px] font-semibold text-black mb-1 uppercase tracking-wider">
-                        Comments
+                        Surgical Procedure / History
                       </label>
                       <AutoResizeTextarea
                         value={row.comments}
-                        onChange={(e) => updateRow(row.id, "comments", e.target.value, setSpecialAttention, specialAttention)}
-                        placeholder="Enter comments..."
+                        onChange={(e) => updateRow(row.id, "comments", e.target.value, setPsh, psh)}
+                        placeholder="Enter surgical history..."
                         className="w-full min-h-[50px] p-2 text-xs sm:text-sm text-black bg-[#CFE8F2] rounded-lg"
                       />
                     </div>
@@ -543,7 +549,7 @@ export default function SocialHistoryPanel() {
                 </Tooltip>
               </div>
 
-              <div className="p-2 space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar">
+              <div className="p-2 max-h-[300px] overflow-y-auto custom-scrollbar">
                 {familyMedicalHistory.map((row) => (
                   <div key={row.id} className="relative bg-white rounded p-2 border border-blue-100">
                     {familyMedicalHistory.length > 1 && (
@@ -617,14 +623,14 @@ export default function SocialHistoryPanel() {
                 </Tooltip>
               </div>
 
-              <div className="p-2 space-y-3 max-h-[400px] overflow-y-auto custom-scrollbar">
+              <div className="p-2 max-h-[400px] overflow-y-auto custom-scrollbar">
                 {healthOverview.map((row) => (
                   <div key={row.id} className="relative bg-white rounded p-3 border border-blue-100">
                     {healthOverview.length > 1 && (
                       <Tooltip text="Remove entry" position="right">
                         <button
                           onClick={() => removeRow(row.id, setHealthOverview, healthOverview)}
-                          className="absolute -top-4  bg-red-400 hover:bg-red-500 text-white p-1 rounded-full shadow-md z-10"
+                          className="absolute -top-4 bg-red-400 hover:bg-red-500 text-white p-1 rounded-full shadow-md z-10"
                         >
                           <X size={10} />
                         </button>
@@ -674,13 +680,87 @@ export default function SocialHistoryPanel() {
           </div>
         </div>
 
+        {/* Special Attention */}
+        <div className="mb-2">
+          <div className="border border-blue-200 rounded-lg bg-blue-50/30">
+            <div className="flex justify-between items-center p-2 sm:p-2">
+              <div className="flex items-center gap-2">
+                <AlertCircle size={14} className="text-blue-600" />
+                <span className="text-xs font-semibold text-black">Special Attention</span>
+              </div>
+              <Tooltip text="Add new entry" position="bottom">
+                <button
+                  onClick={() => addRow(setSpecialAttention, specialAttention)}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-2 sm:px-2 py-1 rounded text-[10px] sm:text-xs font-bold flex items-center gap-1 transition-colors shadow-sm"
+                >
+                  <Plus size={12} /> <span className="hidden xs:inline">ADD</span>
+                </button>
+              </Tooltip>
+            </div>
+
+            <div className="p-2 max-h-[300px] overflow-y-auto custom-scrollbar">
+              {specialAttention.map((row) => (
+                <div key={row.id} className="relative bg-white rounded p-2 border border-blue-100">
+                  {specialAttention.length > 1 && (
+                    <Tooltip text="Remove entry" position="right">
+                      <button
+                        onClick={() => removeRow(row.id, setSpecialAttention, specialAttention)}
+                        className="absolute -top-4 bg-red-400 hover:bg-red-500 text-white p-1 rounded-full shadow-md z-10"
+                      >
+                        <X size={10} />
+                      </button>
+                    </Tooltip>
+                  )}
+
+                  <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 mb-2">
+                    <div>
+                      <label className="block text-[9px] sm:text-[10px] font-semibold text-black mb-1 uppercase tracking-wider">
+                        Date of Service
+                      </label>
+                      <input
+                        type="date"
+                        value={row.dateOfService}
+                        onChange={(e) => updateRow(row.id, "dateOfService", e.target.value, setSpecialAttention, specialAttention)}
+                        className="w-full h-8 bg-[#CFE8F2] rounded px-2 text-xs sm:text-sm text-black outline-none focus:ring-1 focus:ring-blue-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[9px] sm:text-[10px] font-semibold text-black mb-1 uppercase tracking-wider">
+                        Page No
+                      </label>
+                      <input
+                        type="number"
+                        value={row.pageNo}
+                        onChange={(e) => updateRow(row.id, "pageNo", e.target.value, setSpecialAttention, specialAttention)}
+                        className="w-full h-8 bg-[#CFE8F2] rounded px-2 text-xs sm:text-sm text-black outline-none focus:ring-1 focus:ring-blue-400"
+                        placeholder="0"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[9px] sm:text-[10px] font-semibold text-black mb-1 uppercase tracking-wider">
+                      Comments
+                    </label>
+                    <AutoResizeTextarea
+                      value={row.comments}
+                      onChange={(e) => updateRow(row.id, "comments", e.target.value, setSpecialAttention, specialAttention)}
+                      placeholder="Enter comments..."
+                      className="w-full min-h-[50px] p-2 text-xs sm:text-sm text-black bg-[#CFE8F2] rounded-lg"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
         {/* APS Data Range */}
         <div className="border border-blue-300 rounded-xl p-3 sm:p-4 bg-white shadow-sm">
           <h2 className="text-xs sm:text-sm font-bold uppercase flex items-center gap-2 mb-3 text-black">
             <Calendar size={16} className="text-blue-600" />
             APS DATA RANGE
           </h2>
-          
+
           <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label className={labelClass}>Start Date</label>
@@ -701,7 +781,7 @@ export default function SocialHistoryPanel() {
                 />
               </div>
             </div>
-            
+
             <div>
               <label className={labelClass}>End Date</label>
               <div
