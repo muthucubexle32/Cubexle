@@ -9,8 +9,13 @@ import EKGPanel from "@/components/Datapanel/EKGPanel";
 import SocialHistoryPanel from "@/components/Datapanel/SocialHistoryPanel";
 import Toggle from "@/components/home/Toggle";
 import SideMenu from "@/components/home/SideMenu";
+import PmhPanel from "@/components/Datapanel/PmhPanel";
+import PshPanel from "@/components/Datapanel/PshPanel";
+import FamilyMedicalHistoryPanel from "@/components/Datapanel/FamilyMedicalHistoryPanel";
+import HealthOverviewPanel from "@/components/Datapanel/HealthOverviewPanel";
+import SpecialAttentionPanel from "@/components/Datapanel/SpecialAttentionPanel";
 
-const Index = () => {
+const Index = ({ onLogout }) => {   // <-- accept onLogout
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [menuSide, setMenuSide] = useState('right');
   const [activePanel, setActivePanel] = useState('ov');
@@ -19,7 +24,6 @@ const Index = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  // Function to render the appropriate panel based on activePanel
   const renderRightPanel = () => {
     switch(activePanel) {
       case 'ov':
@@ -32,12 +36,21 @@ const Index = () => {
         return <EKGPanel />;
       case 'socialhistory':
         return <SocialHistoryPanel />;
+      case 'pmh':
+        return <PmhPanel />;
+      case 'psh':
+        return <PshPanel />;
+      case 'family-medical-history':
+        return <FamilyMedicalHistoryPanel />;
+      case 'health-overview':
+        return <HealthOverviewPanel />;
+      case 'special-attention':
+        return <SpecialAttentionPanel />;
       default:
         return <OVPanel />;
     }
   };
 
-  // This function will be passed to the navbar to update the panel
   const handlePanelChange = (panel) => {
     setActivePanel(panel);
   };
@@ -46,6 +59,7 @@ const Index = () => {
     <AppLayout 
       onPanelChange={handlePanelChange}
       activePanel={activePanel}
+      onLogout={onLogout}            // <-- pass onLogout to layout
     >
       <div className="flex h-full">
         {/* Left - PDF Viewer */}

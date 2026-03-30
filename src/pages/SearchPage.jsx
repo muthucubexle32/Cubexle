@@ -1,4 +1,4 @@
-import AppLayout from "@/components/layout/AppLayout";
+import AppLayout from '../components/layout/AppLayout.jsx';   
 import { Search, Filter, ChevronDown, Calendar, FileText } from "lucide-react";
 
 const mockResults = [

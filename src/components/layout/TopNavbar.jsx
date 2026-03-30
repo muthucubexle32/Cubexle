@@ -1,8 +1,14 @@
-import { LogOut, Home, Search, FileText, User, ChevronDown, Menu, X, Calendar, Settings, Activity, Microscope, HeartPulse, Stethoscope, Sparkles, Info, Users } from "lucide-react";
+import { 
+  LogOut, Home, Search, FileText, User, ChevronDown, Menu, X, 
+  Calendar, Settings, Activity, Microscope, HeartPulse, Stethoscope, 
+  Sparkles, Info, Users, FileText as MedicalFile, 
+  Activity as HealthActivity, AlertCircle, Heart,
+  Layout  // <-- added Layout
+} from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect, useRef } from "react"; 
 
-// Tooltip Component - Fixed to not interfere with clicks
+// Tooltip Component (unchanged)
 const Tooltip = ({ children, text, position = "bottom" }) => {
   const [show, setShow] = useState(false);
   
@@ -35,7 +41,7 @@ const Tooltip = ({ children, text, position = "bottom" }) => {
   );
 };
 
-const TopNavbar = ({ onPanelChange, activePanel }) => {
+const TopNavbar = ({ onPanelChange, activePanel, onLogout }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -48,7 +54,6 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
   const entryDropdownRef = useRef(null);
   const userDropdownRef = useRef(null);
 
-  // Demo data for display
   const [filterData] = useState({
     provider: 'Dr. John Smith',
     dob: '15-05-1992',
@@ -56,7 +61,6 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
     pageNo: '1-500'
   });
 
-  // Handle scroll effect
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
@@ -65,7 +69,6 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Handle click outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (entryDropdownRef.current && !entryDropdownRef.current.contains(event.target)) {
@@ -79,6 +82,15 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const handleLogoutClick = () => {
+    if (onLogout) {
+      onLogout();
+    } else {
+      navigate("/login");
+    }
+    setIsMobileMenuOpen(false);
+  };
+
   const handleEntrySelect = (panelId) => {
     if (onPanelChange) {
       onPanelChange(panelId);
@@ -88,30 +100,34 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
   };
 
   const navItems = [
-    { label: "Home", path: "/", icon: Home, tooltip: "Go to Dashboard" },
+    { label: "Dashboard", path: "/dashboard", icon: Layout, tooltip: "Go to Dashboard" },
+    { label: "Tool", path: "/tool", icon: Activity, tooltip: "Data Entry Tool" },
     { label: "Admin", path: "/admin", icon: Settings, tooltip: "Admin Panel" },
     { label: "Report", path: "/report", icon: FileText, tooltip: "View Reports" },
     { label: "Search", path: "/search", icon: Search, tooltip: "Search Records" },
   ];
 
-  // Updated entryItems with Social History
   const entryItems = [
     { label: "OV", icon: Stethoscope, panelId: "ov", color: "from-blue-500 to-cyan-400", tooltip: "Office Visit" },
     { label: "Diagnostics", icon: Activity, panelId: "diagnostics", color: "from-emerald-500 to-teal-400", tooltip: "Diagnostic Reports" },
     { label: "Labs", icon: Microscope, panelId: "labs", color: "from-purple-500 to-pink-400", tooltip: "Laboratory Results" },
     { label: "EKG", icon: HeartPulse, panelId: "ekg", color: "from-rose-500 to-red-400", tooltip: "Electrocardiogram" },
-    { label: "Social History", icon: Users, panelId: "socialhistory", color: "from-indigo-500 to-purple-500", tooltip: "Social History & Clinical History" }
+    { label: "Social History", icon: Users, panelId: "socialhistory", color: "from-indigo-500 to-purple-500", tooltip: "Social History" },
+    { label: "PMH", icon: MedicalFile, panelId: "pmh", color: "from-teal-500 to-green-400", tooltip: "Past Medical History" },
+    { label: "PSH", icon: Stethoscope, panelId: "psh", color: "from-orange-500 to-yellow-400", tooltip: "Past Surgical History" },
+    { label: "Family History", icon: Heart, panelId: "family-medical-history", color: "from-pink-500 to-rose-400", tooltip: "Family Medical History" },
+    { label: "Health Overview", icon: HealthActivity, panelId: "health-overview", color: "from-cyan-500 to-blue-400", tooltip: "Health Overview" },
+    { label: "Special Attention", icon: AlertCircle, panelId: "special-attention", color: "from-red-500 to-pink-400", tooltip: "Special Attention & APS" },
   ];
 
-  // Get selected entry label
   const getSelectedEntryLabel = () => {
     if (!activePanel) return "Entry Page";
     const selected = entryItems.find(item => item.panelId === activePanel);
     return selected ? `Entry Page - ${selected.label}` : "Entry Page";
   };
 
-  // Check if current page is home/landing page
-  const isHomePage = location.pathname === "/";
+  // Show filter bar on both home and tool pages
+  const showFilterBar = location.pathname === "/" || location.pathname === "/tool";
 
   return (
     <div className={`w-full transition-all duration-500 ${
@@ -120,12 +136,10 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
         : 'bg-[#031724] dark:bg-black'
     }`}>
       
-      {/* Animated gradient line */}
       <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 animate-gradient-x"></div>
 
       {/* ROW 1: Main Navigation */}
       <div className="relative flex items-center justify-between px-3 sm:px-4 lg:px-6 xl:px-8 py-1.5">
-        {/* Logo Section with tooltip */}
         <Tooltip text="Return to Dashboard" position="right">
           <div 
             className="flex items-center gap-2 sm:gap-3 group cursor-pointer transform transition-all duration-300 hover:scale-105 flex-shrink-0" 
@@ -141,7 +155,6 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
           </div>
         </Tooltip>
 
-        {/* Desktop Navigation - Main Menu */}
         <div className="hidden lg:flex items-center gap-2 xl:gap-10">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -171,9 +184,7 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
           })}
         </div>
 
-        {/* Right Actions */}
         <div className="flex items-center gap-2 sm:gap-4">
-          {/* User Info - Desktop with dropdown */}
           <div className="hidden lg:block relative" ref={userDropdownRef}>
             <Tooltip text="User Profile" position="bottom">
               <button
@@ -190,10 +201,9 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
             </Tooltip>
           </div>
 
-          {/* Logout Button with tooltip */}
           <Tooltip text="Logout" position="bottom">
             <button
-              onClick={() => navigate("/login")}
+              onClick={handleLogoutClick}
               className="relative group p-2 xl:px-4 xl:py-2 bg-red-500/20 hover:bg-red-500/30 text-white rounded-xl transition-all duration-300 border border-red-500/30 hover:border-red-500/50 overflow-hidden flex-shrink-0"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-red-500/0 to-red-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -201,7 +211,6 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
             </button>
           </Tooltip>
 
-          {/* Mobile Menu Button with tooltip */}
           <Tooltip text={isMobileMenuOpen ? "Close Menu" : "Open Menu"} position="bottom">
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -217,43 +226,34 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
         </div>
       </div>
 
-      {/* ROW 2: Search/Filter Bar - Only visible on Home Page */}
-      {isHomePage && (
+      {/* ROW 2: Search/Filter Bar - Visible on Home and Tool pages */}
+      {showFilterBar && (
         <div className="border-t border-white/30 bg-current">
           <div className="px-1 xs:px-2 sm:px-3 md:px-4 lg:px-5 xl:px-6 py-1 sm:py-1.5">
             
             {/* Mobile: Horizontal scroll for small screens */}
             <div className="block sm:hidden overflow-x-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent pb-1">
               <div className="flex items-center gap-1.5 min-w-max">
-                {/* Provider - Mobile with tooltip */}
                 <Tooltip text="Current Provider" position="top">
                   <div className="flex-none px-2 py-1.5 bg-white/5 rounded text-white text-xs whitespace-nowrap">
                     <span className="text-white/60">Patient Name:</span> {filterData.provider}
                   </div>
                 </Tooltip>
-
-                {/* DOB - Mobile with tooltip */}
                 <Tooltip text="Date of Birth" position="top">
                   <div className="flex-none px-2 py-1.5 bg-white/5 rounded text-white text-xs whitespace-nowrap">
                     <span className="text-white/60">DOB:</span> {filterData.dob}
                   </div>
                 </Tooltip>
-
-                {/* Gender - Mobile with tooltip */}
                 <Tooltip text="Patient Gender" position="top">
                   <div className="flex-none px-2 py-1.5 bg-white/5 rounded text-white text-xs whitespace-nowrap">
                     <span className="text-white/60">Gender:</span> {filterData.gender}
                   </div>
                 </Tooltip>
-
-                {/* Page No - Mobile with tooltip */}
                 <Tooltip text="Page Range" position="top">
                   <div className="flex-none px-2 py-1.5 bg-white/5 rounded text-white text-xs whitespace-nowrap">
                     <span className="text-white/60">Pages:</span> {filterData.pageNo}
                   </div>
                 </Tooltip>
-
-                {/* Entry Pages - Mobile with tooltip */}
                 <div className="relative flex-none ml-auto" ref={entryDropdownRef}>
                   <Tooltip text="Select Entry Type" position="top">
                     <button
@@ -270,33 +270,25 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
 
             {/* Tablet & Desktop: Flex with left and right sections */}
             <div className="hidden sm:flex sm:items-center sm:justify-between">
-              {/* Left side - Filter items */}
               <div className="flex items-center gap-2 md:gap-3 lg:gap-4 flex-wrap">
-                {/* Provider Name - with tooltip */}
                 <Tooltip text="Current Patient Information" position="top">
                   <div className="flex items-center gap-1 px-2 md:px-3 py-1.5 md:py-2 rounded-md">
                     <span className="text-white/60 text-xs md:text-sm">Patient Name:</span>
                     <span className="text-white text-xs md:text-sm font-medium">{filterData.provider}</span>
                   </div>
                 </Tooltip>
-
-                {/* DOB with tooltip */}
                 <Tooltip text="Date of Birth" position="top">
                   <div className="flex items-center gap-1 px-2 md:px-3 py-1.5 md:py-2 rounded-md">
                     <span className="text-white/60 text-xs md:text-sm">DOB:</span>
                     <span className="text-white text-xs md:text-sm font-medium">{filterData.dob}</span>
                   </div>
                 </Tooltip>
-
-                {/* Gender - with tooltip */}
                 <Tooltip text="Patient Gender" position="top">
                   <div className="flex items-center gap-1 px-2 md:px-3 py-1.5 md:py-2 rounded-md">
                     <span className="text-white/60 text-xs md:text-sm">Gender:</span>
                     <span className="text-white text-xs md:text-sm font-medium">{filterData.gender}</span>
                   </div>
                 </Tooltip>
-
-                {/* Page Number - with tooltip */}
                 <Tooltip text="Page Range" position="top">
                   <div className="flex items-center gap-1 px-2 md:px-3 py-1.5 md:py-2 rounded-md">
                     <span className="text-white/60 text-xs md:text-sm">Pages:</span>
@@ -305,31 +297,24 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
                 </Tooltip>
               </div>
 
-              {/* Right side - Entry Pages Dropdown */}
               <div className="relative ml-4" ref={entryDropdownRef}>
                 <Tooltip text="Select clinical entry" position="top">
                   <button
                     onClick={() => setShowEntryDropdown(!showEntryDropdown)}
                     className="flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 bg-gradient-to-r from-slate-950 to-black rounded-md text-white text-xs md:text-sm hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all duration-300 shadow-lg"
                   >
-                    <span className="font-medium">
-                      {getSelectedEntryLabel()}
-                    </span>
+                    <span className="font-medium">{getSelectedEntryLabel()}</span>
                     <ChevronDown className={`w-4 h-4 text-white/80 transition-transform duration-300 ${showEntryDropdown ? 'rotate-180' : ''}`} />
                   </button>
                 </Tooltip>
 
-                {/* Entry Pages Dropdown */}
                 {showEntryDropdown && (
                   <>
-                    {/* Mobile full-screen dropdown */}
                     <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:hidden">
                       <div className="w-full bg-white dark:bg-gray-800 rounded-t-xl p-4 animate-slideUp">
                         <div className="flex justify-between items-center mb-4">
                           <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Select Entry</h3>
-                          <button onClick={() => setShowEntryDropdown(false)} className="p-2">
-                            <X className="w-5 h-5 text-gray-500" />
-                          </button>
+                          <button onClick={() => setShowEntryDropdown(false)} className="p-2"><X className="w-5 h-5 text-gray-500" /></button>
                         </div>
                         <div className="space-y-2 max-h-96 overflow-y-auto">
                           {entryItems.map((item) => {
@@ -338,10 +323,7 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
                             return (
                               <button
                                 key={item.panelId}
-                                onClick={() => {
-                                  handleEntrySelect(item.panelId);
-                                  setShowEntryDropdown(false);
-                                }}
+                                onClick={() => { handleEntrySelect(item.panelId); setShowEntryDropdown(false); }}
                                 className={`w-full flex items-center gap-3 p-3 rounded-lg transition-all ${
                                   isActive 
                                     ? 'bg-gradient-to-r from-blue-500/10 to-indigo-500/10 dark:from-gray-700 dark:to-gray-600 border border-blue-500/20' 
@@ -361,7 +343,6 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
                       </div>
                     </div>
 
-                    {/* Desktop dropdown */}
                     <div className="hidden sm:block absolute right-0 top-full mt-1 w-44 bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700 py-1 rounded-lg z-50">
                       {entryItems.map((item) => {
                         const Icon = item.icon;
@@ -393,12 +374,11 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
         </div>
       )}
 
-      {/* Mobile Menu - Enhanced */}
+      {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="lg:hidden fixed inset-0 top-[57px] sm:top-[61px] bg-gradient-to-b from-slate-900 to-slate-800 dark:from-gray-900 dark:to-gray-800 z-40 animate-slideDown overflow-y-auto">
           <div className="min-h-full pb-20">
             <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-              {/* User Profile with tooltips */}
               <div className="relative bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-4 sm:p-6 text-white overflow-hidden">
                 <div className="absolute top-0 right-0 w-24 sm:w-32 h-24 sm:h-32 bg-white/10 rounded-full transform translate-x-16 -translate-y-16"></div>
                 <div className="absolute bottom-0 left-0 w-20 sm:w-24 h-20 sm:h-24 bg-black/10 rounded-full transform -translate-x-12 translate-y-12"></div>
@@ -414,20 +394,15 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
                   </div>
                   <Tooltip text="Logout from application" position="top">
                     <button
-                      onClick={() => {
-                        navigate("/login");
-                        setIsMobileMenuOpen(false);
-                      }}
+                      onClick={handleLogoutClick}
                       className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-500/30 hover:bg-red-500/40 rounded-xl transition-colors text-sm sm:text-base"
                     >
-                      <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
-                      <span>Logout</span>
+                      <LogOut className="w-4 h-4 sm:w-5 sm:h-5" /><span>Logout</span>
                     </button>
                   </Tooltip>
                 </div>
               </div>
 
-              {/* Main Navigation with tooltips */}
               <div className="space-y-2">
                 <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4">Main Menu</div>
                 {navItems.map((item) => {
@@ -436,11 +411,8 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
                   return (
                     <Tooltip key={item.path} text={item.tooltip} position="right">
                       <button
-                        onClick={() => {
-                          navigate(item.path);
-                          setIsMobileMenuOpen(false);
-                        }}
-                        className={`w-full flex items-center gap-4 px-4 py-3 sm:py-4 rounded-xl transition-all duration-300 transform active:scale-95 ${
+                        onClick={() => { navigate(item.path); setIsMobileMenuOpen(false); }}
+                        className={`w-full flex items-center gap-4 px-4 py-3 sm:py-4 rounded-xl transition-all duration-300 ${
                           isActive 
                             ? 'bg-white/20 text-white shadow-lg' 
                             : 'text-white/70 hover:bg-white/10 hover:text-white'
@@ -457,7 +429,6 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
                 })}
               </div>
 
-              {/* Entry Pages with tooltips */}
               <div className="space-y-2 pt-4 border-t border-white/10">
                 <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4">Entry Pages</div>
                 {entryItems.map((item) => {
@@ -466,11 +437,8 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
                   return (
                     <Tooltip key={item.panelId} text={item.tooltip} position="right">
                       <button
-                        onClick={() => {
-                          handleEntrySelect(item.panelId);
-                          setIsMobileMenuOpen(false);
-                        }}
-                        className={`w-full flex items-center gap-4 px-4 py-3 sm:py-4 rounded-xl transition-all duration-300 transform active:scale-95 ${
+                        onClick={() => { handleEntrySelect(item.panelId); setIsMobileMenuOpen(false); }}
+                        className={`w-full flex items-center gap-4 px-4 py-3 sm:py-4 rounded-xl transition-all duration-300 ${
                           isActive 
                             ? `bg-gradient-to-r ${item.color} text-white shadow-lg` 
                             : 'text-white/70 hover:bg-white/10'
@@ -486,8 +454,8 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
                 })}
               </div>
 
-              {/* Filter Data Display with tooltips */}
-              {isHomePage && (
+              {/* Filter Data Display - also on tool page */}
+              {showFilterBar && (
                 <div className="space-y-2 pt-4 border-t border-white/10">
                   <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4">Current Filters</div>
                   <div className="bg-white/5 rounded-xl p-4 space-y-2">
@@ -523,17 +491,11 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
         </div>
       )}
 
-      {/* Custom CSS */}
       <style jsx>{`
         @media (min-width: 480px) {
-          .xs\\:inline {
-            display: inline;
-          }
-          .xs\\:hidden {
-            display: none;
-          }
+          .xs\\:inline { display: inline; }
+          .xs\\:hidden { display: none; }
         }
-        
         @keyframes gradient-x {
           0%, 100% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }
@@ -546,36 +508,22 @@ const TopNavbar = ({ onPanelChange, activePanel }) => {
           animation: slideDown 0.3s ease-out;
         }
         @keyframes slideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
         }
         .animate-slideUp {
           animation: slideUp 0.3s ease-out;
         }
         @keyframes slideUp {
-          from {
-            transform: translateY(100%);
-          }
-          to {
-            transform: translateY(0);
-          }
+          from { transform: translateY(100%); }
+          to { transform: translateY(0); }
         }
         .animate-fadeIn {
           animation: fadeIn 0.2s ease-out;
         }
         @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
+          from { opacity: 0; }
+          to { opacity: 1; }
         }
       `}</style>
     </div>

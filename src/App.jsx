@@ -1,30 +1,108 @@
-// App.js
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import AdminPage from "./pages/admin/AdminPage";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import Index from "./pages/Index";                 // data entry tool
+import Dashboard from "./pages/Dashboard";         // dashboard after login
+import AdminPage from "./pages/admin/AdminPage";   // admin panel (in subfolder)
 import ReportPage from "./pages/ReportPage";
 import SearchPage from "./pages/SearchPage";
+import LoginPage from "./components/LoginPage";
 
-import OVPanel from "./components/Datapanel/OVPanel";
-import DiagnosticsPanel from "./components/Datapanel/DiagnosticsPanel";
-import LabsPanel from "./components/Datapanel/LabsPanel";
-import EKGPanel from "./components/Datapanel/EKGPanel";
-import SocialHistoryPanel from "./components/Datapanel/SocialHistoryPanel";
+const AppContent = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const session = sessionStorage.getItem("authSession");
+    if (session === "authenticated") {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  const handleLogin = () => {
+    setIsAuthenticated(true);
+    sessionStorage.setItem("authSession", "authenticated");
+    navigate('/dashboard');
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    sessionStorage.removeItem("authSession");
+    navigate('/login');
+  };
+
+  return (
+    <Routes>
+      <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
+
+      <Route
+        path="/dashboard"
+        element={
+          isAuthenticated ? (
+            <Dashboard onLogout={handleLogout} />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
+      <Route
+        path="/tool"
+        element={
+          isAuthenticated ? (
+            <Index onLogout={handleLogout} />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
+      <Route
+        path="/report"
+        element={
+          isAuthenticated ? (
+            <ReportPage onLogout={handleLogout} />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
+      <Route
+        path="/search"
+        element={
+          isAuthenticated ? (
+            <SearchPage onLogout={handleLogout} />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
+      <Route
+        path="/admin"
+        element={
+          isAuthenticated ? (
+            <AdminPage onLogout={handleLogout} />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
+
+      <Route
+        path="/"
+        element={
+          isAuthenticated ? (
+            <Navigate to="/dashboard" replace />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
+    </Routes>
+  );
+};
 
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/ov" element={<OVPanel />} />
-        <Route path="/diagnostics" element={<DiagnosticsPanel />} />
-        <Route path="/labs" element={<LabsPanel />} />
-        <Route path="/ekg" element={<EKGPanel />} />
-        <Route path="/socialhistory" element={<SocialHistoryPanel />} />
-        <Route path="/admin" element={<AdminPage />} />
-        <Route path="/report" element={<ReportPage />} />
-        <Route path="/search" element={<SearchPage />} />
-      </Routes>
+      <AppContent />
     </BrowserRouter>
   );
 }

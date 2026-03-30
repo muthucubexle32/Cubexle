@@ -1,11 +1,12 @@
 import React from 'react';
-import TopNavbar from '@/components/layout/TopNavbar';
+import TopNavbar from './TopNavbar';
 
 const AppLayout = ({ 
   children, 
   onPanelChange, 
   activePanel, 
-  showNavbar = true 
+  showNavbar = true,
+  onLogout
 }) => {
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -13,6 +14,7 @@ const AppLayout = ({
         <TopNavbar 
           onPanelChange={onPanelChange}
           activePanel={activePanel}
+          onLogout={onLogout}
         />
       )}
       <div className="flex-1 overflow-hidden">

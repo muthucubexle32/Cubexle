@@ -1,4 +1,4 @@
-import AppLayout from "@/components/layout/AppLayout";
+import AppLayout from '../components/layout/AppLayout.jsx';   
 import { FileText, Download, Printer, Calendar, ChevronDown, BarChart3, PieChart, TrendingUp } from "lucide-react";
 
 const recentReports = [
