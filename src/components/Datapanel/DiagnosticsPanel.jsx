@@ -285,7 +285,7 @@ export default function DiagnosticReport() {
   const labelClass = "block text-xs font-semibold text-black mb-1";
 
   return (
-    <div className="w-full gap-3 bg-white min-h-screen pb-12">
+    <div className="w-full gap-3 bg-white min-h-screen pb-1">
       {/* 1. Header Bar */}
       <div className="w-full flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-2 pb-2 pt-2 border-b border-gray-200 px-4">
         <h1 className="block text-lg font-semibold text-black">Diagnostic Report</h1>
@@ -626,7 +626,7 @@ export default function DiagnosticReport() {
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold text-gray-700 mb-2">Special Comments</h3>
+            <h3 className="text-sm font-semibold text-gray-700 mb-1">Special Comments</h3>
             <div className="border border-blue-300 rounded-lg bg-white p-1 shadow-sm">
               <AutoResizeTextarea
                 value={specialComments}

@@ -284,7 +284,7 @@ export default function LaboratoryReport() {
   const labelClass = "block text-xs font-semibold text-black mb-1";
 
   return (
-    <div className="min-h-screen bg-white pb-24 font-sans text-gray-800">
+    <div className="min-h-screen bg-white pb-2 font-sans text-gray-800">
       
       {/* 1. Top Status & Action Bar */}
       <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-3 px-3 sm:px-4 py-2 bg-white border-b border-gray-200 sticky top-0 z-20">
