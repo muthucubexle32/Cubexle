@@ -1,3 +1,4 @@
+// components/layout/AppLayout.jsx
 import React from 'react';
 import TopNavbar from './TopNavbar';
 
@@ -17,7 +18,8 @@ const AppLayout = ({
           onLogout={onLogout}
         />
       )}
-      <div className="flex-1 overflow-hidden">
+      {/* Change overflow-hidden to overflow-auto */}
+      <div className="flex-1 overflow-auto">
         {children}
       </div>
     </div>

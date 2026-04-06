@@ -169,7 +169,7 @@ export default function EKGPanel() {
   const handleSave = () => {
     console.log({
       status,
-      provider: { providerName, facility, pageNo, dos },
+      provider: { providerName, facility, pageNo, dos },      
       timingComments,
       additionalNotes
     });
@@ -181,7 +181,7 @@ export default function EKGPanel() {
   const labelClass = "block text-xs font-semibold text-black mb-1";
 
   return (
-    <div className="min-h-screen bg-white font-sans text-gray-800 pb-0">
+    <div className="min-h-screen bg-white font-sans text-gray-800 pb-0 ">
 
       {/* 1. Top Status Bar */}
       <div className="w-full bg-white border-b border-gray-200 sticky top-0 z-20">

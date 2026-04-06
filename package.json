@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/muthucubexle32/Cubexle#readme",
   "dependencies": {
+    "@tanstack/react-table": "^8.21.3",
     "framer-motion": "^12.35.2",
     "lucide-react": "^0.577.0",
     "react": "^19.2.4",

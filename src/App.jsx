@@ -4,7 +4,7 @@ import Index from "./pages/Index";                 // data entry tool
 import Dashboard from "./pages/Dashboard";         // dashboard after login
 import AdminPage from "./pages/admin/AdminPage";   // admin panel (in subfolder)
 import ReportPage from "./pages/ReportPage";
-import SearchPage from "./pages/SearchPage";
+
 import LoginPage from "./components/LoginPage";
 
 const AppContent = () => {
@@ -64,16 +64,7 @@ const AppContent = () => {
           )
         }
       />
-      <Route
-        path="/search"
-        element={
-          isAuthenticated ? (
-            <SearchPage onLogout={handleLogout} />
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
-      />
+    
       <Route
         path="/admin"
         element={
