@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "ignoreDeprecations": "6.0",
     "target": "ES2022",
     "lib": ["ES2023", "DOM"],
     "module": "ESNext",
@@ -10,11 +11,10 @@
     "moduleDetection": "force",
     "noEmit": true,
     "jsx": "react-jsx",
+
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     }
-  },
-  "include": ["src/**/*", "vite.config.js"],
-  "exclude": ["node_modules", "dist"]
+  }
 }

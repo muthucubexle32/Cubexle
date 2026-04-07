@@ -1,4 +1,4 @@
-// Dashboard.jsx – fully corrected
+// Dashboard.jsx – fully responsive, with column visibility restored
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   useReactTable,
@@ -19,7 +19,8 @@ import {
   ChevronsUpDown,
   FileText,
   X,
-  ChevronDown,
+  UserPlus,
+  Split,
 } from 'lucide-react';
 import AppLayout from '@/components/layout/AppLayout';
 
@@ -82,8 +83,8 @@ const generateMockData = () => {
   return data;
 };
 
-// ---------- Action Buttons ----------
-const ActionButtons = ({ row, onAction }) => {
+// ---------- Action Buttons (with Split) ----------
+const ActionButtons = ({ row, onAction, onSplit }) => {
   const handleAction = (action) => {
     const messages = {
       start: 'Start processing this case? Status will change to "UW In Progress".',
@@ -102,22 +103,281 @@ const ActionButtons = ({ row, onAction }) => {
         className="p-1.5 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 transition-all hover:scale-110"
         title="Start Processing"
       >
-        <Play size={18} />
+        <Play size={16} />
       </button>
       <button
         onClick={() => handleAction('complete')}
         className="p-1.5 rounded-md hover:bg-green-100 dark:hover:bg-green-900/30 text-green-600 dark:text-green-400 transition-all hover:scale-110"
         title="Complete Case"
       >
-        <CheckCircle size={18} />
+        <CheckCircle size={16} />
       </button>
       <button
         onClick={() => handleAction('cancel')}
         className="p-1.5 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 transition-all hover:scale-110"
         title="Cancel/Withdraw"
       >
-        <XCircle size={18} />
+        <XCircle size={16} />
       </button>
+      <button
+        onClick={() => onSplit(row.original)}
+        className="p-1.5 rounded-md hover:bg-purple-100 dark:hover:bg-purple-900/30 text-purple-600 dark:text-purple-400 transition-all hover:scale-110"
+        title="Split Pages"
+      >
+        <Split size={16} />
+      </button>
+    </div>
+  );
+};
+
+// ---------- Column Visibility Menu Component ----------
+const ColumnVisibilityMenu = ({ table }) => {
+  const [show, setShow] = useState(false);
+  const allColumns = table.getAllLeafColumns();
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setShow(!show)}
+        className="flex items-center gap-2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors whitespace-nowrap"
+      >
+        <Eye size={16} /> Columns
+      </button>
+      {show && (
+        <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-10 p-2">
+          {allColumns.map(column => (
+            <label key={column.id} className="flex items-center gap-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer">
+              <input
+                type="checkbox"
+                checked={column.getIsVisible()}
+                onChange={column.getToggleVisibilityHandler()}
+                className="rounded"
+              />
+              <span className="text-sm text-gray-700 dark:text-gray-300">{column.columnDef.header}</span>
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ---------- Split Modal Component (fully responsive) ----------
+const SplitModal = ({ isOpen, onClose, caseData, availableUsers, onSplitConfirm }) => {
+  const [splitMethod, setSplitMethod] = useState('equal');
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const [pageAssignments, setPageAssignments] = useState([]);
+  const totalPages = caseData?.totalPages || 0;
+  const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    if (isOpen && caseData) {
+      setSelectedUsers([]);
+      setSplitMethod('equal');
+      setPageAssignments([]);
+      setErrors({});
+    }
+  }, [isOpen, caseData]);
+
+  const recalcEqualSplit = (users) => {
+    if (users.length === 0) return [];
+    const pagesPerUser = Math.floor(totalPages / users.length);
+    const remainder = totalPages % users.length;
+    return users.map((user, idx) => ({
+      user,
+      pageStart: idx * pagesPerUser + 1,
+      pageEnd: (idx + 1) * pagesPerUser + (idx === users.length - 1 ? remainder : 0),
+      pages: pagesPerUser + (idx === users.length - 1 ? remainder : 0),
+    }));
+  };
+
+  const handleUserToggle = (user) => {
+    setSelectedUsers(prev => {
+      const newSet = prev.includes(user) ? prev.filter(u => u !== user) : [...prev, user];
+      if (splitMethod === 'equal') {
+        setPageAssignments(recalcEqualSplit(newSet));
+      } else {
+        if (!prev.includes(user)) {
+          setPageAssignments(prevAssign => [...prevAssign, { user, pageStart: 1, pageEnd: 0, pages: 0 }]);
+        } else {
+          setPageAssignments(prevAssign => prevAssign.filter(a => a.user !== user));
+        }
+      }
+      return newSet;
+    });
+  };
+
+  const handleManualChange = (index, field, value) => {
+    const updated = [...pageAssignments];
+    let numValue = parseInt(value) || 0;
+    updated[index][field] = numValue;
+    if (field === 'pageStart' || field === 'pages') {
+      updated[index].pageEnd = updated[index].pageStart + updated[index].pages - 1;
+    }
+    setPageAssignments(updated);
+    validateAssignments(updated);
+  };
+
+  const validateAssignments = (assignments) => {
+    const newErrors = {};
+    for (let i = 0; i < assignments.length; i++) {
+      const a = assignments[i];
+      if (a.pages < 0) newErrors[`pages_${i}`] = 'Pages cannot be negative';
+      if (a.pageStart < 1) newErrors[`start_${i}`] = 'Start page must be at least 1';
+      if (a.pageEnd > totalPages) newErrors[`end_${i}`] = `End page cannot exceed ${totalPages}`;
+      for (let j = i + 1; j < assignments.length; j++) {
+        const b = assignments[j];
+        if (a.pageStart <= b.pageEnd && b.pageStart <= a.pageEnd) {
+          newErrors[`overlap_${i}_${j}`] = `Overlap between ${a.user} and ${b.user}`;
+        }
+      }
+    }
+    setErrors(newErrors);
+  };
+
+  const handleSplitMethodChange = (method) => {
+    setSplitMethod(method);
+    if (method === 'equal' && selectedUsers.length > 0) {
+      setPageAssignments(recalcEqualSplit(selectedUsers));
+    } else if (method === 'manual' && selectedUsers.length > 0) {
+      if (pageAssignments.length === 0 || pageAssignments.length !== selectedUsers.length) {
+        setPageAssignments(recalcEqualSplit(selectedUsers));
+      }
+    }
+    setErrors({});
+  };
+
+  const handleBalance = () => {
+    if (selectedUsers.length === 0) return;
+    setPageAssignments(recalcEqualSplit(selectedUsers));
+    setErrors({});
+  };
+
+  const handleConfirm = () => {
+    if (selectedUsers.length === 0) {
+      alert('Please select at least one user.');
+      return;
+    }
+    if (pageAssignments.length === 0) {
+      alert('No page assignments. Please adjust split.');
+      return;
+    }
+    const totalAssignedPages = pageAssignments.reduce((sum, a) => sum + (a.pages || 0), 0);
+    if (totalAssignedPages !== totalPages) {
+      alert(`Total assigned pages (${totalAssignedPages}) does not match case total pages (${totalPages}). Please adjust.`);
+      return;
+    }
+    if (Object.keys(errors).length > 0) {
+      alert('Please fix the errors before confirming.');
+      return;
+    }
+    onSplitConfirm(caseData.id, pageAssignments);
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fadeIn">
+      <div className="bg-white dark:bg-gray-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+        <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-between items-center">
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Split Case Pages</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
+        </div>
+        <div className="p-6 space-y-4">
+          <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3">
+            <p><strong>Case No:</strong> {caseData?.caseNum}</p>
+            <p><strong>Total Pages:</strong> {totalPages}</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Users</label>
+            <div className="flex flex-wrap gap-2">
+              {availableUsers.map(user => (
+                <label key={user} className="flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    value={user}
+                    checked={selectedUsers.includes(user)}
+                    onChange={() => handleUserToggle(user)}
+                    className="rounded"
+                  />
+                  <span className="text-sm">{user}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {selectedUsers.length > 0 && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Split Method</label>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2">
+                    <input type="radio" value="equal" checked={splitMethod === 'equal'} onChange={() => handleSplitMethodChange('equal')} />
+                    <span>Equal pages per user (automatic)</span>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input type="radio" value="manual" checked={splitMethod === 'manual'} onChange={() => handleSplitMethodChange('manual')} />
+                    <span>Manual assignment (work assigner)</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <h4 className="font-medium">Page Assignments</h4>
+                  {splitMethod === 'manual' && (
+                    <button
+                      onClick={handleBalance}
+                      className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 flex items-center gap-1"
+                    >
+                      <RotateCcw size={14} /> Balance equally
+                    </button>
+                  )}
+                </div>
+                {pageAssignments.map((assign, idx) => (
+                  <div key={assign.user} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                    <div className="font-medium mb-2">{assign.user}</div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs text-gray-500">Start Page</label>
+                        <input
+                          type="number"
+                          value={assign.pageStart}
+                          onChange={(e) => handleManualChange(idx, 'pageStart', e.target.value)}
+                          disabled={splitMethod === 'equal'}
+                          className={`w-full px-2 py-1 border rounded disabled:bg-gray-100 dark:disabled:bg-gray-700 ${errors[`start_${idx}`] ? 'border-red-500' : 'border-gray-300'}`}
+                        />
+                        {errors[`start_${idx}`] && <p className="text-xs text-red-500 mt-1">{errors[`start_${idx}`]}</p>}
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-500">Pages Count</label>
+                        <input
+                          type="number"
+                          value={assign.pages}
+                          onChange={(e) => handleManualChange(idx, 'pages', e.target.value)}
+                          disabled={splitMethod === 'equal'}
+                          className={`w-full px-2 py-1 border rounded disabled:bg-gray-100 dark:disabled:bg-gray-700 ${errors[`pages_${idx}`] ? 'border-red-500' : 'border-gray-300'}`}
+                        />
+                        {errors[`pages_${idx}`] && <p className="text-xs text-red-500 mt-1">{errors[`pages_${idx}`]}</p>}
+                      </div>
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">End Page: {assign.pageEnd}</div>
+                    {errors[`overlap_${idx}_${idx+1}`] && <p className="text-xs text-red-500 mt-1">{errors[`overlap_${idx}_${idx+1}`]}</p>}
+                  </div>
+                ))}
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  Total assigned pages: {pageAssignments.reduce((sum, a) => sum + a.pages, 0)} / {totalPages}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+        <div className="sticky bottom-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-end gap-3">
+          <button onClick={onClose} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Cancel</button>
+          <button onClick={handleConfirm} className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg">Confirm Split</button>
+        </div>
+      </div>
     </div>
   );
 };
@@ -147,7 +407,6 @@ const StatusCell = ({ status, onStatusChange }) => {
         className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${colorClass} hover:opacity-80 transition-opacity`}
       >
         {currentOption?.label}
-
       </button>
       {isOpen && (
         <div className="absolute left-0 top-full mt-1 z-20 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 min-w-[130px]">
@@ -177,7 +436,7 @@ const Dashboard = ({ onLogout }) => {
   const [masterData, setMasterData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
-  const [assignedUserFilter, setAssignedUserFilter] = useState('');
+  const [selectedAssignUser, setSelectedAssignUser] = useState('');
   const [filters, setFilters] = useState({
     receivedDateFrom: '',
     receivedDateTo: '',
@@ -192,7 +451,9 @@ const Dashboard = ({ onLogout }) => {
     completedDateTo: '',
   });
   const [columnVisibility, setColumnVisibility] = useState({});
-  const filterPanelRef = useRef(null);
+  const [caseSplits, setCaseSplits] = useState({});
+  const [splitModalOpen, setSplitModalOpen] = useState(false);
+  const [currentSplitCase, setCurrentSplitCase] = useState(null);
 
   // Load mock data
   useEffect(() => {
@@ -202,25 +463,9 @@ const Dashboard = ({ onLogout }) => {
     }, 800);
   }, []);
 
-  // Close filter panel when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (filterPanelRef.current && !filterPanelRef.current.contains(event.target) && showFilters) {
-        setShowFilters(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showFilters]);
-
   // Apply filters
   const filteredData = useMemo(() => {
     let result = [...masterData];
-
-    if (assignedUserFilter) {
-      result = result.filter(row => row.assignedUser === assignedUserFilter);
-    }
-
     if (filters.receivedDateFrom) result = result.filter(row => row.receivedDate >= filters.receivedDateFrom);
     if (filters.receivedDateTo) result = result.filter(row => row.receivedDate <= filters.receivedDateTo);
     if (filters.client) result = result.filter(row => row.client.toLowerCase().includes(filters.client.toLowerCase()));
@@ -232,9 +477,8 @@ const Dashboard = ({ onLogout }) => {
     if (filters.auditor) result = result.filter(row => row.auditor === filters.auditor);
     if (filters.completedDateFrom) result = result.filter(row => row.completedDate && row.completedDate >= filters.completedDateFrom);
     if (filters.completedDateTo) result = result.filter(row => row.completedDate && row.completedDate <= filters.completedDateTo);
-
     return result;
-  }, [masterData, filters, assignedUserFilter]);
+  }, [masterData, filters]);
 
   const uniqueUnderwriters = useMemo(() => [...new Set(masterData.map(d => d.underwriter))], [masterData]);
   const uniqueAuditors = useMemo(() => [...new Set(masterData.map(d => d.auditor))], [masterData]);
@@ -269,7 +513,38 @@ const Dashboard = ({ onLogout }) => {
     updateRow(rowId, { qc: checked });
   }, [updateRow]);
 
-  // Table columns
+  // Batch assign
+  const handleBatchAssign = useCallback(() => {
+    if (!selectedAssignUser) {
+      alert('Please select a user to assign.');
+      return;
+    }
+    const rowsToUpdate = masterData.filter(row => row.assigned === true);
+    if (rowsToUpdate.length === 0) {
+      alert('No rows selected. Please check the "Assigned" boxes for the rows you want to assign.');
+      return;
+    }
+    rowsToUpdate.forEach(row => {
+      updateRow(row.id, { assignedUser: selectedAssignUser });
+    });
+    alert(`✅ Successfully assigned ${rowsToUpdate.length} case(s) to ${selectedAssignUser}.`);
+  }, [masterData, selectedAssignUser, updateRow]);
+
+  // Split handlers
+  const openSplitModal = (caseData) => {
+    setCurrentSplitCase(caseData);
+    setSplitModalOpen(true);
+  };
+
+  const handleSplitConfirm = (caseId, assignments) => {
+    setCaseSplits(prev => ({
+      ...prev,
+      [caseId]: assignments,
+    }));
+    alert(`✅ Case ${caseId} split into ${assignments.length} parts.`);
+  };
+
+  // Column definitions
   const columns = useMemo(() => [
     {
       accessorKey: 'assigned', header: 'Assigned', cell: ({ row }) => (
@@ -304,8 +579,36 @@ const Dashboard = ({ onLogout }) => {
       enableSorting: true,
     },
     { accessorKey: 'completedDate', header: 'Completed Date', enableSorting: true },
-    { id: 'actions', header: 'Actions', cell: ({ row }) => <ActionButtons row={row} onAction={handleRowAction} />, enableSorting: false },
-  ], [handleAssignedChange, handleQCChange, handleStatusChange, handleRowAction]);
+    {
+      id: 'splitInfo',
+      header: 'Split Info',
+      cell: ({ row }) => {
+        const splits = caseSplits[row.original.id];
+        if (!splits || splits.length === 0) return <span className="text-gray-400">—</span>;
+        return (
+          <div className="relative group">
+            <span className="text-purple-600 dark:text-purple-400 cursor-help">
+              {splits.length} user{splits.length > 1 ? 's' : ''}
+            </span>
+            <div className="absolute left-0 top-full mt-1 z-10 hidden group-hover:block bg-white dark:bg-gray-800 border rounded shadow-lg p-2 min-w-[200px] whitespace-normal">
+              {splits.map((s, idx) => (
+                <div key={idx} className="text-xs">
+                  <strong>{s.user}</strong>: pages {s.pageStart}-{s.pageEnd} ({s.pages} pages)
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      },
+      enableSorting: false,
+    },
+    {
+      id: 'actions',
+      header: 'Actions',
+      cell: ({ row }) => <ActionButtons row={row} onAction={handleRowAction} onSplit={openSplitModal} />,
+      enableSorting: false,
+    },
+  ], [handleAssignedChange, handleQCChange, handleStatusChange, handleRowAction, caseSplits]);
 
   const table = useReactTable({
     data: filteredData,
@@ -323,33 +626,6 @@ const Dashboard = ({ onLogout }) => {
       receivedDateFrom: '', receivedDateTo: '', client: '', caseNum: '', policyNum: '',
       firstName: '', lastName: '', underwriter: '', auditor: '', completedDateFrom: '', completedDateTo: '',
     });
-    setAssignedUserFilter('');
-  };
-
-  // Column visibility menu
-  const ColumnVisibilityMenu = () => {
-    const [show, setShow] = useState(false);
-    const allColumns = table.getAllLeafColumns();
-    return (
-      <div className="relative">
-        <button
-          onClick={() => setShow(!show)}
-          className="flex items-center gap-1 px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors whitespace-nowrap"
-        >
-          <Eye size={16} /> Columns
-        </button>
-        {show && (
-          <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-10 p-2">
-            {allColumns.map(column => (
-              <label key={column.id} className="flex items-center gap-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer">
-                <input type="checkbox" checked={column.getIsVisible()} onChange={column.getToggleVisibilityHandler()} className="rounded" />
-                <span className="text-sm text-gray-700 dark:text-gray-300">{column.columnDef.header}</span>
-              </label>
-            ))}
-          </div>
-        )}
-      </div>
-    );
   };
 
   // Loading skeleton
@@ -370,64 +646,70 @@ const Dashboard = ({ onLogout }) => {
 
   return (
     <AppLayout onLogout={onLogout} activePanel="dashboard">
-      <div className="p-4 md:p-6 space-y-6 max-w-[1600px] mx-auto">
+      <div className="p-2 md:p-3 space-y-4 max-w-[1600px] mx-auto">
         {/* Stats Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-2 shadow-sm border border-gray-200 dark:border-gray-700 transition-all hover:shadow-md hover:-translate-y-0.5">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-2 shadow-sm border border-gray-200 dark:border-gray-700 transition-all hover:shadow-md hover:-translate-y-1">
             <p className="text-sm text-gray-500 dark:text-gray-400">Total Cases</p>
             <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{filteredData.length}</p>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-2 shadow-sm border border-gray-200 dark:border-gray-700 transition-all hover:shadow-md hover:-translate-y-0.5">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-2 shadow-sm border border-gray-200 dark:border-gray-700 transition-all hover:shadow-md hover:-translate-y-1">
             <p className="text-sm text-gray-500 dark:text-gray-400">Open Cases</p>
             <p className="text-3xl font-bold text-blue-600 dark:text-blue-400 mt-1">{filteredData.filter(r => r.status === 'Open').length}</p>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-2 shadow-sm border border-gray-200 dark:border-gray-700 transition-all hover:shadow-md hover:-translate-y-0.5">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-2 shadow-sm border border-gray-200 dark:border-gray-700 transition-all hover:shadow-md hover:-translate-y-1">
             <p className="text-sm text-gray-500 dark:text-gray-400">Completed</p>
             <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">{filteredData.filter(r => r.status === 'Completed').length}</p>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-2 shadow-sm border border-gray-200 dark:border-gray-700 transition-all hover:shadow-md hover:-translate-y-0.5">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-2 shadow-sm border border-gray-200 dark:border-gray-700 transition-all hover:shadow-md hover:-translate-y-1">
             <p className="text-sm text-gray-500 dark:text-gray-400">In Progress</p>
             <p className="text-3xl font-bold text-purple-600 dark:text-purple-400 mt-1">{filteredData.filter(r => r.status === 'UW In Progress' || r.status === 'Audit In Progress').length}</p>
           </div>
         </div>
 
-        {/* Smart Search Bar */}
-        <div className="relative" ref={filterPanelRef}>
+        {/* Search + Batch Assignment Section */}
+        <div className="space-y-4">
           <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-            {/* Left side: search input */}
-            <div className="flex-1 flex items-center gap-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-2 pr-3 transition-all focus-within:ring-2 focus-within:ring-blue-500/20">
+            <div
+              className="flex-1 flex items-center gap-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-2 pr-3 transition-all focus-within:ring-2 focus-within:ring-blue-500/20 cursor-pointer"
+              onClick={() => setShowFilters(!showFilters)}
+            >
               <Search className="w-5 h-5 text-gray-400 dark:text-gray-500 flex-shrink-0 ml-2" />
               <input
                 type="text"
-                placeholder="Search by client, case, policy, name..."
-                className="w-full bg-transparent outline-none text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm"
+                placeholder="Search by client, case, policy, name... (click to open filters)"
+                className="w-full bg-transparent outline-none text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm cursor-pointer"
                 value={filters.client || filters.caseNum || filters.policyNum || filters.firstName || filters.lastName ? 'Filters active' : ''}
                 readOnly
-                onClick={() => setShowFilters(true)}
               />
             </div>
-            {/* Right side: Column Visibility + Assigned to dropdown (responsive) */}
-            <div className="flex flex-col sm:flex-row gap-2 flex-shrink-0">
-              <div className="sm:self-start">
-                <ColumnVisibilityMenu />
+
+            <div className="flex flex-col sm:flex-row gap-2 flex-shrink-0 items-stretch sm:items-center">
+              <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-600 p-1 pl-3">
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">Assign to:</span>
+                <select
+                  value={selectedAssignUser}
+                  onChange={(e) => setSelectedAssignUser(e.target.value)}
+                  className="px-2 py-1.5 text-sm border-0 bg-transparent text-gray-700 dark:text-gray-300 focus:ring-0 focus:outline-none"
+                >
+                  <option value="">Select user</option>
+                  {uniqueAssignedUsers.map(user => (
+                    <option key={user} value={user}>{user}</option>
+                  ))}
+                </select>
+                <button
+                  onClick={handleBatchAssign}
+                  className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-sm"
+                >
+                  <UserPlus size={14} /> Assign
+                </button>
               </div>
-              <select
-                value={assignedUserFilter}
-                onChange={(e) => setAssignedUserFilter(e.target.value)}
-                className="w-full sm:w-auto px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
-              >
-                <option value="">Assigned To</option>
-                {uniqueAssignedUsers.map(user => (
-                  <option key={user} value={user}>{user}</option>
-                ))}
-              </select>
             </div>
           </div>
 
-          {/* Filter Dropdown Panel */}
           {showFilters && (
-            <div className="absolute left-0 right-0 mt-2 z-20 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 p-3 animate-fadeInUp">
-              <div className="flex justify-between items-center mb-2">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 animate-fadeInUp">
+              <div className="flex justify-between items-center mb-4">
                 <h3 className="font-semibold text-gray-900 dark:text-white">Advanced Filters</h3>
                 <button onClick={() => setShowFilters(false)} className="text-gray-400 hover:text-gray-600"><X size={18} /></button>
               </div>
@@ -494,15 +776,15 @@ const Dashboard = ({ onLogout }) => {
           )}
         </div>
 
-        {/* Data Table - fully responsive */}
+        {/* Data Table */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full table-auto">
+            <table className="w-full min-w-full table-auto">
               <thead className="bg-gray-50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-700">
                 {table.getHeaderGroups().map(headerGroup => (
                   <tr key={headerGroup.id}>
                     {headerGroup.headers.map(header => (
-                      <th key={header.id} className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      <th key={header.id} className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         {header.column.getCanSort() ? (
                           <button onClick={header.column.getToggleSortingHandler()} className="flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200">
                             {flexRender(header.column.columnDef.header, header.getContext())}
@@ -580,12 +862,26 @@ const Dashboard = ({ onLogout }) => {
         </div>
       </div>
 
+      {/* Split Modal */}
+      <SplitModal
+        isOpen={splitModalOpen}
+        onClose={() => setSplitModalOpen(false)}
+        caseData={currentSplitCase}
+        availableUsers={uniqueAssignedUsers.filter(u => u !== 'Unassigned')}
+        onSplitConfirm={handleSplitConfirm}
+      />
+
       <style jsx>{`
         @keyframes fadeInUp {
           from { opacity: 0; transform: translateY(-10px); }
           to { opacity: 1; transform: translateY(0); }
         }
         .animate-fadeInUp { animation: fadeInUp 0.2s ease-out; }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        .animate-fadeIn { animation: fadeIn 0.2s ease-out; }
       `}</style>
     </AppLayout>
   );
