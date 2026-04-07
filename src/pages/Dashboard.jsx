@@ -161,7 +161,7 @@ const ColumnVisibilityMenu = ({ table }) => {
   );
 };
 
-// ---------- Split Modal Component (fully responsive) ----------
+// ---------- Split Modal Component (fully responsive, light/dark theme) ----------
 const SplitModal = ({ isOpen, onClose, caseData, availableUsers, onSplitConfirm }) => {
   const [splitMethod, setSplitMethod] = useState('equal');
   const [selectedUsers, setSelectedUsers] = useState([]);
@@ -281,12 +281,14 @@ const SplitModal = ({ isOpen, onClose, caseData, availableUsers, onSplitConfirm 
       <div className="bg-white dark:bg-gray-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
         <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-between items-center">
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Split Case Pages</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400">
+            <X size={20} />
+          </button>
         </div>
         <div className="p-6 space-y-4">
           <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3">
-            <p><strong>Case No:</strong> {caseData?.caseNum}</p>
-            <p><strong>Total Pages:</strong> {totalPages}</p>
+            <p className="text-gray-700 dark:text-gray-300"><strong>Case No:</strong> {caseData?.caseNum}</p>
+            <p className="text-gray-700 dark:text-gray-300"><strong>Total Pages:</strong> {totalPages}</p>
           </div>
 
           <div>
@@ -301,7 +303,7 @@ const SplitModal = ({ isOpen, onClose, caseData, availableUsers, onSplitConfirm 
                     onChange={() => handleUserToggle(user)}
                     className="rounded"
                   />
-                  <span className="text-sm">{user}</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{user}</span>
                 </label>
               ))}
             </div>
@@ -314,18 +316,18 @@ const SplitModal = ({ isOpen, onClose, caseData, availableUsers, onSplitConfirm 
                 <div className="flex gap-4">
                   <label className="flex items-center gap-2">
                     <input type="radio" value="equal" checked={splitMethod === 'equal'} onChange={() => handleSplitMethodChange('equal')} />
-                    <span>Equal pages per user (automatic)</span>
+                    <span className="text-gray-700 dark:text-gray-300">Equal pages per user (automatic)</span>
                   </label>
                   <label className="flex items-center gap-2">
                     <input type="radio" value="manual" checked={splitMethod === 'manual'} onChange={() => handleSplitMethodChange('manual')} />
-                    <span>Manual assignment (work assigner)</span>
+                    <span className="text-gray-700 dark:text-gray-300">Manual assignment (work assigner)</span>
                   </label>
                 </div>
               </div>
 
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <h4 className="font-medium">Page Assignments</h4>
+                  <h4 className="font-medium text-gray-800 dark:text-gray-200">Page Assignments</h4>
                   {splitMethod === 'manual' && (
                     <button
                       onClick={handleBalance}
@@ -337,32 +339,32 @@ const SplitModal = ({ isOpen, onClose, caseData, availableUsers, onSplitConfirm 
                 </div>
                 {pageAssignments.map((assign, idx) => (
                   <div key={assign.user} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
-                    <div className="font-medium mb-2">{assign.user}</div>
+                    <div className="font-medium mb-2 text-gray-800 dark:text-gray-200">{assign.user}</div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs text-gray-500">Start Page</label>
+                        <label className="block text-xs text-gray-500 dark:text-gray-400">Start Page</label>
                         <input
                           type="number"
                           value={assign.pageStart}
                           onChange={(e) => handleManualChange(idx, 'pageStart', e.target.value)}
                           disabled={splitMethod === 'equal'}
-                          className={`w-full px-2 py-1 border rounded disabled:bg-gray-100 dark:disabled:bg-gray-700 ${errors[`start_${idx}`] ? 'border-red-500' : 'border-gray-300'}`}
+                          className={`w-full px-2 py-1 border rounded disabled:bg-gray-100 dark:disabled:bg-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${errors[`start_${idx}`] ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'}`}
                         />
                         {errors[`start_${idx}`] && <p className="text-xs text-red-500 mt-1">{errors[`start_${idx}`]}</p>}
                       </div>
                       <div>
-                        <label className="block text-xs text-gray-500">Pages Count</label>
+                        <label className="block text-xs text-gray-500 dark:text-gray-400">Pages Count</label>
                         <input
                           type="number"
                           value={assign.pages}
                           onChange={(e) => handleManualChange(idx, 'pages', e.target.value)}
                           disabled={splitMethod === 'equal'}
-                          className={`w-full px-2 py-1 border rounded disabled:bg-gray-100 dark:disabled:bg-gray-700 ${errors[`pages_${idx}`] ? 'border-red-500' : 'border-gray-300'}`}
+                          className={`w-full px-2 py-1 border rounded disabled:bg-gray-100 dark:disabled:bg-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${errors[`pages_${idx}`] ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'}`}
                         />
                         {errors[`pages_${idx}`] && <p className="text-xs text-red-500 mt-1">{errors[`pages_${idx}`]}</p>}
                       </div>
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">End Page: {assign.pageEnd}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">End Page: {assign.pageEnd}</div>
                     {errors[`overlap_${idx}_${idx+1}`] && <p className="text-xs text-red-500 mt-1">{errors[`overlap_${idx}_${idx+1}`]}</p>}
                   </div>
                 ))}
@@ -374,7 +376,7 @@ const SplitModal = ({ isOpen, onClose, caseData, availableUsers, onSplitConfirm 
           )}
         </div>
         <div className="sticky bottom-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-end gap-3">
-          <button onClick={onClose} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Cancel</button>
+          <button onClick={onClose} className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300">Cancel</button>
           <button onClick={handleConfirm} className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg">Confirm Split</button>
         </div>
       </div>
