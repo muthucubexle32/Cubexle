@@ -2,7 +2,6 @@
 import React from 'react';
 import TopNavbar from './TopNavbar';
 
-// AppLayout.jsx
 const AppLayout = ({ children, onPanelChange, activePanel, showNavbar = true, onLogout, toggleTheme, dark }) => {
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -15,7 +14,10 @@ const AppLayout = ({ children, onPanelChange, activePanel, showNavbar = true, on
           dark={dark}
         />
       )}
-      <div className="flex-1 overflow-hidden">{children}</div>
+      {/* Change overflow-hidden to overflow-auto */}
+      <div className="flex-1 overflow-auto">
+        {children}
+      </div>
     </div>
   );
 };

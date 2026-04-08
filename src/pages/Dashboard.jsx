@@ -48,11 +48,11 @@ const STATUS_COLOR_MAP = {
 // ---------- Mock Data Generation ----------
 const generateMockData = () => {
   const clients = ['ABC Corp', 'XYZ Ltd', 'Global Insurance', 'SecureLife', 'Prime Health', 'Elite Coverage'];
-  const underwriters = ['John Smith', 'Sarah Johnson', 'Michael Brown', 'Emily Davis', 'David Wilson'];
-  const auditors = ['Audit Firm A', 'Audit Firm B', 'Internal Audit', 'External Audit Co', 'Compliance Plus'];
+  const underwriters = ['MG', 'SJ', 'MB', 'ED', 'DW'];
+  const auditors = ['AA', 'AB', 'IT', 'EO', 'CI'];
   const firstNames = ['James', 'Mary', 'Robert', 'Patricia', 'John', 'Jennifer', 'Michael', 'Linda', 'William', 'Elizabeth'];
   const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez'];
-  const assignedUsers = ['Unassigned', 'John Doe', 'Jane Smith', 'Robert Brown', 'Emily White'];
+  const assignedUsers = [ 'John Doe', 'Jane Smith', 'Robert Brown', 'Emily White','Muthu','Afridi'];
 
   const data = [];
   for (let i = 1; i <= 150; i++) {
@@ -67,9 +67,9 @@ const generateMockData = () => {
       qc: Math.random() > 0.7,
       receivedDate: receivedDate.toISOString().split('T')[0],
       client: clients[Math.floor(Math.random() * clients.length)],
-      uin: `UIN-${Math.floor(10000 + Math.random() * 90000)}`,
-      caseNum: `CASE-${Math.floor(1000 + Math.random() * 9000)}`,
-      policyNum: `POL-${Math.floor(100000 + Math.random() * 900000)}`,
+      uin: `UIN-${Math.floor(100000000 + Math.random() * 90000000)}`,
+      caseNum: `CASE-${Math.floor(10000000000 + Math.random() * 900000000)}`,
+      policyNum: `POL-${Math.floor(1000000000000000000000 + Math.random() * 900000000000000000000)}`,
       firstName: firstNames[Math.floor(Math.random() * firstNames.length)],
       lastName: lastNames[Math.floor(Math.random() * lastNames.length)],
       totalPages: Math.floor(Math.random() * 200) + 10,
@@ -130,51 +130,35 @@ const ActionButtons = ({ row, onAction, onSplit }) => {
   );
 };
 
-// ---------- Column Visibility Menu Component ----------
-const ColumnVisibilityMenu = ({ table }) => {
-  const [show, setShow] = useState(false);
-  const allColumns = table.getAllLeafColumns();
-  return (
-    <div className="relative">
-      <button
-        onClick={() => setShow(!show)}
-        className="flex items-center gap-2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors whitespace-nowrap"
-      >
-        <Eye size={16} /> Columns
-      </button>
-      {show && (
-        <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-10 p-2">
-          {allColumns.map(column => (
-            <label key={column.id} className="flex items-center gap-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer">
-              <input
-                type="checkbox"
-                checked={column.getIsVisible()}
-                onChange={column.getToggleVisibilityHandler()}
-                className="rounded"
-              />
-              <span className="text-sm text-gray-700 dark:text-gray-300">{column.columnDef.header}</span>
-            </label>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
 
-// ---------- Split Modal Component (fully responsive, light/dark theme) ----------
+// ---------- Split Modal Component (multi‑select dropdown) ----------
 const SplitModal = ({ isOpen, onClose, caseData, availableUsers, onSplitConfirm }) => {
-  const [splitMethod, setSplitMethod] = useState('equal');
+  const [splitMethod, setSplitMethod] = useState('manual'); // only manual is shown, but keep flexible
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [pageAssignments, setPageAssignments] = useState([]);
   const totalPages = caseData?.totalPages || 0;
   const [errors, setErrors] = useState({});
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     if (isOpen && caseData) {
       setSelectedUsers([]);
-      setSplitMethod('equal');
+      setSplitMethod('manual');
       setPageAssignments([]);
       setErrors({});
+      setIsDropdownOpen(false);
     }
   }, [isOpen, caseData]);
 
@@ -281,31 +265,48 @@ const SplitModal = ({ isOpen, onClose, caseData, availableUsers, onSplitConfirm 
       <div className="bg-white dark:bg-gray-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
         <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-between items-center">
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Split Case Pages</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400">
-            <X size={20} />
-          </button>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
         </div>
         <div className="p-6 space-y-4">
           <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3">
-            <p className="text-gray-700 dark:text-gray-300"><strong>Case No:</strong> {caseData?.caseNum}</p>
-            <p className="text-gray-700 dark:text-gray-300"><strong>Total Pages:</strong> {totalPages}</p>
+            <p><strong>Case No:</strong> {caseData?.caseNum}</p>
+            <p><strong>Total Pages:</strong> {totalPages}</p>
           </div>
 
+          {/* Multi‑select dropdown for users */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Users</label>
-            <div className="flex flex-wrap gap-2">
-              {availableUsers.map(user => (
-                <label key={user} className="flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    value={user}
-                    checked={selectedUsers.includes(user)}
-                    onChange={() => handleUserToggle(user)}
-                    className="rounded"
-                  />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">{user}</span>
-                </label>
-              ))}
+            <div className="relative" ref={dropdownRef}>
+              <button
+                type="button"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="w-full flex items-center justify-between px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                <span>
+                  {selectedUsers.length === 0
+                    ? 'Select users'
+                    : `${selectedUsers.length} user${selectedUsers.length > 1 ? 's' : ''} selected`}
+                </span>
+                <span className="ml-2">▼</span>
+              </button>
+              {isDropdownOpen && (
+                <div className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  {availableUsers.map(user => (
+                    <label
+                      key={user}
+                      className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedUsers.includes(user)}
+                        onChange={() => handleUserToggle(user)}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-700 dark:text-gray-300">{user}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -315,19 +316,20 @@ const SplitModal = ({ isOpen, onClose, caseData, availableUsers, onSplitConfirm 
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Split Method</label>
                 <div className="flex gap-4">
                   <label className="flex items-center gap-2">
-                    <input type="radio" value="equal" checked={splitMethod === 'equal'} onChange={() => handleSplitMethodChange('equal')} />
-                    <span className="text-gray-700 dark:text-gray-300">Equal pages per user (automatic)</span>
-                  </label>
-                  <label className="flex items-center gap-2">
                     <input type="radio" value="manual" checked={splitMethod === 'manual'} onChange={() => handleSplitMethodChange('manual')} />
-                    <span className="text-gray-700 dark:text-gray-300">Manual assignment (work assigner)</span>
+                    <span>Manual assignment</span>
                   </label>
+                  {/* Optional: uncomment if you want automatic split again */}
+                  {/* <label className="flex items-center gap-2">
+                    <input type="radio" value="equal" checked={splitMethod === 'equal'} onChange={() => handleSplitMethodChange('equal')} />
+                    <span>Equal pages per user (automatic)</span>
+                  </label> */}
                 </div>
               </div>
 
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <h4 className="font-medium text-gray-800 dark:text-gray-200">Page Assignments</h4>
+                  <h4 className="font-medium">Page Assignments</h4>
                   {splitMethod === 'manual' && (
                     <button
                       onClick={handleBalance}
@@ -339,32 +341,32 @@ const SplitModal = ({ isOpen, onClose, caseData, availableUsers, onSplitConfirm 
                 </div>
                 {pageAssignments.map((assign, idx) => (
                   <div key={assign.user} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
-                    <div className="font-medium mb-2 text-gray-800 dark:text-gray-200">{assign.user}</div>
+                    <div className="font-medium mb-2">{assign.user}</div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs text-gray-500 dark:text-gray-400">Start Page</label>
+                        <label className="block text-xs text-gray-500">Start Page</label>
                         <input
                           type="number"
                           value={assign.pageStart}
                           onChange={(e) => handleManualChange(idx, 'pageStart', e.target.value)}
                           disabled={splitMethod === 'equal'}
-                          className={`w-full px-2 py-1 border rounded disabled:bg-gray-100 dark:disabled:bg-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${errors[`start_${idx}`] ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'}`}
+                          className={`w-full px-2 py-1 border rounded disabled:bg-gray-100 dark:disabled:bg-gray-700 ${errors[`start_${idx}`] ? 'border-red-500' : 'border-gray-300'}`}
                         />
                         {errors[`start_${idx}`] && <p className="text-xs text-red-500 mt-1">{errors[`start_${idx}`]}</p>}
                       </div>
                       <div>
-                        <label className="block text-xs text-gray-500 dark:text-gray-400">Pages Count</label>
+                        <label className="block text-xs text-gray-500">Pages Count</label>
                         <input
                           type="number"
                           value={assign.pages}
                           onChange={(e) => handleManualChange(idx, 'pages', e.target.value)}
                           disabled={splitMethod === 'equal'}
-                          className={`w-full px-2 py-1 border rounded disabled:bg-gray-100 dark:disabled:bg-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${errors[`pages_${idx}`] ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'}`}
+                          className={`w-full px-2 py-1 border rounded disabled:bg-gray-100 dark:disabled:bg-gray-700 ${errors[`pages_${idx}`] ? 'border-red-500' : 'border-gray-300'}`}
                         />
                         {errors[`pages_${idx}`] && <p className="text-xs text-red-500 mt-1">{errors[`pages_${idx}`]}</p>}
                       </div>
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">End Page: {assign.pageEnd}</div>
+                    <div className="text-xs text-gray-500 mt-1">End Page: {assign.pageEnd}</div>
                     {errors[`overlap_${idx}_${idx+1}`] && <p className="text-xs text-red-500 mt-1">{errors[`overlap_${idx}_${idx+1}`]}</p>}
                   </div>
                 ))}
@@ -376,7 +378,7 @@ const SplitModal = ({ isOpen, onClose, caseData, availableUsers, onSplitConfirm 
           )}
         </div>
         <div className="sticky bottom-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-end gap-3">
-          <button onClick={onClose} className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300">Cancel</button>
+          <button onClick={onClose} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Cancel</button>
           <button onClick={handleConfirm} className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg">Confirm Split</button>
         </div>
       </div>
@@ -567,7 +569,7 @@ const Dashboard = ({ onLogout }) => {
     { accessorKey: 'lastName', header: 'Last Name', enableSorting: true },
     { accessorKey: 'totalPages', header: 'Total Pages', enableSorting: true },
     { accessorKey: 'totalFiles', header: 'Total Files', enableSorting: true },
-    { accessorKey: 'underwriter', header: 'Underwriter', enableSorting: true },
+    { accessorKey: 'underwriter', header: 'UW', enableSorting: true },
     { accessorKey: 'auditor', header: 'Auditor', enableSorting: true },
     {
       accessorKey: 'status',
@@ -636,7 +638,7 @@ const Dashboard = ({ onLogout }) => {
       <div className="p-4 md:p-6">
         <div className="animate-pulse space-y-6">
           <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded-xl w-full max-w-md"></div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             {[...Array(4)].map((_, i) => <div key={i} className="h-24 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>)}
           </div>
           <div className="h-16 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
@@ -648,9 +650,9 @@ const Dashboard = ({ onLogout }) => {
 
   return (
     <AppLayout onLogout={onLogout} activePanel="dashboard">
-      <div className="p-2 md:p-3 space-y-4 max-w-[1600px] mx-auto">
+      <div className="p-3 md:p-4 space-y-3 max-w-[1700px] mx-auto">
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-2 shadow-sm border border-gray-200 dark:border-gray-700 transition-all hover:shadow-md hover:-translate-y-1">
             <p className="text-sm text-gray-500 dark:text-gray-400">Total Cases</p>
             <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{filteredData.length}</p>
@@ -687,6 +689,7 @@ const Dashboard = ({ onLogout }) => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-2 flex-shrink-0 items-stretch sm:items-center">
+          
               <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-600 p-1 pl-3">
                 <span className="text-sm font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">Assign to:</span>
                 <select
@@ -786,9 +789,9 @@ const Dashboard = ({ onLogout }) => {
                 {table.getHeaderGroups().map(headerGroup => (
                   <tr key={headerGroup.id}>
                     {headerGroup.headers.map(header => (
-                      <th key={header.id} className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      <th key={header.id} className="px-2 py-4 text-left text-xs items-center font-bold text-gray-600 dark:text-gray-400  tracking-wider">
                         {header.column.getCanSort() ? (
-                          <button onClick={header.column.getToggleSortingHandler()} className="flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200">
+                          <button onClick={header.column.getToggleSortingHandler()} className="flex items-center gap-2 hover:text-gray-700 dark:hover:text-gray-200">
                             {flexRender(header.column.columnDef.header, header.getContext())}
                           </button>
                         ) : (
@@ -813,7 +816,7 @@ const Dashboard = ({ onLogout }) => {
                   table.getRowModel().rows.map(row => (
                     <tr key={row.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                       {row.getVisibleCells().map(cell => (
-                        <td key={cell.id} className="px-4 py-3 text-sm text-gray-900 dark:text-gray-300 break-words">
+                        <td key={cell.id} className="px-3 py-3 text-xs text-gray-900 dark:text-gray-300 break-words">
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}
                         </td>
                       ))}
