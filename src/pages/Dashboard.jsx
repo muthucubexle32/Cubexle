@@ -643,22 +643,22 @@ const Dashboard = ({ onLogout, toggleTheme, dark }) => {
   return (
     <AppLayout onLogout={onLogout} toggleTheme={toggleTheme} dark={dark}>
       <div className="h-full w-full overflow-y-auto">
-        <div className="p-4 md:p-6 space-y-4 max-w-[1700px] mx-auto">
+        <div className="p-2 md:p-3 space-y-4 max-w-[1700px] mx-auto">
           {/* Stats Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 transition-all hover:shadow-md">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+            <div className="bg-white rounded-xl p-2 shadow-sm border border-gray-200 transition-all hover:shadow-md">
               <p className="text-sm text-gray-500">Total Cases</p>
               <p className="text-3xl font-bold text-gray-900 mt-1">{filteredData.length}</p>
             </div>
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 transition-all hover:shadow-md">
+            <div className="bg-white rounded-xl p-2 shadow-sm border border-gray-200 transition-all hover:shadow-md">
               <p className="text-sm text-gray-500">Open Cases</p>
               <p className="text-3xl font-bold text-blue-600 mt-1">{filteredData.filter(r => r.status === 'Open').length}</p>
             </div>
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 transition-all hover:shadow-md">
+            <div className="bg-white rounded-xl p-2 shadow-sm border border-gray-200 transition-all hover:shadow-md">
               <p className="text-sm text-gray-500">Completed</p>
               <p className="text-3xl font-bold text-emerald-600 mt-1">{filteredData.filter(r => r.status === 'Completed').length}</p>
             </div>
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 transition-all hover:shadow-md">
+            <div className="bg-white rounded-xl p-2 shadow-sm border border-gray-200 transition-all hover:shadow-md">
               <p className="text-sm text-gray-500">In Progress</p>
               <p className="text-3xl font-bold text-purple-600 mt-1">{filteredData.filter(r => r.status === 'UW In Progress' || r.status === 'Audit In Progress').length}</p>
             </div>
