@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import {
   Maximize2,
   RotateCcw,
-  FileSearch,
   PanelRight,
   ChevronLeft,
   ChevronRight,
@@ -22,33 +21,18 @@ import {
   Ruler,
   ScanLine,
   Menu,
-  Upload,
-  Minus,
-  Plus,
   Check,
-  AlertCircle,
-  HelpCircle,
-  Tag,
-  Flag,
-  Edit,
-  File,
-  Clock,
-  Calendar,
-  User,
-  CheckCircle,
-  MoreVertical,
-  MoreHorizontal,
-  Home,
   FileText,
-  Circle,
+  Clock,
   Copy,
   Download,
-  Printer,
-  Share2,
-  Bookmark,
   Layers,
   Type,
   Languages,
+  FolderOpen,
+  User as UserIcon,
+  Calendar,
+  Users
 } from "lucide-react";
 
 // Tooltip Component
@@ -87,31 +71,28 @@ const Tooltip = ({ children, text, position = 'top' }) => {
 const PAGE_SIZE_DIMENSIONS = {
   'A4': { width: 595, height: 842, unit: 'px' },
   'A3': { width: 842, height: 1191, unit: 'px' },
-  'A2': { width: 1191, height: 1684, unit: 'px' },
-  'A1': { width: 1684, height: 2384, unit: 'px' },
-  'A0': { width: 2384, height: 3370, unit: 'px' },
   'Letter': { width: 612, height: 792, unit: 'px' },
   'Legal': { width: 612, height: 1008, unit: 'px' },
 };
 
 const PdfViewerPanel = () => {
-  // Document Info State with manual entry
-  const [documentInfo, setDocumentInfo] = useState({
-    docName: "Annual Report ",
-    docNo: "DOC-2025-001",
-    status: "pending",
-    pages: 1,
-    totalPages: 11,
-    fileSize: "2.4 MB",
-    createdDate: new Date().toLocaleDateString(),
-    modifiedDate: new Date().toLocaleDateString(),
-    author: "",
-    department: ""
+  // Patient data from localStorage
+  const [patientInfo, setPatientInfo] = useState({
+    sourceFile: null,
+    patientName: null,
+    dob: null,
+    gender: null,
+    pages: null,
+    providerName: null,
+    policyNumber: null
   });
 
-  // Manual entry states
-  const [isEditingDoc, setIsEditingDoc] = useState(false);
-  const [editDocInfo, setEditDocInfo] = useState({ ...documentInfo });
+  // Document Info State
+  const [documentInfo, setDocumentInfo] = useState({
+    docName: "No Document Selected",
+    docNo: "—",
+    totalPages: 11
+  });
 
   // Core states
   const [currentPage, setCurrentPage] = useState(1);
@@ -130,9 +111,8 @@ const PdfViewerPanel = () => {
   // Page search states
   const [isPageSearchOpen, setIsPageSearchOpen] = useState(false);
   const pageSearchInputRef = useRef(null);
-  const [pageSearchResults, setPageSearchResults] = useState([]);
 
-  // Enhanced OCR states
+  // OCR states
   const [isOCRProcessing, setIsOCRProcessing] = useState(false);
   const [ocrText, setOcrText] = useState('');
   const [showOCRPanel, setShowOCRPanel] = useState(false);
@@ -140,7 +120,7 @@ const PdfViewerPanel = () => {
   const [selectedOCRLanguage, setSelectedOCRLanguage] = useState('english');
   const [ocrProgress, setOcrProgress] = useState(0);
   const [showOCRExportMenu, setShowOCRExportMenu] = useState(false);
-  const [ocrMode, setOcrMode] = useState('full-page'); // 'full-page', 'area', 'text-only'
+  const [ocrMode, setOcrMode] = useState('full-page');
   const [isOCRSettingsOpen, setIsOCRSettingsOpen] = useState(false);
 
   // Page size states
@@ -150,8 +130,6 @@ const PdfViewerPanel = () => {
   const [isSizeDropdownOpen, setIsSizeDropdownOpen] = useState(false);
 
   // UI states
-  const [isToolbarCollapsed, setIsToolbarCollapsed] = useState(false);
-  const [showDocumentMenu, setShowDocumentMenu] = useState(false);
   const [isZoomMenuOpen, setIsZoomMenuOpen] = useState(false);
   const [selectedText, setSelectedText] = useState('');
 
@@ -159,11 +137,88 @@ const PdfViewerPanel = () => {
   const scrollContainerRef = useRef(null);
   const settingsRef = useRef(null);
   const sizeRef = useRef(null);
-  const fileInputRef = useRef(null);
-  const documentMenuRef = useRef(null);
   const zoomMenuRef = useRef(null);
   const ocrExportMenuRef = useRef(null);
   const pageContentRef = useRef(null);
+
+  // ==================== LOAD PATIENT DATA FROM LOCALSTORAGE ====================
+  const loadPatientData = () => {
+    const currentPatient = localStorage.getItem('currentPatient');
+    if (currentPatient) {
+      const patient = JSON.parse(currentPatient);
+      setPatientInfo({
+        sourceFile: patient.sourceFile,
+        patientName: patient.patientName,
+        dob: patient.dob,
+        gender: patient.gender,
+        pages: patient.pages,
+        providerName: patient.providerName,
+        policyNumber: patient.policyNumber
+      });
+      
+      // Update document info with patient data
+      setDocumentInfo({
+        docName: patient.patientName || patient.sourceFile || "Document",
+        docNo: patient.sourceFile || "—",
+        totalPages: 11
+      });
+      
+      console.log('PDF Viewer loaded patient:', patient);
+    } else {
+      // Try to load from patientData
+      const allPatients = JSON.parse(localStorage.getItem('patientData') || '{}');
+      const firstKey = Object.keys(allPatients)[0];
+      if (firstKey) {
+        const patient = allPatients[firstKey];
+        setPatientInfo({
+          sourceFile: patient.sourceFile,
+          patientName: patient.fullName,
+          dob: patient.dob,
+          gender: patient.gender,
+         
+          providerName: patient.providerName,
+          policyNumber: patient.policyNumber
+        });
+        setDocumentInfo({
+          docName: patient.fullName || patient.sourceFile || "Document",
+          docNo: patient.sourceFile || "—",
+          totalPages: 11
+        });
+      }
+    }
+  };
+
+  // Load patient data on mount and listen for changes
+  useEffect(() => {
+    loadPatientData();
+    
+    // Listen for storage changes
+    const handleStorageChange = (event) => {
+      if (event.key === 'currentPatient' || event.key === 'patientData') {
+        loadPatientData();
+      }
+    };
+    
+    // Listen for custom event
+    const handlePatientLoaded = (event) => {
+      if (event.detail) {
+        setPatientInfo(prev => ({ ...prev, ...event.detail }));
+        setDocumentInfo({
+          docName: event.detail.patientName || event.detail.sourceFile || "Document",
+          docNo: event.detail.sourceFile || "—",
+          totalPages: 11
+        });
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('patientLoaded', handlePatientLoaded);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('patientLoaded', handlePatientLoaded);
+    };
+  }, []);
 
   // Page size handling
   const getCurrentPageDimensions = () => {
@@ -191,13 +246,10 @@ const PdfViewerPanel = () => {
       setWindowWidth(window.innerWidth);
       if (window.innerWidth < 640) {
         setIsThumbnailOpen(false);
-        setIsToolbarCollapsed(true);
       } else if (window.innerWidth < 1024) {
         setIsThumbnailOpen(false);
-        setIsToolbarCollapsed(false);
       } else {
         setIsThumbnailOpen(true);
-        setIsToolbarCollapsed(false);
       }
     };
 
@@ -215,9 +267,6 @@ const PdfViewerPanel = () => {
       if (sizeRef.current && !sizeRef.current.contains(event.target)) {
         setIsSizeDropdownOpen(false);
       }
-      if (documentMenuRef.current && !documentMenuRef.current.contains(event.target)) {
-        setShowDocumentMenu(false);
-      }
       if (zoomMenuRef.current && !zoomMenuRef.current.contains(event.target)) {
         setIsZoomMenuOpen(false);
       }
@@ -232,19 +281,16 @@ const PdfViewerPanel = () => {
   // Navigation functions
   const handlePrevPage = () => {
     setCurrentPage(prev => Math.max(prev - 1, 1));
-    setDocumentInfo(prev => ({ ...prev, pageNo: currentPage }));
   };
 
   const handleNextPage = () => {
     setCurrentPage(prev => Math.min(prev + 1, totalPages));
-    setDocumentInfo(prev => ({ ...prev, pageNo: currentPage }));
   };
 
   const handlePageChange = (e) => {
     const value = parseInt(e.target.value);
     if (value > 0 && value <= totalPages) {
       setCurrentPage(value);
-      setDocumentInfo(prev => ({ ...prev, pageNo: value }));
     }
   };
 
@@ -256,23 +302,20 @@ const PdfViewerPanel = () => {
     setRotationAngle(prev => direction === 'left' ? prev - 90 : prev + 90);
   };
 
-  // Manual page search
   const handleManualPageSearch = (pageNum) => {
     if (pageNum >= 1 && pageNum <= totalPages) {
       setCurrentPage(pageNum);
       setSelectedPage(pageNum);
-      setDocumentInfo(prev => ({ ...prev, pageNo: pageNum }));
       setIsPageSearchOpen(false);
     }
   };
 
-// Enhanced OCR Functions
+  // OCR Functions
   const performOCR = async (mode = 'full-page') => {
     setIsOCRProcessing(true);
     setOcrProgress(0);
     setOcrMode(mode);
     
-    // Simulate OCR progress
     const interval = setInterval(() => {
       setOcrProgress(prev => {
         if (prev >= 100) {
@@ -286,27 +329,24 @@ const PdfViewerPanel = () => {
     setTimeout(() => {
       clearInterval(interval);
       
-      // Mock OCR results based on mode
       let mockOCRText = '';
       if (mode === 'full-page') {
-        mockOCRText = `[FULL PAGE OCR - Page ${currentPage}]\n\nThis is the complete OCR text extracted from page ${currentPage}. It contains all the text content that was detected on this page, including headers, paragraphs, and any other text elements.`;
+        mockOCRText = `[FULL PAGE OCR - Page ${currentPage}]\n\nSource File: ${patientInfo.sourceFile || 'Unknown'}\nPatient: ${patientInfo.patientName || 'Unknown'}\nDOB: ${patientInfo.dob || 'Unknown'}\nGender: ${patientInfo.gender || 'Unknown'}\n\nThis is the complete OCR text extracted from page ${currentPage}. It contains all the text content that was detected on this page.`;
       } else if (mode === 'area') {
-        mockOCRText = `[SELECTED AREA OCR - Page ${currentPage}]\n\nThis is the OCR text from the selected area on page ${currentPage}. Only the text from the region you selected has been extracted.`;
-      } else if (mode === 'text-only') {
-        mockOCRText = `[TEXT-ONLY OCR - Page ${currentPage}]\n\nThis is the raw text extracted from page ${currentPage} without any formatting or layout information.`;
+        mockOCRText = `[SELECTED AREA OCR - Page ${currentPage}]\n\nSource File: ${patientInfo.sourceFile || 'Unknown'}\nPatient: ${patientInfo.patientName || 'Unknown'}\n\nThis is the OCR text from the selected area on page ${currentPage}.`;
+      } else {
+        mockOCRText = `[TEXT-ONLY OCR - Page ${currentPage}]\n\nSource File: ${patientInfo.sourceFile || 'Unknown'}\n\nThis is the raw text extracted from page ${currentPage}.`;
       }
-
-     
 
       setOcrText(mockOCRText);
       
-      // Add to history
       setOcrHistory(prev => [{
         page: currentPage,
         text: mockOCRText,
         timestamp: new Date().toLocaleTimeString(),
         mode: mode,
-        language: selectedOCRLanguage
+        language: selectedOCRLanguage,
+        sourceFile: patientInfo.sourceFile
       }, ...prev].slice(0, 10));
       
       setIsOCRProcessing(false);
@@ -317,14 +357,17 @@ const PdfViewerPanel = () => {
 
   const handleCopyOCRText = () => {
     navigator.clipboard.writeText(ocrText);
-    // You could add a toast notification here
+    alert('OCR text copied to clipboard!');
   };
 
   const handleDownloadOCRText = () => {
     const element = document.createElement('a');
     const file = new Blob([ocrText], {type: 'text/plain'});
+    const fileName = patientInfo.sourceFile 
+      ? `${patientInfo.sourceFile}-page-${currentPage}-ocr.txt`
+      : `page-${currentPage}-ocr-${new Date().getTime()}.txt`;
     element.href = URL.createObjectURL(file);
-    element.download = `page-${currentPage}-ocr-${new Date().getTime()}.txt`;
+    element.download = fileName;
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
@@ -345,35 +388,30 @@ const PdfViewerPanel = () => {
     }
   };
 
-  const performOCRSelected = () => {
-    if (selectedText) {
-      performOCR('area');
-    } else {
-      performOCR('full-page');
-    }
-  };
-
   const isMobile = windowWidth < 640;
   const isTablet = windowWidth >= 640 && windowWidth < 1024;
 
-  // Page Content Component with visual improvements
+  // Page Content Component
   const PageContent = ({ pageNum }) => (
     <div
       ref={pageContentRef}
       onMouseUp={handleTextSelection}
       className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg border overflow-hidden transition-all ${
         selectedPage === pageNum ? 'ring-2 ring-blue-500' : 'border-gray-200 dark:border-gray-700'
-      } ${pageSearchResults.includes(pageNum) ? 'ring-2 ring-yellow-500' : ''}`}
+      }`}
       style={{
         width: '100%',
-        minHeight: isMobile ? '400px' : pageDims.height,
-        transform: `scale(${isMobile ? 0.8 : zoomLevel / 100}) rotate(${rotationAngle}deg)`,
+        minHeight: isMobile ? '400px' : 'auto',
+        transform: `rotate(${rotationAngle}deg)`,
         transformOrigin: 'center center',
         transition: 'transform 0.3s ease'
       }}
     >
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-600 px-3 sm:px-4 py-2 border-b flex justify-between items-center">
-        <span className="font-medium text-sm sm:text-base">Page {pageNum}</span>
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-600 px-3 sm:px-4 py-2 border-b flex justify-between items-center flex-wrap gap-2">
+        <div>
+          <span className="font-medium text-sm sm:text-base">Page {pageNum}</span>
+         
+        </div>
         <div className="flex items-center gap-2">
           <Tooltip text={starredPages.includes(pageNum) ? "Remove from starred" : "Add to starred"} position="bottom">
             <button 
@@ -394,31 +432,25 @@ const PdfViewerPanel = () => {
         </div>
       </div>
 
-      <div className="relative p-4 sm:p-6 min-h-[300px] sm:min-h-[500px] lg:min-h-[800px]">
-        {/* Visual page content - improved representation */}
+      <div className="relative p-4 sm:p-6" style={{ zoom: zoomLevel / 100 }}>
         <div className="space-y-2 sm:space-y-3 mb-8">
-          {/* Page header */}
           <div className="flex justify-between items-center mb-4">
             <div className="h-4 sm:h-5 bg-gradient-to-r from-gray-300 to-gray-200 rounded w-32"></div>
             <div className="h-4 sm:h-5 bg-gradient-to-r from-gray-300 to-gray-200 rounded w-24"></div>
           </div>
           
-          {/* Main content lines - more realistic */}
           <div className="h-3 sm:h-4 bg-gradient-to-r from-gray-200 to-gray-100 rounded w-full"></div>
           <div className="h-3 sm:h-4 bg-gradient-to-r from-gray-200 to-gray-100 rounded w-11/12"></div>
           <div className="h-3 sm:h-4 bg-gradient-to-r from-gray-200 to-gray-100 rounded w-4/5"></div>
           <div className="h-3 sm:h-4 bg-gradient-to-r from-gray-200 to-gray-100 rounded w-3/4"></div>
           <div className="h-3 sm:h-4 bg-gradient-to-r from-gray-200 to-gray-100 rounded w-5/6"></div>
           
-          {/* Paragraph break */}
           <div className="h-2"></div>
           
-          {/* Second paragraph */}
           <div className="h-3 sm:h-4 bg-gradient-to-r from-gray-200 to-gray-100 rounded w-10/12"></div>
           <div className="h-3 sm:h-4 bg-gradient-to-r from-gray-200 to-gray-100 rounded w-9/12"></div>
           <div className="h-3 sm:h-4 bg-gradient-to-r from-gray-200 to-gray-100 rounded w-4/5"></div>
           
-          {/* List items */}
           <div className="flex items-center gap-2 mt-4">
             <div className="w-2 h-2 rounded-full bg-gray-300"></div>
             <div className="h-3 bg-gradient-to-r from-gray-200 to-gray-100 rounded w-8/12"></div>
@@ -432,7 +464,6 @@ const PdfViewerPanel = () => {
             <div className="h-3 bg-gradient-to-r from-gray-200 to-gray-100 rounded w-9/12"></div>
           </div>
           
-          {/* Image placeholder */}
           <div className="mt-6 p-4 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center">
             <div className="text-center">
               <div className="w-8 h-8 mx-auto mb-2 bg-gray-300 rounded"></div>
@@ -441,7 +472,6 @@ const PdfViewerPanel = () => {
           </div>
         </div>
         
-        {/* Selected text indicator */}
         {selectedText && (
           <div className="absolute bottom-2 right-2 text-xs text-blue-500 bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded">
             Text selected
@@ -451,55 +481,45 @@ const PdfViewerPanel = () => {
     </div>
   );
 
-  // Thumbnail Component with visual improvements
+  // Thumbnail Component
   const ThumbnailPage = ({ pageNum }) => (
     <button
       onClick={() => {
         setCurrentPage(pageNum);
         setSelectedPage(pageNum);
-        setDocumentInfo(prev => ({ ...prev, pageNo: pageNum }));
       }}
       className={`w-full relative rounded-lg border-2 transition-all overflow-hidden group ${
         currentPage === pageNum ? 'border-blue-500 shadow-lg' : 'border-transparent hover:border-blue-300'
       }`}
     >
-      {/* Thumbnail content - visually improved */}
       <div className={`h-12 sm:h-14 lg:h-16 xl:h-20 bg-gradient-to-b from-gray-100 to-gray-200 p-1.5 sm:p-2 ${
         currentPage === pageNum ? 'bg-gradient-to-b from-blue-50 to-blue-100' : ''
       }`}>
         <div className="space-y-1">
-          {/* Header line */}
           <div className="flex justify-between items-center">
             <div className="h-1 w-8 bg-gray-300 rounded"></div>
             <div className="h-1 w-4 bg-gray-300 rounded"></div>
           </div>
-          
-          {/* Content lines */}
           <div className="h-1 w-full bg-white/80 rounded"></div>
           <div className="h-1 w-3/4 bg-white/80 rounded"></div>
           <div className="h-1 w-5/6 bg-white/80 rounded"></div>
           <div className="h-1 w-2/3 bg-white/80 rounded"></div>
-          
-          {/* Bottom indicator */}
           <div className="flex justify-end mt-1">
             <div className="h-1 w-4 bg-gray-300 rounded"></div>
           </div>
         </div>
       </div>
       
-      {/* Page number badge */}
       <div className="absolute bottom-1 right-1 bg-black/60 text-white text-[8px] sm:text-[10px] px-1.5 py-0.5 rounded-full">
         {pageNum}
       </div>
       
-      {/* Star indicator */}
       {starredPages.includes(pageNum) && (
         <div className="absolute top-1 left-1">
           <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-yellow-500 fill-yellow-500" />
         </div>
       )}
       
-      {/* OCR indicator (if OCR was performed on this page) */}
       {ocrHistory.some(h => h.page === pageNum) && (
         <Tooltip text="OCR performed on this page" position="top">
           <div className="absolute top-1 right-6">
@@ -508,91 +528,57 @@ const PdfViewerPanel = () => {
         </Tooltip>
       )}
       
-      {/* Hover effect */}
       <div className="absolute inset-0 bg-blue-500/0 group-hover:bg-blue-500/10 transition-all"></div>
     </button>
   );
 
   return (
-    <div className={`flex flex-col h-screen transition-colors duration-300 ${
+    <div className={`flex flex-col h-full w-full transition-colors duration-300 ${
       isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-gradient-to-b from-gray-50 to-white text-gray-800'
     }`}>
-      {/* Document Info Bar with Manual Entry */}
-      <div className={`px-2 sm:px-4 py-1 sm:py-2 border-b ${
+      {/* Document Info Bar with Patient Data */}
+      <div className={`flex-shrink-0 px-2 sm:px-4 py-2 sm:py-3 border-b ${
         isDarkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'
       }`}>
-        {isEditingDoc ? (
-          // Edit Mode - Responsive grid
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
-            <div>
-              <label className="block text-xs font-medium mb-1">Document Name</label>
-              <input
-                type="text"
-                value={editDocInfo.docName}
-                onChange={(e) => setEditDocInfo({ ...editDocInfo, docName: e.target.value })}
-                className={`w-full px-2 py-1 text-xs sm:text-sm border rounded ${
-                  isDarkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
-                }`}
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1">Document No.</label>
-              <input
-                type="text"
-                value={editDocInfo.docNo}
-                onChange={(e) => setEditDocInfo({ ...editDocInfo, docNo: e.target.value })}
-                className={`w-full px-2 py-1 text-xs sm:text-sm border rounded ${
-                  isDarkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
-                }`}
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1">Page</label>
-              <input
-                type="number"
-                value={editDocInfo.pageNo}
-                onChange={(e) => setEditDocInfo({ ...editDocInfo, pageNo: parseInt(e.target.value) || 1 })}
-                min="1"
-                max={totalPages}
-                className={`w-full px-2 py-1 text-xs sm:text-sm border rounded ${
-                  isDarkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
-                }`}
-              />
-            </div>
-           </div>
-        ) : (
-          // View Mode - Responsive
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-6">
-            <div className="flex flex-wrap items-center gap-2 sm:gap-10">
-              <div className="flex items-center gap-1 sm:gap-2">
-                <Tooltip text="Document name" position="bottom">
-                <span className="text-sm sm:text-base lg:text-sm font-semibold truncate max-w-[100px] sm:max-w-[150px] md:max-w-[200px] lg:max-w-[300px]">
-                  {documentInfo.docName}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-6">
+            {/* Source File */}
+            <div className="flex items-center gap-1 sm:gap-2">
+             
+              <Tooltip text="Source File" position="bottom">
+                <span className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  {patientInfo.sourceFile || 'No Source File'}
                 </span>
+              </Tooltip>
+            </div>
+            
+            {/* Patient Name */}
+            {patientInfo.patientName && (
+              <div className="flex items-center gap-1 sm:gap-2">
+                
+                <Tooltip text="Patient Name" position="bottom">
+                  <span className=" text-xs sm:text-sm font-medium">
+                    {patientInfo.patientName}
+                  </span>
                 </Tooltip>
               </div>
-
-              <div className="flex items-center gap-1 sm:gap-2">
-                <Tooltip text="Document number" position="bottom">
-                 <span className="text-xs sm:text-sm lg:text-sm font-semibold">{documentInfo.docNo}</span>
-                 </Tooltip>
-              </div>
-
+            )}
             
-              <div className="flex items-center gap-1 sm:gap-2">
-                <Tooltip text="Current page / Total pages" position="bottom">
-                  <span className="text-xs sm:text-sm">PAGE {currentPage}/{totalPages}</span>
-                  </Tooltip>
-              </div>
+            {/* Page Info */}
+            <div className="flex items-center gap-1 sm:gap-2">
+              
+              <Tooltip text="Current page / Total pages" position="bottom">
+                <span className="text-xs sm:text-sm font-medium">
+                  Page {currentPage} of {totalPages}
+                </span>
+              </Tooltip>
             </div>
-
-            
           </div>
-        )}
+        </div>
       </div>
 
-      {/* Main Toolbar - Responsive with tooltips */}
-      <div className={`flex flex-wrap items-center gap-0.5 sm:gap-1 p-0.5 sm:p-1 border-b ${
+      {/* Main Toolbar */}
+      <div className={`flex-shrink-0 flex flex-wrap items-center gap-0.5 sm:gap-1 p-1 sm:p-1.5 border-b ${
         isDarkMode ? 'border-gray-700 bg-gray-800/50' : 'border-gray-200 bg-white/60'
       }`}>
         {/* Mobile Menu */}
@@ -601,11 +587,11 @@ const PdfViewerPanel = () => {
             onClick={() => setIsMobileMenuOpen(true)}
             className="lg:hidden p-1.5 sm:p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
           >
-            <Menu className="w-3 h-3 sm:w-4 sm:h-4" />
+            <Menu className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
         </Tooltip>
 
-        {/* Thumbnail Toggle - Hidden on mobile */}
+        {/* Thumbnail Toggle */}
         <Tooltip text={isThumbnailOpen ? "Hide thumbnails" : "Show thumbnails"} position="right">
           <button
             onClick={() => setIsThumbnailOpen(!isThumbnailOpen)}
@@ -613,23 +599,22 @@ const PdfViewerPanel = () => {
               isThumbnailOpen ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100 dark:hover:bg-gray-700'
             }`}
           >
-            <PanelRight className="w-3 h-3 sm:w-4 sm:h-4" />
+            <PanelRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
         </Tooltip>
 
-        {/* Zoom Controls - Simplified for mobile */}
+        {/* Zoom Controls */}
         <div className="relative flex items-center">
           <Tooltip text="Zoom out" position="bottom">
             <button onClick={handleZoomOut} className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg">
-              <ZoomOut className="w-3 h-3 sm:w-4 sm:h-4" />
+              <ZoomOut className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           </Tooltip>
           
-          {/* Zoom percentage - clickable on mobile */}
           <Tooltip text="Zoom level" position="bottom">
             <button
               onClick={() => setIsZoomMenuOpen(!isZoomMenuOpen)}
-              className="px-1 sm:px-2 py-1 text-xs sm:text-sm font-medium hover:bg-gray-100 rounded"
+              className="px-1.5 sm:px-2 py-1 text-xs sm:text-sm font-medium hover:bg-gray-100 rounded"
             >
               {zoomLevel}%
             </button>
@@ -637,11 +622,10 @@ const PdfViewerPanel = () => {
           
           <Tooltip text="Zoom in" position="bottom">
             <button onClick={handleZoomIn} className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg">
-              <ZoomIn className="w-3 h-3 sm:w-4 sm:h-4" />
+              <ZoomIn className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           </Tooltip>
 
-          {/* Zoom menu for mobile */}
           {isZoomMenuOpen && (
             <div className={`absolute top-full left-0 mt-1 w-24 rounded-lg shadow-lg border py-1 z-50 ${
               isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
@@ -670,21 +654,21 @@ const PdfViewerPanel = () => {
           )}
         </div>
 
-        {/* Rotate buttons - Hidden on very small screens */}
+        {/* Rotate buttons */}
         <div className="hidden xs:flex items-center gap-1">
           <Tooltip text="Rotate left" position="bottom">
             <button onClick={() => handleRotate('left')} className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg">
-              <RotateCcw className="w-3 sm:w-4 h-3 sm:h-4" />
+              <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           </Tooltip>
           <Tooltip text="Rotate right" position="bottom">
             <button onClick={() => handleRotate('right')} className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg">
-              <RotateCw className="w-3 sm:w-4 h-3 sm:h-4" />
+              <RotateCw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           </Tooltip>
         </div>
 
-        {/* OCR Button with enhanced options */}
+        {/* OCR Button */}
         <div className="relative">
           <Tooltip text="OCR" position="bottom">
             <button
@@ -693,7 +677,7 @@ const PdfViewerPanel = () => {
                 showOCRPanel ? 'bg-blue-100 text-blue-600' : ''
               }`}
             >
-              <ScanLine className="w-3 h-3 sm:w-4 sm:h-4" />
+              <ScanLine className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           </Tooltip>
 
@@ -757,28 +741,27 @@ const PdfViewerPanel = () => {
               onClick={() => setIsSettingsOpen(!isSettingsOpen)}
               className="flex items-center gap-1 px-2 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm"
             >
-              <Settings className="w-3 sm:w-4 h-3 sm:h-4" />
+              <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           </Tooltip>
 
           {isSettingsOpen && (
-            <div className={`absolute right-0 top-full mt-1 w-56 sm:w-72 max-h-[70vh] sm:max-h-[80vh] overflow-y-auto rounded-lg shadow-lg border py-2 z-50 ${
+            <div className={`absolute right-0 top-full mt-1 w-56 sm:w-72 max-h-[70vh] overflow-y-auto rounded-lg shadow-lg border py-2 z-50 ${
               isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
             }`}>
-              {/* View Settings */}
               <div className="px-3 sm:px-4 py-2">
                 <h4 className="text-xs font-semibold text-gray-500 mb-2">VIEW SETTINGS</h4>
                 <div className="space-y-1">
-                  <button onClick={() => setViewMode('single')} className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-100 rounded flex items-center gap-2">
-                    <LayoutList className="w-3 sm:w-4 h-3 sm:h-4" /> Single Page
+                  <button onClick={() => setViewMode('single')} className="w-full px-2 sm:px-3 py-1.5 text-left text-xs sm:text-sm hover:bg-gray-100 rounded flex items-center gap-2">
+                    <LayoutList className="w-3.5 h-3.5" /> Single Page
                     {viewMode === 'single' && <Check className="w-3 h-3 ml-auto text-green-500" />}
                   </button>
-                  <button onClick={() => setViewMode('double')} className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-100 rounded flex items-center gap-2">
-                    <LayoutGrid className="w-3 sm:w-4 h-3 sm:h-4" /> Double Page
+                  <button onClick={() => setViewMode('double')} className="w-full px-2 sm:px-3 py-1.5 text-left text-xs sm:text-sm hover:bg-gray-100 rounded flex items-center gap-2">
+                    <LayoutGrid className="w-3.5 h-3.5" /> Double Page
                     {viewMode === 'double' && <Check className="w-3 h-3 ml-auto text-green-500" />}
                   </button>
-                  <button onClick={() => setViewMode('continuous')} className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-100 rounded flex items-center gap-2">
-                    <Grid className="w-3 h-3 sm:w-4 sm:h-4" /> Continuous
+                  <button onClick={() => setViewMode('continuous')} className="w-full px-2 sm:px-3 py-1.5 text-left text-xs sm:text-sm hover:bg-gray-100 rounded flex items-center gap-2">
+                    <Grid className="w-3.5 h-3.5" /> Continuous
                     {viewMode === 'continuous' && <Check className="w-3 h-3 ml-auto text-green-500" />}
                   </button>
                 </div>
@@ -786,18 +769,17 @@ const PdfViewerPanel = () => {
 
               <div className="border-t my-2"></div>
 
-              {/* Page Size */}
               <div className="px-3 sm:px-4 py-2">
                 <h4 className="text-xs font-semibold text-gray-500 mb-2">PAGE SIZE</h4>
                 <div className="relative">
                   <button
                     onClick={() => setIsSizeDropdownOpen(!isSizeDropdownOpen)}
-                    className="w-full flex items-center justify-between px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm border rounded-lg hover:bg-gray-100"
+                    className="w-full flex items-center justify-between px-2 sm:px-3 py-1.5 text-xs sm:text-sm border rounded-lg hover:bg-gray-100"
                   >
                     <span className="flex items-center gap-2">
-                      <Ruler className="w-3 h-3 sm:w-4 sm:h-4" /> {pageSize}
+                      <Ruler className="w-3.5 h-3.5" /> {pageSize}
                     </span>
-                    <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <ChevronDown className="w-3.5 h-3.5" />
                   </button>
 
                   {isSizeDropdownOpen && (
@@ -806,7 +788,7 @@ const PdfViewerPanel = () => {
                         <button
                           key={size}
                           onClick={() => handlePageSizeChange(size)}
-                          className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-100 ${
+                          className={`w-full px-3 sm:px-4 py-1.5 text-left text-xs sm:text-sm hover:bg-gray-100 ${
                             pageSize === size ? 'bg-blue-50 text-blue-600' : ''
                           }`}
                         >
@@ -820,14 +802,13 @@ const PdfViewerPanel = () => {
 
               <div className="border-t my-2"></div>
 
-              {/* Theme */}
               <div className="px-3 sm:px-4 py-2">
                 <h4 className="text-xs font-semibold text-gray-500 mb-2">APPEARANCE</h4>
                 <button
                   onClick={() => setIsDarkMode(!isDarkMode)}
-                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-100 rounded flex items-center gap-2"
+                  className="w-full px-2 sm:px-3 py-1.5 text-left text-xs sm:text-sm hover:bg-gray-100 rounded flex items-center gap-2"
                 >
-                  {isDarkMode ? <Sun className="w-3 sm:w-4 h-3 sm:h-4" /> : <Moon className="w-3 sm:w-4 h-3 sm:h-4" />}
+                  {isDarkMode ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
                   {isDarkMode ? 'Light Mode' : 'Dark Mode'}
                 </button>
               </div>
@@ -835,14 +816,11 @@ const PdfViewerPanel = () => {
           )}
         </div>
 
-        {/* Hidden file input */}
-        <input type="file" ref={fileInputRef} onChange={() => { }} accept="image/*,.pdf" className="hidden" />
-
-        {/* Page Navigation - Simplified for mobile */}
+        {/* Page Navigation */}
         <div className="flex items-center gap-0.5 sm:gap-1">
           <Tooltip text="Previous page" position="bottom">
             <button onClick={handlePrevPage} className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg" disabled={currentPage === 1}>
-              <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4" />
+              <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           </Tooltip>
 
@@ -862,7 +840,7 @@ const PdfViewerPanel = () => {
 
           <Tooltip text="Next page" position="bottom">
             <button onClick={handleNextPage} className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg" disabled={currentPage === totalPages}>
-              <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
+              <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           </Tooltip>
         </div>
@@ -874,7 +852,7 @@ const PdfViewerPanel = () => {
               onClick={() => setIsPageSearchOpen(true)}
               className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg"
             >
-              <Search className="w-3 h-3 sm:w-4 sm:h-4" />
+              <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           </Tooltip>
 
@@ -897,7 +875,7 @@ const PdfViewerPanel = () => {
                   }}
                 />
                 <button onClick={() => setIsPageSearchOpen(false)} className="p-1 hover:bg-gray-100 rounded">
-                  <X className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </button>
               </div>
               <div className="text-xs text-gray-500">Press Enter to go to page</div>
@@ -914,20 +892,20 @@ const PdfViewerPanel = () => {
               document.exitFullscreen();
             }
           }} className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg">
-            <Maximize2 className="w-3 h-3 sm:w-4 sm:h-4" />
+            <Maximize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
         </Tooltip>
       </div>
 
-      {/* Enhanced OCR Panel */}
+      {/* OCR Panel */}
       {showOCRPanel && (
-        <div className={`border-b p-2 sm:p-4 ${
+        <div className={`flex-shrink-0 border-b p-2 sm:p-4 ${
           isDarkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-blue-50'
         }`}>
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
             <div className="flex items-center gap-2">
               <h3 className="font-medium flex items-center gap-2 text-sm sm:text-base">
-                <ScanLine className="w-3 h-3 sm:w-4 sm:h-4" /> OCR Text - Page {currentPage}
+                <ScanLine className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> OCR Text - Page {currentPage}
               </h3>
               {ocrMode && (
                 <span className={`text-xs px-2 py-0.5 rounded-full ${
@@ -938,7 +916,6 @@ const PdfViewerPanel = () => {
               )}
             </div>
             <div className="flex items-center gap-1">
-              {/* OCR History */}
               {ocrHistory.length > 0 && (
                 <div className="relative" ref={ocrExportMenuRef}>
                   <Tooltip text="OCR History" position="bottom">
@@ -946,7 +923,7 @@ const PdfViewerPanel = () => {
                       onClick={() => setShowOCRExportMenu(!showOCRExportMenu)}
                       className="p-1 hover:bg-gray-200 rounded"
                     >
-                      <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </button>
                   </Tooltip>
                   
@@ -965,6 +942,7 @@ const PdfViewerPanel = () => {
                           className="w-full px-3 py-1.5 text-left text-xs hover:bg-gray-100"
                         >
                           Page {item.page} • {item.timestamp}
+                          {item.sourceFile && ` • ${item.sourceFile}`}
                         </button>
                       ))}
                     </div>
@@ -974,25 +952,24 @@ const PdfViewerPanel = () => {
               
               <Tooltip text="Copy text" position="bottom">
                 <button onClick={handleCopyOCRText} className="p-1 hover:bg-gray-200 rounded">
-                  <Copy className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </button>
               </Tooltip>
               
               <Tooltip text="Download text" position="bottom">
                 <button onClick={handleDownloadOCRText} className="p-1 hover:bg-gray-200 rounded">
-                  <Download className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </button>
               </Tooltip>
               
               <Tooltip text="Close" position="bottom">
                 <button onClick={() => setShowOCRPanel(false)} className="p-1 hover:bg-gray-200 rounded">
-                  <X className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </button>
               </Tooltip>
             </div>
           </div>
           
-          {/* OCR Progress Bar */}
           {isOCRProcessing && (
             <div className="mb-2">
               <div className="flex justify-between text-xs mb-1">
@@ -1023,7 +1000,6 @@ const PdfViewerPanel = () => {
             )}
           </div>
           
-          {/* OCR Stats */}
           {!isOCRProcessing && ocrText && (
             <div className="mt-2 text-xs text-gray-500 flex gap-4">
               <span>Words: {ocrText.split(/\s+/).length}</span>
@@ -1033,11 +1009,11 @@ const PdfViewerPanel = () => {
         </div>
       )}
 
-      {/* Main Content */}
-      <div className="flex flex-1 overflow-hidden">
+      {/* Main Content - SCROLLABLE AREA */}
+      <div className="flex flex-1 overflow-hidden min-h-0">
         <div
           ref={scrollContainerRef}
-          className={`flex-1 overflow-auto transition-all ${
+          className={`flex-1 overflow-y-auto overflow-x-hidden transition-all ${
             isDarkMode ? 'bg-gray-900' : 'bg-gray-100'
           }`}
         >
@@ -1065,24 +1041,26 @@ const PdfViewerPanel = () => {
           </div>
         </div>
 
-        {/* Enhanced Thumbnail Sidebar - Visually improved */}
+        {/* Thumbnail Sidebar */}
         {isThumbnailOpen && !isMobile && (
-          <div className={`w-16 sm:w-20 lg:w-24 xl:w-32 border-l overflow-auto p-1 sm:p-2 ${
+          <div className={`flex-shrink-0 w-16 sm:w-20 lg:w-24 xl:w-32 border-l overflow-y-auto p-1 sm:p-2 ${
             isDarkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'
           }`}>
             <div className="flex items-center justify-between mb-2 sm:mb-3 px-1 sm:px-2">
               <span className="text-xs font-medium text-gray-500">PAGES</span>
-             
+              {patientInfo.sourceFile && (
+                <span className="text-[9px] text-gray-400 truncate max-w-[60px]" title={patientInfo.sourceFile}>
+                  {patientInfo.sourceFile}
+                </span>
+              )}
             </div>
             
-            {/* Thumbnails grid */}
             <div className="space-y-1.5 sm:space-y-2">
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
                 <ThumbnailPage key={pageNum} pageNum={pageNum} />
               ))}
             </div>
             
-            {/* Quick navigation */}
             <div className="mt-3 pt-2 border-t border-gray-200 dark:border-gray-700">
               <Tooltip text="Go to first page" position="right">
                 <button 
@@ -1108,15 +1086,26 @@ const PdfViewerPanel = () => {
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 lg:hidden" onClick={() => setIsMobileMenuOpen(false)}>
-          <div className="absolute left-0 top-0 h-full w-64 bg-white dark:bg-gray-800 shadow-xl p-4" onClick={e => e.stopPropagation()}>
+          <div className="absolute left-0 top-0 h-full w-64 bg-white dark:bg-gray-800 shadow-xl p-4 overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-bold text-sm">Menu</h3>
               <button onClick={() => setIsMobileMenuOpen(false)}>
                 <X className="w-4 h-4" />
               </button>
             </div>
+            
+            {/* Patient Info in Mobile Menu */}
+            {patientInfo.patientName && (
+              <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <p className="text-xs text-blue-600 dark:text-blue-400 font-medium mb-1">Current Patient</p>
+                <p className="text-sm font-semibold">{patientInfo.patientName}</p>
+                <p className="text-xs text-gray-500 mt-1">Source: {patientInfo.sourceFile}</p>
+                <p className="text-xs text-gray-500">DOB: {patientInfo.dob} | Gender: {patientInfo.gender}</p>
+              </div>
+            )}
+            
             <div className="space-y-2">
-           <button
+              <button
                 onClick={() => {
                   performOCR('full-page');
                   setIsMobileMenuOpen(false);
@@ -1136,7 +1125,6 @@ const PdfViewerPanel = () => {
               </button>
             </div>
             
-            {/* Recent OCR History in mobile menu */}
             {ocrHistory.length > 0 && (
               <div className="mt-4">
                 <h4 className="text-xs font-semibold text-gray-500 mb-2">RECENT OCR</h4>

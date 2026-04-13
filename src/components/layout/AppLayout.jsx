@@ -15,7 +15,7 @@ const AppLayout = ({ children, onPanelChange, activePanel, showNavbar = true, on
         />
       )}
       {/* Change overflow-hidden to overflow-auto */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 min-h-0">
         {children}
       </div>
     </div>

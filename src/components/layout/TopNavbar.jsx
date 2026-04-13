@@ -1,3 +1,4 @@
+// src/components/layout/TopNavbar.jsx
 import { 
   LogOut, Home, Search, FileText, User, ChevronDown, Menu, X, 
   Calendar, Settings, Activity, Microscope, HeartPulse, Stethoscope, 
@@ -8,7 +9,7 @@ import {
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect, useRef } from "react"; 
 
-// Tooltip Component (unchanged)
+// Tooltip Component
 const Tooltip = ({ children, text, position = "bottom" }) => {
   const [show, setShow] = useState(false);
   
@@ -54,12 +55,52 @@ const TopNavbar = ({ onPanelChange, activePanel, onLogout }) => {
   const entryDropdownRef = useRef(null);
   const userDropdownRef = useRef(null);
 
-  const [filterData] = useState({
-    provider: 'Dr. John Smith',
-    dob: '15-05-1992',
-    gender: 'Male',
-    pageNo: '1-500'
+  // State for patient data from localStorage
+  const [patientData, setPatientData] = useState({
+    provider: 'No Patient Selected',
+    dob: '—',
+    gender: '—',
+    pageNo: '—'
   });
+
+  // Load patient data from localStorage on mount and when location changes
+  useEffect(() => {
+    loadPatientData();
+  }, [location.pathname]);
+
+  const loadPatientData = () => {
+    const savedPatient = localStorage.getItem('currentPatient');
+    if (savedPatient) {
+      const patient = JSON.parse(savedPatient);
+      setPatientData({
+        provider: patient.patientName || patient.sourceFile || 'No Patient Selected',
+        dob: patient.dob || '—',
+        gender: patient.gender || '—',
+        pageNo: patient.pages || '1-500'
+      });
+    } else {
+      // Try to load from patientData if exists
+      const allPatients = JSON.parse(localStorage.getItem('patientData') || '{}');
+      const firstPatient = Object.values(allPatients)[0];
+      if (firstPatient) {
+        setPatientData({
+          provider: firstPatient.fullName || firstPatient.sourceFile || 'No Patient Selected',
+          dob: firstPatient.dob || '—',
+          gender: firstPatient.gender || '—',
+          pageNo: '1-500'
+        });
+      }
+    }
+  };
+
+  // Listen for storage changes (when patient data is saved from another tab)
+  useEffect(() => {
+    const handleStorageChange = () => {
+      loadPatientData();
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -104,7 +145,6 @@ const TopNavbar = ({ onPanelChange, activePanel, onLogout }) => {
     { label: "Tool", path: "/tool", icon: Activity, tooltip: "Data Entry Tool" },
     { label: "Admin", path: "/admin", icon: Settings, tooltip: "Admin Panel" },
     { label: "Report", path: "/report", icon: FileText, tooltip: "View Reports" },
-   
   ];
 
   const entryItems = [
@@ -126,7 +166,6 @@ const TopNavbar = ({ onPanelChange, activePanel, onLogout }) => {
     return selected ? `Entry Page - ${selected.label}` : "Entry Page";
   };
 
-  // Show filter bar on both home and tool pages
   const showFilterBar = location.pathname === "/" || location.pathname === "/tool";
 
   return (
@@ -140,7 +179,7 @@ const TopNavbar = ({ onPanelChange, activePanel, onLogout }) => {
 
       {/* ROW 1: Main Navigation */}
       <div className="relative flex items-center justify-between px-2 xs:px-3 sm:px-4 md:px-6 lg:px-8 xl:px-10 py-1.5 gap-2">
-        {/* Logo Section - responsive sizing */}
+        {/* Logo Section */}
         <Tooltip text="Return to Dashboard" position="right">
           <div 
             className="flex items-center gap-1 xs:gap-2 sm:gap-3 group cursor-pointer transform transition-all duration-300 hover:scale-105 flex-shrink-0" 
@@ -156,7 +195,7 @@ const TopNavbar = ({ onPanelChange, activePanel, onLogout }) => {
           </div>
         </Tooltip>
 
-        {/* Desktop Navigation - responsive gap and padding */}
+        {/* Desktop Navigation */}
         <div className="hidden lg:flex items-center gap-1 xl:gap-2 2xl:gap-4">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -186,9 +225,9 @@ const TopNavbar = ({ onPanelChange, activePanel, onLogout }) => {
           })}
         </div>
 
-        {/* Right Actions - responsive gap */}
+        {/* Right Actions */}
         <div className="flex items-center gap-1 xs:gap-2 sm:gap-3 md:gap-4 flex-shrink-0">
-          {/* User Info - hidden on smaller tablets */}
+          {/* User Info */}
           <div className="hidden md:block relative" ref={userDropdownRef}>
             <Tooltip text="User Profile" position="bottom">
               <button
@@ -232,32 +271,32 @@ const TopNavbar = ({ onPanelChange, activePanel, onLogout }) => {
         </div>
       </div>
 
-      {/* ROW 2: Search/Filter Bar - fully responsive with horizontal scroll on mobile */}
+      {/* ROW 2: Search/Filter Bar with Patient Data */}
       {showFilterBar && (
         <div className="border-t border-white/30 bg-current">
           <div className="px-1 xs:px-2 sm:px-3 md:px-4 lg:px-5 xl:px-6 py-1 sm:py-1.5">
             
-            {/* Mobile: Horizontal scroll with improved touch handling */}
+            {/* Mobile: Horizontal scroll */}
             <div className="block sm:hidden overflow-x-auto overflow-y-visible scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent pb-1 -mx-1 px-1">
               <div className="flex items-center gap-1.5 min-w-max">
-                <Tooltip text="Current Provider" position="top">
+                <Tooltip text="Current Patient" position="top">
                   <div className="flex-none px-2 py-1.5 bg-white/5 rounded text-white text-[10px] whitespace-nowrap">
-                    <span className="text-white/60">Patient:</span> {filterData.provider.split(' ')[0]}
+                    <span className="text-white/60">Patient Name:</span> {patientData.provider.length > 15 ? patientData.provider.substring(0, 15) + '...' : patientData.provider}
                   </div>
                 </Tooltip>
                 <Tooltip text="Date of Birth" position="top">
                   <div className="flex-none px-2 py-1.5 bg-white/5 rounded text-white text-[10px] whitespace-nowrap">
-                    <span className="text-white/60">DOB:</span> {filterData.dob}
+                    <span className="text-white/60">DOB:</span> {patientData.dob}
                   </div>
                 </Tooltip>
                 <Tooltip text="Patient Gender" position="top">
                   <div className="flex-none px-2 py-1.5 bg-white/5 rounded text-white text-[10px] whitespace-nowrap">
-                    <span className="text-white/60">Gender:</span> {filterData.gender}
+                    <span className="text-white/60">Gender:</span> {patientData.gender}
                   </div>
                 </Tooltip>
                 <Tooltip text="Page Range" position="top">
                   <div className="flex-none px-2 py-1.5 bg-white/5 rounded text-white text-[10px] whitespace-nowrap">
-                    <span className="text-white/60">Pages:</span> {filterData.pageNo}
+                    <span className="text-white/60">Pages:</span> {patientData.pageNo}
                   </div>
                 </Tooltip>
                 <div className="relative flex-none ml-auto" ref={entryDropdownRef}>
@@ -274,31 +313,31 @@ const TopNavbar = ({ onPanelChange, activePanel, onLogout }) => {
               </div>
             </div>
 
-            {/* Tablet & Desktop: normal flex wrap */}
+            {/* Tablet & Desktop */}
             <div className="hidden sm:flex sm:flex-wrap sm:items-center sm:justify-between gap-2">
               <div className="flex flex-wrap items-center gap-2 md:gap-3 lg:gap-4">
                 <Tooltip text="Current Patient Information" position="top">
                   <div className="flex items-center gap-1 px-2 md:px-3 py-1 md:py-1.5 rounded-md">
-                    <span className="text-white/60 text-[10px] md:text-xs">Patient:</span>
-                    <span className="text-white text-[10px] md:text-xs font-medium truncate max-w-[100px] md:max-w-[150px]">{filterData.provider}</span>
+                    <span className="text-white text-[10px] md:text-xs">Patient Name:</span>
+                    <span className="text-white text-[10px] md:text-xs font-medium truncate max-w-[150px] md:max-w-[200px]">{patientData.provider}</span>
                   </div>
                 </Tooltip>
                 <Tooltip text="Date of Birth" position="top">
                   <div className="flex items-center gap-1 px-2 md:px-3 py-1 md:py-1.5 rounded-md">
-                    <span className="text-white/60 text-[10px] md:text-xs">DOB:</span>
-                    <span className="text-white text-[10px] md:text-xs font-medium">{filterData.dob}</span>
+                    <span className="text-white text-[10px] md:text-xs">DOB:</span>
+                    <span className="text-white text-[10px] md:text-xs font-medium">{patientData.dob}</span>
                   </div>
                 </Tooltip>
                 <Tooltip text="Patient Gender" position="top">
                   <div className="flex items-center gap-1 px-2 md:px-3 py-1 md:py-1.5 rounded-md">
-                    <span className="text-white/60 text-[10px] md:text-xs">Gender:</span>
-                    <span className="text-white text-[10px] md:text-xs font-medium">{filterData.gender}</span>
+                    <span className="text-white text-[10px] md:text-xs">Gender:</span>
+                    <span className="text-white text-[10px] md:text-xs font-medium">{patientData.gender}</span>
                   </div>
                 </Tooltip>
                 <Tooltip text="Page Range" position="top">
                   <div className="flex items-center gap-1 px-2 md:px-3 py-1 md:py-1.5 rounded-md">
-                    <span className="text-white/60 text-[10px] md:text-xs">Pages:</span>
-                    <span className="text-white text-[10px] md:text-xs font-medium">{filterData.pageNo}</span>
+                    <span className="text-white text-[10px] md:text-xs">Pages:</span>
+                    <span className="text-white text-[10px] md:text-xs font-medium">{patientData.pageNo}</span>
                   </div>
                 </Tooltip>
               </div>
@@ -316,7 +355,7 @@ const TopNavbar = ({ onPanelChange, activePanel, onLogout }) => {
                   </button>
                 </Tooltip>
 
-                {/* Entry Pages Dropdown - responsive width */}
+                {/* Entry Pages Dropdown */}
                 {showEntryDropdown && (
                   <>
                     {/* Mobile full-screen dropdown */}
@@ -358,7 +397,7 @@ const TopNavbar = ({ onPanelChange, activePanel, onLogout }) => {
                       </div>
                     </div>
 
-                    {/* Desktop dropdown - responsive width */}
+                    {/* Desktop dropdown */}
                     <div className="hidden sm:block absolute right-0 top-full mt-1 w-40 md:w-44 lg:w-48 bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700 py-1 rounded-lg z-50">
                       {entryItems.map((item) => {
                         const Icon = item.icon;
@@ -390,7 +429,7 @@ const TopNavbar = ({ onPanelChange, activePanel, onLogout }) => {
         </div>
       )}
 
-      {/* Mobile Menu - responsive height and padding */}
+      {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="lg:hidden fixed inset-0 top-[57px] xs:top-[60px] sm:top-[65px] bg-gradient-to-b from-slate-900 to-slate-800 dark:from-gray-900 dark:to-gray-800 z-40 animate-slideDown overflow-y-auto">
           <div className="min-h-full pb-20">
@@ -480,38 +519,28 @@ const TopNavbar = ({ onPanelChange, activePanel, onLogout }) => {
                 })}
               </div>
 
-              {/* Filter Data Display - on tool page */}
-              {showFilterBar && (
-                <div className="space-y-1 xs:space-y-2 pt-3 xs:pt-4 border-t border-white/10">
-                  <div className="text-[9px] xs:text-[10px] font-semibold text-gray-400 uppercase tracking-wider px-3 xs:px-4">Current Filters</div>
-                  <div className="bg-white/5 rounded-xl p-3 xs:p-4 space-y-2">
-                    <Tooltip text="Current Provider" position="left">
-                      <div className="flex justify-between items-center text-xs xs:text-sm">
-                        <span className="text-white/60">Provider:</span>
-                        <span className="text-white font-medium truncate ml-2 max-w-[150px]">{filterData.provider}</span>
-                      </div>
-                    </Tooltip>
-                    <Tooltip text="Date of Birth" position="left">
-                      <div className="flex justify-between items-center text-xs xs:text-sm">
-                        <span className="text-white/60">DOB:</span>
-                        <span className="text-white font-medium">{filterData.dob}</span>
-                      </div>
-                    </Tooltip>
-                    <Tooltip text="Patient Gender" position="left">
-                      <div className="flex justify-between items-center text-xs xs:text-sm">
-                        <span className="text-white/60">Gender:</span>
-                        <span className="text-white font-medium">{filterData.gender}</span>
-                      </div>
-                    </Tooltip>
-                    <Tooltip text="Page Range" position="left">
-                      <div className="flex justify-between items-center text-xs xs:text-sm">
-                        <span className="text-white/60">Page No:</span>
-                        <span className="text-white font-medium">{filterData.pageNo}</span>
-                      </div>
-                    </Tooltip>
+              {/* Patient Data Display in Mobile Menu */}
+              <div className="space-y-1 xs:space-y-2 pt-3 xs:pt-4 border-t border-white/10">
+                <div className="text-[9px] xs:text-[10px] font-semibold text-gray-400 uppercase tracking-wider px-3 xs:px-4">Current Patient</div>
+                <div className="bg-white/5 rounded-xl p-3 xs:p-4 space-y-2">
+                  <div className="flex justify-between items-center text-xs xs:text-sm">
+                    <span className="text-white/60">Patient:</span>
+                    <span className="text-white font-medium truncate ml-2 max-w-[150px]">{patientData.provider}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs xs:text-sm">
+                    <span className="text-white/60">DOB:</span>
+                    <span className="text-white font-medium">{patientData.dob}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs xs:text-sm">
+                    <span className="text-white/60">Gender:</span>
+                    <span className="text-white font-medium">{patientData.gender}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs xs:text-sm">
+                    <span className="text-white/60">Pages:</span>
+                    <span className="text-white font-medium">{patientData.pageNo}</span>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </div>
@@ -522,7 +551,6 @@ const TopNavbar = ({ onPanelChange, activePanel, onLogout }) => {
           .xs\\:inline { display: inline; }
           .xs\\:hidden { display: none; }
         }
-        /* Custom scrollbar for horizontal filter bar */
         .scrollbar-thin::-webkit-scrollbar {
           height: 3px;
         }

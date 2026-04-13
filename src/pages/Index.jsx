@@ -1,5 +1,5 @@
 // pages/Index.js
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AppLayout from "@/components/layout/AppLayout";
 import PdfViewerPanel from "@/components/home/PdfViewerPanel";
 import OVPanel from "@/components/Datapanel/OVPanel";
@@ -15,10 +15,35 @@ import FamilyMedicalHistoryPanel from "@/components/Datapanel/FamilyMedicalHisto
 import HealthOverviewPanel from "@/components/Datapanel/HealthOverviewPanel";
 import SpecialAttentionPanel from "@/components/Datapanel/SpecialAttentionPanel";
 
-const Index = ({ onLogout }) => {   // <-- accept onLogout
+const Index = ({ onLogout, toggleTheme, dark }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [menuSide, setMenuSide] = useState('right');
   const [activePanel, setActivePanel] = useState('ov');
+
+  // Load patient data and update PDF viewer on mount
+  useEffect(() => {
+    const loadPatientData = () => {
+      const currentPatient = localStorage.getItem('currentPatient');
+      if (currentPatient) {
+        const patient = JSON.parse(currentPatient);
+        console.log('Loaded patient for Tool page:', patient);
+        // You can dispatch an event or update state to refresh PDF viewer
+        window.dispatchEvent(new CustomEvent('patientLoaded', { detail: patient }));
+      }
+    };
+    
+    loadPatientData();
+    
+    // Listen for storage changes (when patient info is saved)
+    const handleStorageChange = (e) => {
+      if (e.key === 'currentPatient') {
+        loadPatientData();
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   const handleToggle = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -59,7 +84,9 @@ const Index = ({ onLogout }) => {   // <-- accept onLogout
     <AppLayout 
       onPanelChange={handlePanelChange}
       activePanel={activePanel}
-      onLogout={onLogout}            // <-- pass onLogout to layout
+      onLogout={onLogout}
+      toggleTheme={toggleTheme}
+      dark={dark}
     >
       <div className="flex h-full">
         {/* Left - PDF Viewer */}

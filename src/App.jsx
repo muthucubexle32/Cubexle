@@ -1,4 +1,4 @@
-// App.js
+// App.js - Complete with all routes, authentication, and dark mode
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import Index from "./pages/Index";
@@ -6,6 +6,8 @@ import Dashboard from "./pages/Dashboard";
 import AdminPage from "./pages/admin/AdminPage";
 import ReportPage from "./pages/ReportPage";
 import LoginPage from "./components/LoginPage";
+import PatientInfo from "./pages/PatientInfo";
+import AdminSetupPage from "./pages/admin/AdminPage";
 
 const AppContent = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -53,8 +55,10 @@ const AppContent = () => {
 
   return (
     <Routes>
+      {/* Public Routes */}
       <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
 
+      {/* Protected Routes - Dashboard & Main Pages */}
       <Route
         path="/dashboard"
         element={
@@ -65,6 +69,7 @@ const AppContent = () => {
           )
         }
       />
+      
       <Route
         path="/tool"
         element={
@@ -75,6 +80,7 @@ const AppContent = () => {
           )
         }
       />
+      
       <Route
         path="/report"
         element={
@@ -85,6 +91,7 @@ const AppContent = () => {
           )
         }
       />
+      
       <Route
         path="/admin"
         element={
@@ -95,8 +102,45 @@ const AppContent = () => {
           )
         }
       />
+
+      {/* New Routes - Patient Info & Admin Setup */}
+      <Route
+        path="/patient-info"
+        element={
+          isAuthenticated ? (
+            <PatientInfo onLogout={handleLogout} toggleTheme={toggleTheme} dark={dark} />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
+      
+      <Route
+        path="/admin-setup"
+        element={
+          isAuthenticated ? (
+            <AdminSetupPage onLogout={handleLogout} toggleTheme={toggleTheme} dark={dark} />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
+
+      {/* Default Route */}
       <Route
         path="/"
+        element={
+          isAuthenticated ? (
+            <Navigate to="/dashboard" replace />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
+      
+      {/* Catch all - redirect to dashboard or login */}
+      <Route
+        path="*"
         element={
           isAuthenticated ? (
             <Navigate to="/dashboard" replace />
