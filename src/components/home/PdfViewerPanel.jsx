@@ -956,12 +956,6 @@ const PdfViewerPanel = () => {
                 </button>
               </Tooltip>
               
-              <Tooltip text="Download text" position="bottom">
-                <button onClick={handleDownloadOCRText} className="p-1 hover:bg-gray-200 rounded">
-                  <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                </button>
-              </Tooltip>
-              
               <Tooltip text="Close" position="bottom">
                 <button onClick={() => setShowOCRPanel(false)} className="p-1 hover:bg-gray-200 rounded">
                   <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -1048,11 +1042,6 @@ const PdfViewerPanel = () => {
           }`}>
             <div className="flex items-center justify-between mb-2 sm:mb-3 px-1 sm:px-2">
               <span className="text-xs font-medium text-gray-500">PAGES</span>
-              {patientInfo.sourceFile && (
-                <span className="text-[9px] text-gray-400 truncate max-w-[60px]" title={patientInfo.sourceFile}>
-                  {patientInfo.sourceFile}
-                </span>
-              )}
             </div>
             
             <div className="space-y-1.5 sm:space-y-2">
