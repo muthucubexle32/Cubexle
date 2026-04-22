@@ -5,6 +5,7 @@ import {
   Trash2,
   RotateCcw,
   Save,
+  Calendar,
 } from "lucide-react";
 
 
@@ -19,7 +20,6 @@ const Tooltip = ({ children, text, position = "bottom" }) => {
     right: "left-full top-1/2 -translate-y-1/2 ml-2"
   };
 
-  // Calculate arrow position based on tooltip position
   const getArrowClasses = (pos) => {
     switch(pos) {
       case "top":
@@ -44,7 +44,6 @@ const Tooltip = ({ children, text, position = "bottom" }) => {
     >
       {children}
       
-      {/* Tooltip with high z-index and backdrop blur */}
       {show && (
         <div 
           className={`absolute z-[9999] ${positionClasses[position]} px-2 py-1 
@@ -57,7 +56,6 @@ const Tooltip = ({ children, text, position = "bottom" }) => {
         >
           {text}
           
-          {/* Arrow */}
           <div className={`absolute w-2 h-2 bg-gray-900 transform rotate-45 
                           border border-gray-700 ${getArrowClasses(position)}`}
                style={{
@@ -72,6 +70,35 @@ const Tooltip = ({ children, text, position = "bottom" }) => {
       )}
     </div>
   );
+};
+
+// Helper function to format date as MM-DD-YYYY
+const formatDate = (value) => {
+  // Remove non-digits
+  let cleaned = value.replace(/\D/g, '');
+  if (cleaned.length === 0) return '';
+  
+  // Limit to 8 digits (MMDDYYYY)
+  if (cleaned.length > 8) cleaned = cleaned.slice(0, 8);
+  
+  // Add hyphens after month and day
+  let formatted = '';
+  if (cleaned.length >= 2) {
+    formatted += cleaned.slice(0, 2);
+    if (cleaned.length >= 4) {
+      formatted += '-' + cleaned.slice(2, 4);
+      if (cleaned.length >= 8) {
+        formatted += '-' + cleaned.slice(4, 8);
+      } else if (cleaned.length > 4) {
+        formatted += '-' + cleaned.slice(4);
+      }
+    } else if (cleaned.length > 2) {
+      formatted += '-' + cleaned.slice(2);
+    }
+  } else {
+    formatted = cleaned;
+  }
+  return formatted;
 };
 
 // --- Auto-resizing Textarea Component ---
@@ -116,12 +143,15 @@ export default function EKGPanel() {
   /* ADDITIONAL NOTES */
   const [additionalNotes, setAdditionalNotes] = useState("");
 
-  /* REFS for Date Pickers */
+  /* REFS for Date Pickers - only needed for DOS (no longer used, keep for consistency) */
   const dosRef = useRef(null);
 
   /* HANDLERS */
-  const triggerDatePicker = (ref) => {
-    if (ref.current) ref.current.showPicker();
+  // DOS change handler with formatting
+  const handleDosChange = (e) => {
+    const raw = e.target.value;
+    const formatted = formatDate(raw);
+    setDos(formatted);
   };
 
   // Add new timing/comment pair
@@ -187,7 +217,6 @@ export default function EKGPanel() {
       <div className="w-full bg-white border-b border-gray-200 sticky top-0 z-20">
         <div className="px-6 py-2 max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-1">
           <div className="flex items-center gap-3 w-full sm:w-auto">
-            {/* Title Header */}
             <div className="flex items-center gap-2 mb-1">
               <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
                 <Activity size={18} className="text-blue-600" />
@@ -245,18 +274,18 @@ export default function EKGPanel() {
               />
             </div>
 
-            {/* DOS */}
+            {/* DOS - Changed to MM-DD-YYYY text input with calendar icon */}
             <div>
               <label className={labelClass}>DOS</label>
               <div className="relative">
                 <input
-                  ref={dosRef}
-                  type="date"
+                  type="text"
+                  placeholder="MM-DD-YYYY"
                   value={dos}
-                  onChange={(e) => setDos(e.target.value)}
-                  onClick={() => triggerDatePicker(dosRef)}
-                  className={`${inputClass} pr-3 cursor-pointer`}
+                  onChange={handleDosChange}
+                  className={`${inputClass} pr-8`}
                 />
+                <Calendar size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
               </div>
             </div>
 

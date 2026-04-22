@@ -8,14 +8,14 @@ const SideMenu = ({ isOpen, side = 'left', onItemSelect }) => {
   if (!isOpen) return null;
 
   const menuItems = [
-    { date: 'dd-mm-yyyy', pageNo: '1' },
-    { date: 'dd-mm-yyyy', pageNo: '2' },
-    { date: 'dd-mm-yyyy', pageNo: '3' },
-    { date: 'dd-mm-yyyy', pageNo: '4' },
-    { date: 'dd-mm-yyyy', pageNo: '5' },
-    { date: 'dd-mm-yyyy', pageNo: '6' },
-    { date: 'dd-mm-yyyy', pageNo: '7' },
-    { date: 'dd-mm-yyyy', pageNo: '8' },
+    { date: 'MM-DD-YYYY', pageNo: '1' },
+    { date: 'MM-DD-YYYY', pageNo: '2' },
+    { date: 'MM-DD-YYYY', pageNo: '3' },
+    { date: 'MM-DD-YYYY', pageNo: '4' },
+    { date: 'MM-DD-YYYY', pageNo: '5' },
+    { date: 'MM-DD-YYYY', pageNo: '6' },
+    { date: 'MM-DD-YYYY', pageNo: '7' },
+    { date: 'MM-DD-YYYY', pageNo: '8' },
   ];
 
   // Filter items based on search

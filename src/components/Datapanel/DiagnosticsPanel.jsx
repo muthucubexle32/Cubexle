@@ -28,7 +28,6 @@ const Tooltip = ({ children, text, position = "bottom" }) => {
     right: "left-full top-1/2 -translate-y-1/2 ml-2"
   };
 
-  // Calculate arrow position based on tooltip position
   const getArrowClasses = (pos) => {
     switch(pos) {
       case "top":
@@ -53,7 +52,6 @@ const Tooltip = ({ children, text, position = "bottom" }) => {
     >
       {children}
       
-      {/* Tooltip with high z-index and backdrop blur */}
       {show && (
         <div 
           className={`absolute z-[9999] ${positionClasses[position]} px-2 py-1 
@@ -66,7 +64,6 @@ const Tooltip = ({ children, text, position = "bottom" }) => {
         >
           {text}
           
-          {/* Arrow */}
           <div className={`absolute w-2 h-2 bg-gray-900 transform rotate-45 
                           border border-gray-700 ${getArrowClasses(position)}`}
                style={{
@@ -114,12 +111,37 @@ const AutoResizeTextarea = ({
   );
 };
 
+// Helper function to format date as MM-DD-YYYY
+const formatDate = (value) => {
+  // Remove non-digits
+  let cleaned = value.replace(/\D/g, '');
+  if (cleaned.length === 0) return '';
+  
+  // Limit to 8 digits (MMDDYYYY)
+  if (cleaned.length > 8) cleaned = cleaned.slice(0, 8);
+  
+  // Add hyphens after month and day
+  let formatted = '';
+  if (cleaned.length >= 2) {
+    formatted += cleaned.slice(0, 2);
+    if (cleaned.length >= 4) {
+      formatted += '-' + cleaned.slice(2, 4);
+      if (cleaned.length >= 8) {
+        formatted += '-' + cleaned.slice(4, 8);
+      } else if (cleaned.length > 4) {
+        formatted += '-' + cleaned.slice(4);
+      }
+    } else if (cleaned.length > 2) {
+      formatted += '-' + cleaned.slice(2);
+    }
+  } else {
+    formatted = cleaned;
+  }
+  return formatted;
+};
+
 // --- Main Component ---
 export default function DiagnosticReport() {
- 
- 
-
-
   /* PROVIDER / FACILITY / DOS */
   const [providerName, setProviderName] = useState("");
   const [facility, setFacility] = useState("");
@@ -128,7 +150,7 @@ export default function DiagnosticReport() {
 
   /* Refs for Date Pickers */
   const dobRef = useRef(null);
-  const dosRef = useRef(null);
+  // dosRef no longer needed because we use text input
 
   /* VITALS STATE - Two separate rows like OV panel */
   // Box 1 - Height/Weight measurements (multiple rows)
@@ -213,13 +235,15 @@ export default function DiagnosticReport() {
     );
   };
 
+  // DOS change handler with formatting
+  const handleDosChange = (e) => {
+    const raw = e.target.value;
+    const formatted = formatDate(raw);
+    setDos(formatted);
+  };
+
   const handleReset = () => {
     if (window.confirm("Reset all fields?")) {
-      setStatus("pending");
-      setFirstName("");
-      setLastName("");
-      setDob("");
-      setGender("");
       setProviderName("");
       setFacility("");
       setDos("");
@@ -255,7 +279,6 @@ export default function DiagnosticReport() {
 
   const handleSave = () => {
     const allData = {
-      patientInfo: { firstName, lastName, dob, gender },
       provider: { providerName, facility, dos, pageNoHeader },
       vitals: { vitalsRowsBox1, vitalsRows },
       diagnostic: {
@@ -271,13 +294,6 @@ export default function DiagnosticReport() {
     };
     alert("Data Saved Successfully!");
     console.log(allData);
-  };
-
-  // Function to trigger native date picker
-  const triggerDatePicker = (ref) => {
-    if (ref.current) {
-      ref.current.showPicker();
-    }
   };
 
   // --- Helper Styles ---
@@ -319,7 +335,6 @@ export default function DiagnosticReport() {
 
       <div className="px-4 space-y-3 max-w-[1400px] mx-auto">
         
-
         {/* Provider / Facility Row */}
         <div className="border border-blue-300 rounded-xl p-3 bg-white shadow-sm">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3">
@@ -345,16 +360,13 @@ export default function DiagnosticReport() {
             </div>
             <div>
               <label className={labelClass}>Date of Service</label>
-              <div
-                className="relative cursor-pointer"
-                onClick={() => triggerDatePicker(dosRef)}
-              >
+              <div className="relative">
                 <input
-                  ref={dosRef}
-                  type="date"
+                  type="text"
+                  placeholder="MM-DD-YYYY"
                   value={dos}
-                  onChange={(e) => setDos(e.target.value)}
-                  className={`${inputBaseClass} pr-10 cursor-pointer [&::-webkit-calendar-picker-indicator]:hidden`}
+                  onChange={handleDosChange}
+                  className={`${inputBaseClass} pr-8`}
                 />
                 <Calendar
                   size={16}

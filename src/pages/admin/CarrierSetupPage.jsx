@@ -7,7 +7,7 @@ import { Plus, Edit, Trash2, Save, X, ChevronLeft, ChevronRight, Search } from '
 const Input = ({ label, type = "text", placeholder, value, onChange, required, error, className = "" }) => (
   <div className={`flex flex-col gap-1.5 ${className}`}>
     {label && (
-      <label className="text-[12px] font-semibold uppercase tracking-wide text-gray-600">
+      <label className="text-[14px] font-semibold  tracking-wide text-gray-900">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
@@ -32,7 +32,7 @@ const Checkbox = ({ label, checked, onChange }) => (
       onChange={(e) => onChange(e.target.checked)}
       className="w-5 h-5 sm:w-6 sm:h-6 rounded border-gray-700 text-[#001438] focus:ring-[#001438] focus:ring-offset-2 sm:focus:ring-offset-4 cursor-pointer"
     />
-    <span className="text-[14px] sm:text-[16px] font-semibold uppercase tracking-wide text-gray-900 group-hover:text-gray-900 transition-colors pt-0.5">{label}</span>
+    <span className="text-[14px] sm:text-[16px] font-semibold tracking-wide text-gray-900 group-hover:text-gray-900 transition-colors pt-0.5">{label}</span>
   </label>
 );
 
@@ -47,7 +47,7 @@ const Radio = ({ label, name, value, checked, onChange }) => (
       onChange={(e) => onChange(e.target.value)}
       className="w-5 h-5 sm:w-6 sm:h-6 border-gray-500 text-[#001438] focus:ring-[#001438] cursor-pointer"
     />
-    <span className="text-[12px] sm:text-[14px] font-semibold uppercase tracking-wide text-gray-900 group-hover:text-gray-900 transition-colors">{label}</span>
+    <span className="text-[14px] sm:text-[16px] font-semibold  tracking-wide text-gray-900 group-hover:text-gray-900 transition-colors">{label}</span>
   </label>
 );
 
@@ -93,12 +93,12 @@ const Modal = ({ isOpen, onClose, title, children }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fadeIn">
-      <div 
+      <div
         ref={modalRef}
-        className="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden animate-slideUp"
+        className="bg-white rounded-xl shadow-2xl w-full max-w-7xl min-h-[700px] max-h-[99vh] overflow-y-auto"
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50/50">
-          <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
+        <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50/50">
+          <h3 className="text-xl font-semibold text-gray-800">{title}</h3>
           <button
             onClick={onClose}
             className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
@@ -106,7 +106,7 @@ const Modal = ({ isOpen, onClose, title, children }) => {
             <X size={20} />
           </button>
         </div>
-        <div className="overflow-y-auto max-h-[calc(90vh-70px)] p-6">
+        <div className="p-6">
           {children}
         </div>
       </div>
@@ -145,10 +145,10 @@ const CarrierSetupPanel = () => {
 
   // Table data state with sample data
   const [carriers, setCarriers] = useState([
-    { 
-      id: 1, 
-      carrierName: 'ABC Insurance', 
-      carrierCode: 'ABC001987978978987', 
+    {
+      id: 1,
+      carrierName: 'ABC Insurance',
+      carrierCode: 'ABC001987978978987',
       accountNumber: 'ACC-12345',
       product: 'Health Insurance',
       carrierQC: true,
@@ -159,10 +159,10 @@ const CarrierSetupPanel = () => {
       combineAPSHyperlink: false,
       indexer: false
     },
-    { 
-      id: 2, 
-      carrierName: 'XYZ Health', 
-      carrierCode: 'XYZ00289879789789', 
+    {
+      id: 2,
+      carrierName: 'XYZ Health',
+      carrierCode: 'XYZ00289879789789',
       accountNumber: 'ACC-67890',
       product: 'Life Insurance',
       carrierQC: false,
@@ -173,10 +173,10 @@ const CarrierSetupPanel = () => {
       combineAPSHyperlink: true,
       indexer: true
     },
-    { 
-      id: 3, 
-      carrierName: 'Global Care', 
-      carrierCode: 'GLOB00399898779879', 
+    {
+      id: 3,
+      carrierName: 'Global Care',
+      carrierCode: 'GLOB00399898779879',
       accountNumber: 'ACC-11223',
       product: 'Dental Insurance',
       carrierQC: true,
@@ -243,7 +243,7 @@ const CarrierSetupPanel = () => {
     if (!validateForm()) return;
 
     if (isEditing && editId) {
-      setCarriers(prev => prev.map(carrier => 
+      setCarriers(prev => prev.map(carrier =>
         carrier.id === editId ? { ...formData, id: editId } : carrier
       ));
       alert('Carrier updated successfully!');
@@ -341,7 +341,7 @@ const CarrierSetupPanel = () => {
               className="w-full pl-9 pr-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0f3f3f]/20 focus:border-[#0f3f3f]"
             />
           </div>
-          
+
           <Button variant="primary" onClick={openAddModal}>
             <Plus size={16} /> Add New Carrier
           </Button>
@@ -353,10 +353,10 @@ const CarrierSetupPanel = () => {
             <table className="w-full min-w-[600px]">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">CARRIER NAME</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">CARRIER CODE</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">TEMPLATE NAME</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600">ACTIONS</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Carrier Name</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Carrier Code</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Template Name</th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-900">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -375,13 +375,7 @@ const CarrierSetupPanel = () => {
                           >
                             <Edit size={16} />
                           </button>
-                          <button
-                            onClick={() => handleDelete(carrier.id)}
-                            className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
-                            title="Delete"
-                          >
-                            <Trash2 size={16} />
-                          </button>
+
                         </div>
                       </td>
                     </tr>
@@ -433,11 +427,10 @@ const CarrierSetupPanel = () => {
                       <button
                         key={pageNum}
                         onClick={() => setCurrentPage(pageNum)}
-                        className={`w-8 h-8 rounded text-sm transition-colors ${
-                          currentPage === pageNum
+                        className={`w-8 h-8 rounded text-sm transition-colors ${currentPage === pageNum
                             ? 'bg-[#0f3f3f] text-white'
                             : 'text-gray-600 hover:bg-gray-200'
-                        }`}
+                          }`}
                       >
                         {pageNum}
                       </button>
@@ -463,7 +456,7 @@ const CarrierSetupPanel = () => {
           {/* Row 1: Carrier Name, Carrier Code, Account Number */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <Input
-              label="CARRIER NAME"
+              label="Carrier Name"
               placeholder="Enter carrier name"
               value={formData.carrierName}
               onChange={(e) => updateField('carrierName', e.target.value)}
@@ -471,7 +464,7 @@ const CarrierSetupPanel = () => {
               required
             />
             <Input
-              label="CARRIER CODE"
+              label="Carrier Code"
               placeholder="CAR001"
               value={formData.carrierCode}
               onChange={(e) => updateField('carrierCode', e.target.value)}
@@ -479,7 +472,7 @@ const CarrierSetupPanel = () => {
               required
             />
             <Input
-              label="ACCOUNT NUMBER"
+              label="Account Number"
               placeholder="ACC-12345"
               value={formData.accountNumber}
               onChange={(e) => updateField('accountNumber', e.target.value)}
@@ -487,10 +480,10 @@ const CarrierSetupPanel = () => {
           </div>
 
           {/* Row 2: Product (wide) + Checkboxes (Carrier QC, ICD) */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
             <div className="lg:col-span-7">
               <Input
-                label="PRODUCT"
+                label="Product"
                 placeholder="Enter product name"
                 value={formData.product}
                 onChange={(e) => updateField('product', e.target.value)}
@@ -498,9 +491,9 @@ const CarrierSetupPanel = () => {
             </div>
             <div className="lg:col-span-5">
               <label className="text-[12px] font-semibold uppercase tracking-wide text-gray-600 block mb-2">&nbsp;</label>
-              <div className="flex flex-wrap gap-4 sm:gap-8">
+              <div className="flex flex-wrap gap-4 sm:gap-12">
                 <Checkbox
-                  label="Carrier QC"
+                  label=" QC"
                   checked={formData.carrierQC}
                   onChange={(val) => updateField('carrierQC', val)}
                 />
@@ -514,10 +507,10 @@ const CarrierSetupPanel = () => {
           </div>
 
           {/* Row 3: Template Name (wide) + Sorting Logic (radio buttons) */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start mb-3">
             <div className="lg:col-span-7">
               <Input
-                label="TEMPLATE NAME"
+                label="Template Name"
                 placeholder="Enter template name"
                 value={formData.templateName}
                 onChange={(e) => updateField('templateName', e.target.value)}
@@ -526,7 +519,7 @@ const CarrierSetupPanel = () => {
               />
             </div>
             <div className="lg:col-span-5">
-              <label className="text-[12px] font-semibold uppercase tracking-wide text-gray-600 block mb-2">SORTING LOGIC</label>
+              <label className="text-[14px] font-semibold  tracking-wide text-gray-900 block mb-2">Sorting Logic</label>
               <div className="flex flex-wrap gap-4 sm:gap-8">
                 <Radio
                   label="Chronological"
@@ -570,7 +563,7 @@ const CarrierSetupPanel = () => {
           </div>
 
           {/* Bottom Actions */}
-          <div className="flex justify-end gap-3 pt-5 border-t border-gray-200 mt-4">
+          <div className="flex justify-end gap-3 sm:gap-4 pt-6 sm:pt-8 border-t border-gray-200 mt-4">
             <Button type="button" variant="secondary" onClick={closeModal}>Cancel</Button>
             <Button type="submit" variant="primary">
               <Save size={14} />

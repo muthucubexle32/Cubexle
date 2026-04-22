@@ -15,9 +15,9 @@ const PatientInfo = ({ onLogout, toggleTheme, dark }) => {
   const location = useLocation();
   const { sourceFile, patientId, existingData, returnTo } = location.state || {};
 
-  // State for selected PDF to view
+  // State for selected PDF to view (no modal – opens in new tab)
   const [selectedPdf, setSelectedPdf] = useState(null);
-  const [isPdfViewerOpen, setIsPdfViewerOpen] = useState(false);
+  const [isPdfViewerOpen, setIsPdfViewerOpen] = useState(false); // kept for compatibility, not used
   const [pdfZoom, setPdfZoom] = useState(100);
   const [pdfRotation, setPdfRotation] = useState(0);
   
@@ -29,7 +29,7 @@ const PatientInfo = ({ onLogout, toggleTheme, dark }) => {
     firstName: '',
     lastName: '',
     dob: '',
-    gender: 'Male',
+    gender: '',
     age: '',
     // Policy Details
     providerName: '',
@@ -37,7 +37,7 @@ const PatientInfo = ({ onLogout, toggleTheme, dark }) => {
     policyAmount: '',
     facility: '',
     // Professional & Additional Info
-    applicationScope: 'Universal',
+    applicationScopes: [], // array of selected scopes (Universal, Specific)
     occupation: '',
     employeeId: '',
     specialInstructions: ''
@@ -97,7 +97,7 @@ const PatientInfo = ({ onLogout, toggleTheme, dark }) => {
               </div>
               <div class="info-row">
                 <div class="info-label">Gender:</div>
-                <div class="info-value">${formData.gender || 'Male'}</div>
+                <div class="info-value">${formData.gender || 'Not specified'}</div>
               </div>
               <div class="info-row">
                 <div class="info-label">Age:</div>
@@ -156,13 +156,13 @@ const PatientInfo = ({ onLogout, toggleTheme, dark }) => {
         firstName: existingData.firstName || '',
         lastName: existingData.lastName || '',
         dob: existingData.dob || '',
-        gender: existingData.gender || 'Male',
+        gender: existingData.gender || '',
         age: existingData.age || '',
         providerName: existingData.providerName || '',
         policyNumber: existingData.policyNumber || '',
         policyAmount: existingData.policyAmount || '',
         facility: existingData.facility || '',
-        applicationScope: existingData.applicationScope || 'Universal',
+        applicationScopes: existingData.applicationScopes || [],
         occupation: existingData.occupation || '',
         employeeId: existingData.employeeId || '',
         specialInstructions: existingData.specialInstructions || ''
@@ -250,10 +250,18 @@ const PatientInfo = ({ onLogout, toggleTheme, dark }) => {
     setFilteredGroups(groups);
   };
 
-  // Auto-calculate age from DOB
-  const calculateAge = (dob) => {
-    if (!dob) return '';
-    const birthDate = new Date(dob);
+  // Auto-calculate age from DOB (expects format MM-DD-YYYY)
+  const calculateAgeFromDob = (dobStr) => {
+    if (!dobStr) return '';
+    // Parse MM-DD-YYYY
+    const parts = dobStr.split('-');
+    if (parts.length !== 3) return '';
+    const month = parseInt(parts[0], 10) - 1;
+    const day = parseInt(parts[1], 10);
+    const year = parseInt(parts[2], 10);
+    if (isNaN(month) || isNaN(day) || isNaN(year)) return '';
+    const birthDate = new Date(year, month, day);
+    if (birthDate.getFullYear() !== year || birthDate.getMonth() !== month || birthDate.getDate() !== day) return '';
     const today = new Date();
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
@@ -266,15 +274,15 @@ const PatientInfo = ({ onLogout, toggleTheme, dark }) => {
   // Validate form
   const validateForm = () => {
     const newErrors = {};
-
     if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
     if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
     if (!formData.dob) newErrors.dob = 'Date of birth is required';
-    if (!formData.gender) newErrors.gender = 'Gender is required';
+    // Gender is optional
     if (!formData.providerName.trim()) newErrors.providerName = 'Provider name is required';
     if (!formData.policyNumber.trim()) newErrors.policyNumber = 'Policy number is required';
     if (!formData.policyAmount.trim()) newErrors.policyAmount = 'Policy amount is required';
     if (!formData.facility.trim()) newErrors.facility = 'Facility is required';
+    // Application scopes are optional
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -285,14 +293,15 @@ const PatientInfo = ({ onLogout, toggleTheme, dark }) => {
   };
 
   const handleChange = (field, value) => {
-    // Auto-calculate age when DOB changes
     if (field === 'dob') {
-      const calculatedAge = calculateAge(value);
+      const calculatedAge = calculateAgeFromDob(value);
       setFormData(prev => ({
         ...prev,
-        [field]: value,
+        dob: value,
         age: calculatedAge
       }));
+    } else if (field === 'gender') {
+      setFormData(prev => ({ ...prev, gender: value }));
     } else {
       setFormData(prev => ({ ...prev, [field]: value }));
     }
@@ -300,6 +309,18 @@ const PatientInfo = ({ onLogout, toggleTheme, dark }) => {
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
+  };
+
+  // Toggle application scope pill
+  const toggleApplicationScope = (scope) => {
+    setFormData(prev => {
+      const current = [...prev.applicationScopes];
+      if (current.includes(scope)) {
+        return { ...prev, applicationScopes: current.filter(s => s !== scope) };
+      } else {
+        return { ...prev, applicationScopes: [...current, scope] };
+      }
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -360,44 +381,12 @@ const PatientInfo = ({ onLogout, toggleTheme, dark }) => {
     navigate('/dashboard');
   };
 
-  // Handle PDF view - opens PDF in modal within the same page
+  // Handle PDF view - opens PDF in a new tab
   const handleViewPdf = (pdfItem, sourceFileName) => {
-    setSelectedPdf({
-      ...pdfItem,
-      sourceFile: sourceFileName
-    });
-    setIsPdfViewerOpen(true);
-    setPdfZoom(100);
-    setPdfRotation(0);
-  };
-
-  // Close PDF viewer
-  const closePdfViewer = () => {
-    setIsPdfViewerOpen(false);
-    setSelectedPdf(null);
-  };
-
-  // PDF viewer controls
-  const handleZoomIn = () => setPdfZoom(prev => Math.min(prev + 25, 200));
-  const handleZoomOut = () => setPdfZoom(prev => Math.max(prev - 25, 50));
-  const handleRotate = () => setPdfRotation(prev => (prev + 90) % 360);
-  const handlePrint = () => {
-    const printWindow = window.open('', '_blank');
-    if (printWindow && selectedPdf) {
-      printWindow.document.write(getDummyPdfContent(selectedPdf.sourceFile, selectedPdf));
-      printWindow.document.close();
-      printWindow.print();
-    }
-  };
-  const handleDownload = () => {
-    const blob = new Blob([getDummyPdfContent(selectedPdf?.sourceFile || 'document', selectedPdf)], { type: 'text/html' });
+    const pdfContent = getDummyPdfContent(sourceFileName, pdfItem);
+    const blob = new Blob([pdfContent], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${selectedPdf?.sourceFile || 'document'}_${selectedPdf?.documentType || 'report'}.html`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    window.open(url, '_blank');
     URL.revokeObjectURL(url);
   };
 
@@ -446,7 +435,7 @@ const PatientInfo = ({ onLogout, toggleTheme, dark }) => {
                 <div className="h-6 sm:h-8 w-px bg-gray-300 hidden sm:block"></div>
                 <div>
                   <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Patient Information</h1>
-                  <p className="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1">Source File: {sourceFile || 'New Entry'}</p>
+                  <p className="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1">Source file: {sourceFile || 'New entry'}</p>
                 </div>
               </div>
 
@@ -467,13 +456,13 @@ const PatientInfo = ({ onLogout, toggleTheme, dark }) => {
                     <div className="w-6 h-6 sm:w-8 sm:h-8 bg-[#0f3f3f]/10 rounded-lg flex items-center justify-center">
                       <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#0f3f3f]" />
                     </div>
-                    <h4 className="text-sm sm:text-base font-semibold text-gray-800">Personal Information</h4>
+                    <h4 className="text-sm sm:text-base font-semibold text-gray-800">Personal information</h4>
                   </div>
                   <div className="p-3 sm:p-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
                       <div id="field-firstName">
-                        <label className="block text-[10px] sm:text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-1 sm:mb-1.5">
-                          FIRST NAME <span className="text-red-500">*</span>
+                        <label className="block text-[10px] sm:text-[11px] font-semibold tracking-wide text-gray-500 mb-1 sm:mb-1.5">
+                          First name <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="text"
@@ -491,8 +480,8 @@ const PatientInfo = ({ onLogout, toggleTheme, dark }) => {
                       </div>
 
                       <div id="field-lastName">
-                        <label className="block text-[10px] sm:text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-1 sm:mb-1.5">
-                          LAST NAME <span className="text-red-500">*</span>
+                        <label className="block text-[10px] sm:text-[11px] font-semibold tracking-wide text-gray-500 mb-1 sm:mb-1.5">
+                          Last name <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="text"
@@ -512,17 +501,19 @@ const PatientInfo = ({ onLogout, toggleTheme, dark }) => {
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                       <div id="field-dob">
-                        <label className="block text-[10px] sm:text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-1 sm:mb-1.5">
-                          DOB <span className="text-red-500">*</span>
+                        <label className="block text-[10px] sm:text-[11px] font-semibold tracking-wide text-gray-500 mb-1 sm:mb-1.5">
+                          Date of birth <span className="text-red-500">*</span>
                         </label>
                         <div className="relative">
                           <input
-                            type="date"
+                            type="text"
+                            placeholder="MM-DD-YYYY"
                             value={formData.dob}
                             onChange={(e) => handleChange('dob', e.target.value)}
                             onBlur={() => handleBlur('dob')}
                             className={`w-full h-9 sm:h-10 px-2 sm:px-3 bg-[#e8f0f3] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0f3f3f]/30 focus:bg-[#e0eaf0] text-gray-800 transition-all text-xs sm:text-sm ${errors.dob && touched.dob ? 'ring-2 ring-red-500' : ''}`}
                           />
+                          <Calendar className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 pointer-events-none" />
                         </div>
                         {errors.dob && touched.dob && (
                           <p className="text-[10px] sm:text-xs text-red-500 mt-1">{errors.dob}</p>
@@ -530,8 +521,8 @@ const PatientInfo = ({ onLogout, toggleTheme, dark }) => {
                       </div>
 
                       <div id="field-gender">
-                        <label className="block text-[10px] sm:text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-1 sm:mb-1.5">
-                          GENDER <span className="text-red-500">*</span>
+                        <label className="block text-[10px] sm:text-[11px] font-semibold tracking-wide text-gray-500 mb-1 sm:mb-1.5">
+                          Gender
                         </label>
                         <div className="relative">
                           <select
@@ -540,6 +531,7 @@ const PatientInfo = ({ onLogout, toggleTheme, dark }) => {
                             onBlur={() => handleBlur('gender')}
                             className={`w-full h-9 sm:h-10 px-2 sm:px-3 bg-[#e8f0f3] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0f3f3f]/30 focus:bg-[#e0eaf0] text-gray-800 appearance-none pr-6 sm:pr-8 transition-all text-xs sm:text-sm ${errors.gender && touched.gender ? 'ring-2 ring-red-500' : ''}`}
                           >
+                            <option value="">Select</option>
                             <option value="Male">Male</option>
                             <option value="Female">Female</option>
                             <option value="Other">Other</option>
@@ -552,15 +544,15 @@ const PatientInfo = ({ onLogout, toggleTheme, dark }) => {
                       </div>
 
                       <div id="field-age">
-                        <label className="block text-[10px] sm:text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-1 sm:mb-1.5">
-                          AGE <span className="text-red-500">*</span>
+                        <label className="block text-[10px] sm:text-[11px] font-semibold tracking-wide text-gray-500 mb-1 sm:mb-1.5">
+                          Age <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="text"
                           value={formData.age}
                           readOnly
                           className="w-full h-9 sm:h-10 px-2 sm:px-3 rounded-lg text-gray-800 cursor-default text-xs sm:text-sm bg-gray-100"
-                          placeholder="Auto-Age from DOB"
+                          placeholder="Auto-age from DOB"
                         />
                       </div>
                     </div>
@@ -573,13 +565,13 @@ const PatientInfo = ({ onLogout, toggleTheme, dark }) => {
                     <div className="w-6 h-6 sm:w-8 sm:h-8 bg-[#0f3f3f]/10 rounded-lg flex items-center justify-center">
                       <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#0f3f3f]" />
                     </div>
-                    <h4 className="text-sm sm:text-base font-semibold text-gray-800">Policy Details</h4>
+                    <h4 className="text-sm sm:text-base font-semibold text-gray-800">Policy details</h4>
                   </div>
                   <div className="p-3 sm:p-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
                       <div id="field-providerName">
-                        <label className="block text-[10px] sm:text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-1 sm:mb-1.5">
-                          PROVIDER NAME <span className="text-red-500">*</span>
+                        <label className="block text-[10px] sm:text-[11px] font-semibold tracking-wide text-gray-500 mb-1 sm:mb-1.5">
+                          Provider name <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="text"
@@ -595,8 +587,8 @@ const PatientInfo = ({ onLogout, toggleTheme, dark }) => {
                       </div>
 
                       <div id="field-policyNumber">
-                        <label className="block text-[10px] sm:text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-1 sm:mb-1.5">
-                          POLICY NUMBER <span className="text-red-500">*</span>
+                        <label className="block text-[10px] sm:text-[11px] font-semibold tracking-wide text-gray-500 mb-1 sm:mb-1.5">
+                          Policy number <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="text"
@@ -614,8 +606,8 @@ const PatientInfo = ({ onLogout, toggleTheme, dark }) => {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       <div id="field-policyAmount">
-                        <label className="block text-[10px] sm:text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-1 sm:mb-1.5">
-                          POLICY AMOUNT <span className="text-red-500">*</span>
+                        <label className="block text-[10px] sm:text-[11px] font-semibold tracking-wide text-gray-500 mb-1 sm:mb-1.5">
+                          Policy amount <span className="text-red-500">*</span>
                         </label>
                         <div className="relative">
                           <DollarSign className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400" />
@@ -634,8 +626,8 @@ const PatientInfo = ({ onLogout, toggleTheme, dark }) => {
                       </div>
 
                       <div id="field-facility">
-                        <label className="block text-[10px] sm:text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-1 sm:mb-1.5">
-                          FACILITY <span className="text-red-500">*</span>
+                        <label className="block text-[10px] sm:text-[11px] font-semibold tracking-wide text-gray-500 mb-1 sm:mb-1.5">
+                          Facility <span className="text-red-500">*</span>
                         </label>
                         <div className="relative">
                           <Building className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400" />
@@ -665,42 +657,44 @@ const PatientInfo = ({ onLogout, toggleTheme, dark }) => {
                     <div className="w-6 h-6 sm:w-8 sm:h-8 bg-[#0f3f3f]/10 rounded-lg flex items-center justify-center">
                       <Briefcase className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#0f3f3f]" />
                     </div>
-                    <h4 className="text-sm sm:text-base font-semibold text-gray-800">Professional & Additional Info</h4>
+                    <h4 className="text-sm sm:text-base font-semibold text-gray-800">Professional & additional info</h4>
                   </div>
 
                   <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
                     <div>
-                      <label className="block text-[10px] sm:text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-1.5 sm:mb-2">
-                        APPLICATION SCOPE <span className="text-red-500">*</span>
+                      <label className="block text-[10px] sm:text-[11px] font-semibold tracking-wide text-gray-500 mb-1.5 sm:mb-2">
+                        Application scope
                       </label>
                       <div className="flex flex-wrap gap-2 sm:gap-3">
                         <button
                           type="button"
-                          onClick={() => handleChange('applicationScope', 'Universal')}
-                          className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 ${formData.applicationScope === 'Universal'
+                          onClick={() => toggleApplicationScope('Universal')}
+                          className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 ${
+                            formData.applicationScopes.includes('Universal')
                               ? 'bg-[#0f3f3f] text-white shadow-sm'
                               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
+                          }`}
                         >
-                          Universal Scope
+                          Universal scope
                         </button>
                         <button
                           type="button"
-                          onClick={() => handleChange('applicationScope', 'Specific')}
-                          className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 ${formData.applicationScope === 'Specific'
+                          onClick={() => toggleApplicationScope('Specific')}
+                          className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 ${
+                            formData.applicationScopes.includes('Specific')
                               ? 'bg-[#0f3f3f] text-white shadow-sm'
                               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
+                          }`}
                         >
-                          Specific Scope
+                          Specific scope
                         </button>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       <div>
-                        <label className="block text-[10px] sm:text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-1 sm:mb-1.5">
-                          OCCUPATION
+                        <label className="block text-[10px] sm:text-[11px] font-semibold tracking-wide text-gray-500 mb-1 sm:mb-1.5">
+                          Occupation
                         </label>
                         <input
                           type="text"
@@ -711,8 +705,8 @@ const PatientInfo = ({ onLogout, toggleTheme, dark }) => {
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] sm:text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-1 sm:mb-1.5">
-                          EMPLOYEE ID
+                        <label className="block text-[10px] sm:text-[11px] font-semibold tracking-wide text-gray-500 mb-1 sm:mb-1.5">
+                          Employee ID
                         </label>
                         <input
                           type="text"
@@ -725,8 +719,8 @@ const PatientInfo = ({ onLogout, toggleTheme, dark }) => {
                     </div>
 
                     <div>
-                      <label className="block text-[10px] sm:text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-1 sm:mb-1.5">
-                        SPECIAL INSTRUCTIONS
+                      <label className="block text-[10px] sm:text-[11px] font-semibold tracking-wide text-gray-500 mb-1 sm:mb-1.5">
+                        Special instructions
                       </label>
                       <textarea
                         value={formData.specialInstructions}
@@ -756,7 +750,7 @@ const PatientInfo = ({ onLogout, toggleTheme, dark }) => {
                       <div className="w-6 h-6 sm:w-8 sm:h-8 bg-[#0f3f3f]/10 rounded-lg flex items-center justify-center">
                         <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#0f3f3f]" />
                       </div>
-                      <h4 className="text-sm sm:text-base font-semibold text-gray-800">PDF Source Files</h4>
+                      <h4 className="text-sm sm:text-base font-semibold text-gray-800">PDF source files</h4>
                       <span className="text-[10px] sm:text-xs text-gray-500 bg-gray-200 px-1.5 sm:px-2 py-0.5 rounded-full">
                         {getTotalDocuments()} documents
                       </span>
@@ -893,109 +887,7 @@ const PatientInfo = ({ onLogout, toggleTheme, dark }) => {
         </div>
       </div>
 
-      {/* PDF Viewer Modal */}
-      {isPdfViewerOpen && selectedPdf && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fadeIn">
-          <div className="relative w-[90vw] h-[90vh] bg-gray-900 rounded-xl shadow-2xl overflow-hidden flex flex-col">
-            {/* PDF Viewer Header */}
-            <div className="flex items-center justify-between px-4 py-3 bg-gray-800 border-b border-gray-700 flex-shrink-0">
-              <div className="flex items-center gap-3">
-                <FileText className="w-5 h-5 text-blue-400" />
-                <div>
-                  <h3 className="text-sm font-semibold text-white">{selectedPdf.sourceFile}</h3>
-                  <p className="text-xs text-gray-400">
-                    {selectedPdf.documentType || 'Medical Report'} • {selectedPdf.pages} pages • {new Date(selectedPdf.uploadedDate).toLocaleDateString()}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handleZoomOut}
-                  className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
-                  title="Zoom Out"
-                >
-                  <ZoomOut size={18} />
-                </button>
-                <span className="text-xs text-gray-400 min-w-[45px] text-center">{pdfZoom}%</span>
-                <button
-                  onClick={handleZoomIn}
-                  className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
-                  title="Zoom In"
-                >
-                  <ZoomIn size={18} />
-                </button>
-                <button
-                  onClick={handleRotate}
-                  className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
-                  title="Rotate"
-                >
-                  <RotateCcw size={18} />
-                </button>
-                <button
-                  onClick={handleDownload}
-                  className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
-                  title="Download"
-                >
-                  <Download size={18} />
-                </button>
-                <button
-                  onClick={handlePrint}
-                  className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
-                  title="Print"
-                >
-                  <Printer size={18} />
-                </button>
-                <button
-                  onClick={() => {
-                    const elem = document.getElementById('pdf-viewer-content');
-                    if (elem?.requestFullscreen) elem.requestFullscreen();
-                  }}
-                  className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
-                  title="Fullscreen"
-                >
-                  <Maximize2 size={18} />
-                </button>
-                <button
-                  onClick={closePdfViewer}
-                  className="p-1.5 text-gray-400 hover:text-white hover:bg-red-600 rounded-lg transition-colors"
-                  title="Close"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-            </div>
-            
-            {/* PDF Viewer Content */}
-            <div id="pdf-viewer-content" className="flex-1 overflow-auto p-4 bg-gray-100">
-              <div 
-                className="mx-auto transition-all duration-300"
-                style={{
-                  transform: `scale(${pdfZoom / 100}) rotate(${pdfRotation}deg)`,
-                  transformOrigin: 'center top',
-                  maxWidth: '100%'
-                }}
-              >
-                <iframe
-                  srcDoc={getDummyPdfContent(selectedPdf.sourceFile, selectedPdf)}
-                  className="w-full min-h-[600px] bg-white rounded-lg shadow-lg"
-                  title={`PDF Viewer - ${selectedPdf.sourceFile}`}
-                  sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
-                />
-              </div>
-            </div>
-            
-            {/* Footer */}
-            <div className="flex items-center justify-between px-4 py-2 bg-gray-800 border-t border-gray-700 flex-shrink-0">
-              <div className="text-xs text-gray-400">
-                {selectedPdf.sourceFile} • {selectedPdf.documentType} • {selectedPdf.pages} pages
-              </div>
-              <div className="text-xs text-gray-400">
-                Use toolbar to zoom, rotate, download or print
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* PDF Viewer Modal is removed – now opens in new tab */}
 
       <style jsx>{`
         @keyframes fadeIn {

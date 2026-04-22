@@ -1,6 +1,35 @@
 import React, { useState, useRef, useLayoutEffect } from "react";
 import { RotateCcw, Trash2, Save, Cigarette, Wine, Pill } from "lucide-react";
 
+// Helper function to format date as MM-DD-YYYY
+const formatDate = (value) => {
+  // Remove non-digits
+  let cleaned = value.replace(/\D/g, '');
+  if (cleaned.length === 0) return '';
+  
+  // Limit to 8 digits (MMDDYYYY)
+  if (cleaned.length > 8) cleaned = cleaned.slice(0, 8);
+  
+  // Add hyphens after month and day
+  let formatted = '';
+  if (cleaned.length >= 2) {
+    formatted += cleaned.slice(0, 2);
+    if (cleaned.length >= 4) {
+      formatted += '-' + cleaned.slice(2, 4);
+      if (cleaned.length >= 8) {
+        formatted += '-' + cleaned.slice(4, 8);
+      } else if (cleaned.length > 4) {
+        formatted += '-' + cleaned.slice(4);
+      }
+    } else if (cleaned.length > 2) {
+      formatted += '-' + cleaned.slice(2);
+    }
+  } else {
+    formatted = cleaned;
+  }
+  return formatted;
+};
+
 // Tooltip Component (same as original)
 const Tooltip = ({ children, text, position = "bottom" }) => {
   const [show, setShow] = useState(false);
@@ -58,6 +87,12 @@ export default function SocialHistoryPanel() {
     setRows(rows.map(row => row.id === id ? { ...row, [field]: value } : row));
   };
 
+  // Handle date change with formatting
+  const handleDateChange = (id, value) => {
+    const formatted = formatDate(value);
+    updateRow(id, "dateOfService", formatted);
+  };
+
   const handleReset = () => {
     if (window.confirm("Reset all fields?")) {
       setRows([
@@ -110,13 +145,39 @@ export default function SocialHistoryPanel() {
                       <label className="flex items-center gap-1.5 cursor-pointer"><input type="radio" name={`${row.type}-${row.id}`} value="Yes" checked={row.value === "Yes"} onChange={(e) => updateRow(row.id, "value", e.target.value)} className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600" /><span className="text-xs sm:text-sm text-black">Yes</span></label>
                     </div>
                   </div>
-                  {/* Row 2: Date and Page */}
+                  {/* Row 2: Date and Page - Date changed to text input with MM-DD-YYYY placeholder */}
                   <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 sm:gap-4 mb-2">
-                    <div><label className={labelClass}>Date of Service</label><input type="date" value={row.dateOfService} onChange={(e) => updateRow(row.id, "dateOfService", e.target.value)} className={inputBaseClass} /></div>
-                    <div><label className={labelClass}>Page No</label><input type="number" value={row.pageNo} onChange={(e) => updateRow(row.id, "pageNo", e.target.value)} className={inputBaseClass} placeholder="Enter page number" /></div>
+                    <div>
+                      <label className={labelClass}>Date of Service</label>
+                      <input 
+                        type="text" 
+                        placeholder="MM-DD-YYYY"
+                        value={row.dateOfService} 
+                        onChange={(e) => handleDateChange(row.id, e.target.value)} 
+                        className={inputBaseClass} 
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Page No</label>
+                      <input 
+                        type="number" 
+                        value={row.pageNo} 
+                        onChange={(e) => updateRow(row.id, "pageNo", e.target.value)} 
+                        className={inputBaseClass} 
+                        placeholder="Enter page number" 
+                      />
+                    </div>
                   </div>
                   {/* Row 3: Comments */}
-                  <div><label className={labelClass}>Comments</label><AutoResizeTextarea value={row.comments} onChange={(e) => updateRow(row.id, "comments", e.target.value)} placeholder="Enter comments..." className="w-full min-h-[60px] p-2 text-xs sm:text-sm text-black bg-[#CFE8F2] rounded-lg" /></div>
+                  <div>
+                    <label className={labelClass}>Comments</label>
+                    <AutoResizeTextarea 
+                      value={row.comments} 
+                      onChange={(e) => updateRow(row.id, "comments", e.target.value)} 
+                      placeholder="Enter comments..." 
+                      className="w-full min-h-[60px] p-2 text-xs sm:text-sm text-black bg-[#CFE8F2] rounded-lg" 
+                    />
+                  </div>
                 </div>
               ))}
             </div>

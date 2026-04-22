@@ -7,7 +7,7 @@ import { Plus, Edit, Trash2, Save, X, ChevronLeft, ChevronRight, Search, Eye, Ch
 const Input = ({ label, type = "text", placeholder, value, onChange, required, error, className = "" }) => (
     <div className={`flex flex-col gap-1.5 ${className}`}>
         {label && (
-            <label className="text-[12px] font-semibold uppercase tracking-wide text-gray-600">
+            <label className="text-[14px] font-semibold  tracking-wide text-gray-900">
                 {label}
                 {required && <span className="text-red-500 ml-1">*</span>}
             </label>
@@ -58,7 +58,7 @@ const MultiSelectDropdown = ({ label, options, selectedValues, onChange, placeho
     return (
         <div className="flex flex-col gap-1.5 w-full" ref={dropdownRef}>
             {label && (
-                <label className="text-[12px] font-semibold uppercase tracking-wide text-gray-600">
+                <label className="text-[14px] font-semibold  tracking-wide text-gray-900">
                     {label}
                     {required && <span className="text-red-500 ml-1">*</span>}
                 </label>
@@ -92,7 +92,7 @@ const MultiSelectDropdown = ({ label, options, selectedValues, onChange, placeho
                         ))
                     )}
                 </div>
-                
+
                 {isOpen && (
                     <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg">
                         <div className="p-2 border-b border-gray-100 sticky top-0 bg-white">
@@ -138,7 +138,7 @@ const ToggleSwitch = ({ label, subtext, checked, onChange, inline = false }) => 
     if (inline) {
         return (
             <div className="flex items-center gap-3">
-                <span className="text-[14px] font-semibold uppercase tracking-wide text-gray-800">{label}</span>
+                <span className="text-[14px] font-semibold  tracking-wide text-gray-00">{label}</span>
                 <button
                     type="button"
                     role="switch"
@@ -183,7 +183,7 @@ const LargeRolePill = ({ label, active, onClick }) => (
         className={`px-4 sm:px-8 md:px-10 py-2 rounded-full text-sm font-medium transition-all duration-200 transform ${active
             ? 'bg-[#001438] text-white shadow-md'
             : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-        }`}
+            }`}
     >
         {label}
     </button>
@@ -233,9 +233,9 @@ const Modal = ({ isOpen, onClose, title, children }) => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fadeIn">
             <div
                 ref={modalRef}
-                className="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden animate-slideUp"
+                className="bg-white rounded-xl shadow-2xl w-full max-w-7xl min-h-[600px] max-h-[99vh] overflow-y-auto"
             >
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50/50 sticky top-0 z-10">
+                <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50/50">
                     <h3 className="text-xl font-semibold text-gray-800">{title}</h3>
                     <button
                         onClick={onClose}
@@ -244,15 +244,13 @@ const Modal = ({ isOpen, onClose, title, children }) => {
                         <X size={20} />
                     </button>
                 </div>
-                {/* Modal body scrolls only when content exceeds max height */}
-                <div className="overflow-y-auto max-h-[calc(90vh-70px)] p-6">
+                <div className="p-6">
                     {children}
                 </div>
             </div>
         </div>
     );
 };
-
 // Table Cell with scroll for assigned carriers
 const AssignedCarriersCell = ({ carriers }) => {
     const [showAll, setShowAll] = useState(false);
@@ -305,7 +303,7 @@ const UserSetupPanel = () => {
                 setCarrierOptions(['ABC Insurance', 'XYZ Health', 'Global Care', 'United Health', 'Blue Cross', 'Aetna', 'Cigna', 'Humana']);
             }
         };
-        
+
         loadCarriers();
 
         // Listen for updates
@@ -559,13 +557,13 @@ const UserSetupPanel = () => {
                         <table className="w-full min-w-[600px]">
                             <thead className="bg-gray-50 border-b border-gray-200">
                                 <tr>
-                                    <th className="px-3 sm:px-4 py-3 text-left text-xs font-semibold text-gray-600">EMP ID</th>
-                                    <th className="px-3 sm:px-4 py-3 text-left text-xs font-semibold text-gray-600">FIRST NAME</th>
-                                    <th className="px-3 sm:px-4 py-3 text-left text-xs font-semibold text-gray-600">LAST NAME</th>
-                                    <th className="px-3 sm:px-4 py-3 text-left text-xs font-semibold text-gray-600">USER ROLE ACCESS</th>
-                                 
-                                    <th className="px-3 sm:px-4 py-3 text-center text-xs font-semibold text-gray-600">IS ACTIVE</th>
-                                    <th className="px-3 sm:px-4 py-3 text-center text-xs font-semibold text-gray-600">ACTIONS</th>
+                                    <th className="px-3 sm:px-4 py-3 text-left text-sm font-semibold text-gray-900">EMP ID</th>
+                                    <th className="px-3 sm:px-4 py-3 text-left text-sm font-semibold text-gray-900">First Name</th>
+                                    <th className="px-3 sm:px-4 py-3 text-left text-sm font-semibold text-gray-900">Last Name</th>
+                                    <th className="px-3 sm:px-4 py-3 text-left text-sm font-semibold text-gray-900">User Role Access</th>
+
+                                    <th className="px-3 sm:px-4 py-3 text-center text-sm font-semibold text-gray-900">Is Active</th>
+                                    <th className="px-3 sm:px-4 py-3 text-center text-sm font-semibold text-gray-900">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
@@ -584,7 +582,7 @@ const UserSetupPanel = () => {
                                                     ))}
                                                 </div>
                                             </td>
-                                      
+
                                             <td className="px-3 sm:px-4 py-3 text-center">
                                                 <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${user.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                                                     {user.isActive ? 'Active' : 'Inactive'}
@@ -599,13 +597,7 @@ const UserSetupPanel = () => {
                                                     >
                                                         <Edit size={16} />
                                                     </button>
-                                                    <button
-                                                        onClick={() => handleDelete(user.id)}
-                                                        className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
-                                                        title="Delete"
-                                                    >
-                                                        <Trash2 size={16} />
-                                                    </button>
+
                                                 </div>
                                             </td>
                                         </tr>
@@ -658,8 +650,8 @@ const UserSetupPanel = () => {
                                                 key={pageNum}
                                                 onClick={() => setCurrentPage(pageNum)}
                                                 className={`w-7 h-7 sm:w-8 sm:h-8 rounded text-xs sm:text-sm transition-colors ${currentPage === pageNum
-                                                        ? 'bg-[#0f3f3f] text-white'
-                                                        : 'text-gray-600 hover:bg-gray-200'
+                                                    ? 'bg-[#0f3f3f] text-white'
+                                                    : 'text-gray-600 hover:bg-gray-200'
                                                     }`}
                                             >
                                                 {pageNum}
@@ -694,7 +686,7 @@ const UserSetupPanel = () => {
                             required
                         />
                         <Input
-                            label="FIRST NAME"
+                            label="First Name"
                             placeholder="John"
                             value={formData.firstName}
                             onChange={(e) => updateField('firstName', e.target.value)}
@@ -702,7 +694,7 @@ const UserSetupPanel = () => {
                             required
                         />
                         <Input
-                            label="LAST NAME"
+                            label="Last Name"
                             placeholder="Doe"
                             value={formData.lastName}
                             onChange={(e) => updateField('lastName', e.target.value)}
@@ -710,13 +702,13 @@ const UserSetupPanel = () => {
                             required
                         />
                         <Input
-                            label="INITIAL"
+                            label="Initial"
                             placeholder="JD"
                             value={formData.initial}
                             onChange={(e) => updateField('initial', e.target.value)}
                         />
                         <Input
-                            label="USER NAME"
+                            label="User Name"
                             placeholder="johndoe"
                             value={formData.userName}
                             onChange={(e) => updateField('userName', e.target.value)}
@@ -729,7 +721,7 @@ const UserSetupPanel = () => {
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-end">
                         <div className="lg:col-span-5">
                             <Input
-                                label="EMAIL ADDRESS"
+                                label="Email Address"
                                 type="email"
                                 placeholder="admin@example.com"
                                 value={formData.email}
@@ -746,8 +738,8 @@ const UserSetupPanel = () => {
                             />
                         </div>
                         <div className="lg:col-span-5">
-                            <label className="text-[12px] font-semibold uppercase tracking-wide text-gray-600 block mb-1.5">
-                                PAGE RANGE
+                            <label className="text-[14px] font-semibold tracking-wide text-gray-900 block mb-1.5">
+                                Page Range
                             </label>
                             <div className="flex gap-3">
                                 <input
@@ -771,8 +763,8 @@ const UserSetupPanel = () => {
                     {/* Role Access & Carrier Assigned */}
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
                         <div className="lg:col-span-7">
-                            <label className="text-[12px] font-semibold uppercase tracking-wide text-gray-600 block mb-2">
-                                USER ROLE ACCESS <span className="text-red-500">*</span>
+                            <label className="text-[14px] font-semibold  tracking-wide text-gray-900 block mb-2">
+                                User Roles Access <span className="text-red-500">*</span>
                             </label>
                             <div className="flex flex-wrap gap-2">
                                 {roleOptions.map(role => (
@@ -790,7 +782,7 @@ const UserSetupPanel = () => {
                         </div>
                         <div className="lg:col-span-5">
                             <MultiSelectDropdown
-                                label="CARRIER ASSIGNED"
+                                label="Carriers Assigned"
                                 placeholder="Select carriers..."
                                 searchPlaceholder="Search carriers..."
                                 options={carrierOptions}
@@ -810,11 +802,11 @@ const UserSetupPanel = () => {
                         />
                     </div>
 
-                    {/* Action Buttons */}
-                    <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                    <div className="flex justify-end gap-3 sm:gap-4 pt-6 sm:pt-8 border-t border-gray-200 mt-4">
                         <Button type="button" variant="secondary" onClick={closeModal}>Cancel</Button>
                         <Button type="submit" variant="primary">
-                            {isEditing ? 'Update User' : 'Save User'}
+                            <Save size={14} />
+                            {isEditing ? 'Update Carrier' : 'Save Carrier'}
                         </Button>
                     </div>
                 </form>

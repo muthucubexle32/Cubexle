@@ -1,6 +1,35 @@
 import React, { useState, useRef, useLayoutEffect } from "react";
 import { RotateCcw, Trash2, Plus, Save, X, Heart } from "lucide-react";
 
+// Helper function to format date as MM-DD-YYYY
+const formatDate = (value) => {
+  // Remove non-digits
+  let cleaned = value.replace(/\D/g, '');
+  if (cleaned.length === 0) return '';
+  
+  // Limit to 8 digits (MMDDYYYY)
+  if (cleaned.length > 8) cleaned = cleaned.slice(0, 8);
+  
+  // Add hyphens after month and day
+  let formatted = '';
+  if (cleaned.length >= 2) {
+    formatted += cleaned.slice(0, 2);
+    if (cleaned.length >= 4) {
+      formatted += '-' + cleaned.slice(2, 4);
+      if (cleaned.length >= 8) {
+        formatted += '-' + cleaned.slice(4, 8);
+      } else if (cleaned.length > 4) {
+        formatted += '-' + cleaned.slice(4);
+      }
+    } else if (cleaned.length > 2) {
+      formatted += '-' + cleaned.slice(2);
+    }
+  } else {
+    formatted = cleaned;
+  }
+  return formatted;
+};
+
 // Tooltip and AutoResizeTextarea (same as above – include them)
 const Tooltip = ({ children, text, position = "bottom" }) => {
   const [show, setShow] = useState(false);
@@ -52,6 +81,13 @@ export default function FamilyMedicalHistoryPanel() {
   const addRow = () => setRows([...rows, { id: Date.now() + Math.random(), dateOfService: "", pageNo: "", comments: "" }]);
   const removeRow = (id) => { if (rows.length > 1 && window.confirm("Remove entry?")) setRows(rows.filter(row => row.id !== id)); };
   const updateRow = (id, field, value) => setRows(rows.map(row => row.id === id ? { ...row, [field]: value } : row));
+  
+  // Handle date change with formatting
+  const handleDateChange = (id, value) => {
+    const formatted = formatDate(value);
+    updateRow(id, "dateOfService", formatted);
+  };
+  
   const handleReset = () => { if (window.confirm("Reset all?")) setRows([{ id: Date.now(), dateOfService: "", pageNo: "", comments: "" }]); };
   const handleDelete = () => handleReset();
   const handleSave = () => { alert("Family Medical History Saved!"); console.log({ familyMedicalHistory: rows }); };
@@ -82,7 +118,16 @@ export default function FamilyMedicalHistoryPanel() {
               <div key={row.id} className="relative bg-white rounded p-2 border border-blue-100">
                 {rows.length > 1 && <Tooltip text="Remove entry"><button onClick={() => removeRow(row.id)} className="absolute -top-2 -right-2 bg-red-400 hover:bg-red-500 text-white p-1 rounded-full shadow-md"><X size={10} /></button></Tooltip>}
                 <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 mb-2">
-                  <div><label className={labelClass}>Date of Service</label><input type="date" value={row.dateOfService} onChange={(e) => updateRow(row.id, "dateOfService", e.target.value)} className={inputBaseClass} /></div>
+                  <div>
+                    <label className={labelClass}>Date of Service</label>
+                    <input 
+                      type="text" 
+                      placeholder="MM-DD-YYYY"
+                      value={row.dateOfService} 
+                      onChange={(e) => handleDateChange(row.id, e.target.value)} 
+                      className={inputBaseClass} 
+                    />
+                  </div>
                   <div><label className={labelClass}>Page No</label><input type="number" value={row.pageNo} onChange={(e) => updateRow(row.id, "pageNo", e.target.value)} className={inputBaseClass} placeholder="0" /></div>
                 </div>
                 <div><label className={labelClass}>Comments</label><AutoResizeTextarea value={row.comments} onChange={(e) => updateRow(row.id, "comments", e.target.value)} placeholder="Enter family history..." className="w-full min-h-[50px] p-2 text-xs sm:text-sm text-black bg-[#CFE8F2] rounded-lg" /></div>

@@ -16,7 +16,37 @@ import {
   Scale,
   HeartPulse,
   X,
+  Calendar,          // added calendar icon
 } from "lucide-react";
+
+// Helper function to format date as MM-DD-YYYY
+const formatDate = (value) => {
+  // Remove non-digits
+  let cleaned = value.replace(/\D/g, '');
+  if (cleaned.length === 0) return '';
+  
+  // Limit to 8 digits (MMDDYYYY)
+  if (cleaned.length > 8) cleaned = cleaned.slice(0, 8);
+  
+  // Add slashes after month and day
+  let formatted = '';
+  if (cleaned.length >= 2) {
+    formatted += cleaned.slice(0, 2);
+    if (cleaned.length >= 4) {
+      formatted += '-' + cleaned.slice(2, 4);
+      if (cleaned.length >= 8) {
+        formatted += '-' + cleaned.slice(4, 8);
+      } else if (cleaned.length > 4) {
+        formatted += '-' + cleaned.slice(4);
+      }
+    } else if (cleaned.length > 2) {
+      formatted += '-' + cleaned.slice(2);
+    }
+  } else {
+    formatted = cleaned;
+  }
+  return formatted;
+};
 
 // Tooltip Component - Fixed z-index and positioning
 const Tooltip = ({ children, text, position = "bottom" }) => {
@@ -30,19 +60,13 @@ const Tooltip = ({ children, text, position = "bottom" }) => {
     right: "left-full top-1/2 -translate-y-1/2 ml-2"
   };
 
-  // Calculate arrow position based on tooltip position
   const getArrowClasses = (pos) => {
     switch(pos) {
-      case "top":
-        return "top-full -translate-y-1/2 left-1/2 -translate-x-1/2";
-      case "bottom":
-        return "bottom-full translate-y-1/2 left-1/2 -translate-x-1/2";
-      case "left":
-        return "left-full -translate-x-1/2 top-1/2 -translate-y-1/2";
-      case "right":
-        return "right-full translate-x-1/2 top-1/2 -translate-y-1/2";
-      default:
-        return "top-full -translate-y-1/2 left-1/2 -translate-x-1/2";
+      case "top": return "top-full -translate-y-1/2 left-1/2 -translate-x-1/2";
+      case "bottom": return "bottom-full translate-y-1/2 left-1/2 -translate-x-1/2";
+      case "left": return "left-full -translate-x-1/2 top-1/2 -translate-y-1/2";
+      case "right": return "right-full translate-x-1/2 top-1/2 -translate-y-1/2";
+      default: return "top-full -translate-y-1/2 left-1/2 -translate-x-1/2";
     }
   };
 
@@ -54,21 +78,15 @@ const Tooltip = ({ children, text, position = "bottom" }) => {
       ref={tooltipRef}
     >
       {children}
-      
-      {/* Tooltip with high z-index and backdrop blur */}
       {show && (
         <div 
           className={`absolute z-[9999] ${positionClasses[position]} px-2 py-1 
                      bg-gray-900 text-white text-xs rounded shadow-lg 
                      whitespace-nowrap pointer-events-none animate-fadeIn
                      backdrop-blur-sm bg-opacity-95 border border-gray-700`}
-          style={{
-            filter: 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3))'
-          }}
+          style={{ filter: 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3))' }}
         >
           {text}
-          
-          {/* Arrow */}
           <div className={`absolute w-2 h-2 bg-gray-900 transform rotate-45 
                           border border-gray-700 ${getArrowClasses(position)}`}
                style={{
@@ -110,7 +128,6 @@ const Header = ({ title, icon: Icon, hideIcon }) => (
 
 const Block = ({ title, value, onChange, icon: Icon, minHeight = 60, hideIcon }) => {
   const textareaRef = useRef(null);
-
   const adjustHeight = useCallback(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -391,7 +408,19 @@ export default function MedicalUI() {
     alert("Data saved successfully!");
   };
 
-  // Helper class
+  // Handlers for DOS and DOI with formatting
+  const handleDosChange = (e) => {
+    const raw = e.target.value;
+    const formatted = formatDate(raw);
+    setDos(formatted);
+  };
+
+  const handleDoiChange = (e) => {
+    const raw = e.target.value;
+    const formatted = formatDate(raw);
+    setDoi(formatted);
+  };
+
   const inputBaseClass = "w-full h-8 bg-[#CFE8F2] rounded px-3 text-sm text-gray-700 outline-none focus:ring-1 focus:ring-blue-400 border-none placeholder-gray-400";
   const labelClass = "block text-xs font-semibold text-black mb-1";
 
@@ -438,7 +467,7 @@ export default function MedicalUI() {
       <div className="flex-1 min-h-0 overflow-y-auto space-y-1 pr-2 pb-3" >
         {/* Top Panel */}
         <div className="border border-blue-400 rounded-lg p-2 bg-white shadow-sm">
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2z gap-2">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-2">
             {/* Notes Type */}
             <div className="space-y-1">
               <div className="flex items-center justify-between">
@@ -461,29 +490,33 @@ export default function MedicalUI() {
               </div>
             </div>
 
-            {/* DOS */}
+            {/* DOS - MM-DD-YYYY with calendar icon */}
             <div className="space-y-1">
               <span className="font-semibold text-sm text-gray-800 block">Date of Service</span>
               <div className="relative flex items-center bg-[#b6d3dc] rounded h-[30px] border border-[#a6c3cc]">
                 <input
-                  type="date"
+                  type="text"
+                  placeholder="MM-DD-YYYY"
                   value={dos}
-                  onChange={(e) => setDos(e.target.value)}
+                  onChange={handleDosChange}
                   className="w-full bg-transparent outline-none text-sm px-2 text-gray-800"
                 />
+                <Calendar size={14} className="absolute right-2 text-gray-500 pointer-events-none" />
               </div>
             </div>
 
-            {/* DOI */}
+            {/* DOI - MM-DD-YYYY with calendar icon */}
             <div className="space-y-1">
               <span className="font-semibold text-sm text-gray-800 block">Date of Injury</span>
               <div className="relative flex items-center bg-[#b6d3dc] rounded h-[30px] border border-[#a6c3cc]">
                 <input
-                  type="date"
+                  type="text"
+                  placeholder="MM-DD-YYYY"
                   value={doi}
-                  onChange={(e) => setDoi(e.target.value)}
+                  onChange={handleDoiChange}
                   className="w-full bg-transparent outline-none text-sm px-2 text-gray-800"
                 />
+                <Calendar size={14} className="absolute right-2 text-gray-500 pointer-events-none" />
               </div>
             </div>
 
@@ -535,8 +568,7 @@ export default function MedicalUI() {
 
           {/* ROW 1: Height & Weight Measurements */}
           <div className="mb-1">
-            <div className="border pr-1 border-blue-200 rounded-lg  bg-blue-50/30">
-              {/* Header with Add Button - Clean alignment */}
+            <div className="border pr-1 border-blue-200 rounded-lg bg-blue-50/30">
               <div className="flex justify-end items-center px-2 pt-1 ">
                 <button
                   onClick={addVitalsRowBox1}
@@ -545,12 +577,9 @@ export default function MedicalUI() {
                   <Plus size={14} /> ADD
                 </button>
               </div>
-
-              {/* Scrollable container */}
-              <div className="p-2  space-y-2 max-h-[250px] overflow-y-auto pr-1 custom-scrollbar ">
+              <div className="p-2 space-y-2 max-h-[250px] overflow-y-auto pr-1 custom-scrollbar ">
                 {vitalsRowsBox1.map((row) => (
                   <div key={row.id} className="relative bg-white rounded p-1 border border-blue-100">
-                    {/* Delete button - positioned without affecting layout */}
                     {vitalsRowsBox1.length > 1 && (
                       <button
                         onClick={() => removeVitalsRowBox1(row.id)}
@@ -560,10 +589,7 @@ export default function MedicalUI() {
                         <X size={12} />
                       </button>
                     )}
-
-                    {/* Responsive grid layout */}
                     <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-4 gap-2">
-                      {/* Height */}
                       <div className="min-w-0">
                         <label className="block text-[10px] font-semibold text-gray-600 mb-1">Height</label>
                         <div className="flex">
@@ -584,8 +610,6 @@ export default function MedicalUI() {
                           </select>
                         </div>
                       </div>
-
-                      {/* Weight */}
                       <div className="min-w-0">
                         <label className="block text-[10px] font-semibold text-gray-600 mb-1">Weight</label>
                         <div className="flex">
@@ -605,8 +629,6 @@ export default function MedicalUI() {
                           </select>
                         </div>
                       </div>
-
-                      {/* BMI */}
                       <div className="min-w-0">
                         <label className="block text-[10px] font-semibold text-gray-600 mb-1">BMI</label>
                         <input
@@ -616,8 +638,6 @@ export default function MedicalUI() {
                           placeholder="0.0"
                         />
                       </div>
-
-                      {/* Page No */}
                       <div className="min-w-0">
                         <label className="block text-[10px] font-semibold text-gray-600 mb-1">Page</label>
                         <input
@@ -637,8 +657,7 @@ export default function MedicalUI() {
 
           {/* ROW 2: BP & Pulse Measurements */}
           <div>
-            <div className="border border-blue-200 rounded-lg bg-blue-50/30 ">
-              {/* Header with Add Button - Clean alignment */}
+            <div className="border border-blue-200 rounded-lg bg-blue-50/30">
               <div className="flex justify-end items-center px-2 pt-1">
                 <button
                   onClick={addVitalsRow}
@@ -647,12 +666,9 @@ export default function MedicalUI() {
                   <Plus size={14} /> ADD
                 </button>
               </div>
-
-              {/* Scrollable container */}
-              <div className="p-1  space-y-2 max-h-[250px] overflow-y-auto pr-1 custom-scrollbar">
+              <div className="p-1 space-y-2 max-h-[250px] overflow-y-auto pr-1 custom-scrollbar">
                 {vitalsRows.map((row) => (
-                  <div key={row.id} className="relative bg-white rounded p-2 border border-blue-100 ">
-                    {/* Delete button - positioned without affecting layout */}
+                  <div key={row.id} className="relative bg-white rounded p-2 border border-blue-100">
                     {vitalsRows.length > 1 && (
                       <button
                         onClick={() => removeVitalsRow(row.id)}
@@ -662,10 +678,7 @@ export default function MedicalUI() {
                         <X size={12} />
                       </button>
                     )}
-
-                    {/* Responsive grid layout */}
                     <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-2">
-                      {/* Blood Pressure */}
                       <div className="min-w-0 col-span-1 xs:col-span-2 sm:col-span-1">
                         <label className="block text-[10px] font-semibold text-gray-600 mb-1">Blood Pressure</label>
                         <div className="flex items-center gap-1">
@@ -675,7 +688,6 @@ export default function MedicalUI() {
                             onChange={(e) => updateVitals(row.id, "dia", e.target.value)}
                             className="flex-1 min-w-0 h-8 bg-[#CFE8F2] rounded px-2 text-xs text-center outline-none focus:ring-1 focus:ring-blue-400"
                           />
-
                           <input
                             placeholder="Sys"
                             value={row.sys}
@@ -684,8 +696,6 @@ export default function MedicalUI() {
                           />
                         </div>
                       </div>
-
-                      {/* Pulse */}
                       <div className="min-w-0">
                         <label className="block text-[10px] font-semibold text-gray-600 mb-1">Pulse (bpm)</label>
                         <input
@@ -695,8 +705,6 @@ export default function MedicalUI() {
                           placeholder="0"
                         />
                       </div>
-
-                      {/* Page No */}
                       <div className="min-w-0">
                         <label className="block text-[10px] font-semibold text-gray-600 mb-1">Page</label>
                         <input
@@ -750,7 +758,6 @@ export default function MedicalUI() {
             <div className="space-y-2">
               {rows.map((row, i) => (
                 <div key={i} className="border border-gray-200 rounded-lg p-3 bg-gray-50">
-                  {/* First row - Drug/Brand, Dose, Frequency */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 mb-1">
                     <input
                       value={row.db}
@@ -771,8 +778,6 @@ export default function MedicalUI() {
                       placeholder="Frequency"
                     />
                   </div>
-
-                  {/* Second row - Comments and Delete button */}
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                     <textarea
                       value={row.cmt}

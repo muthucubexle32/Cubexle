@@ -21,9 +21,49 @@ import {
   UserPlus,
   Split,
   FolderOpen,
-  Eye
+  Eye,
+  AlertTriangle
 } from 'lucide-react';
 import AppLayout from '@/components/layout/AppLayout';
+
+// ---------- Helper: Convert YYYY-MM-DD to MM-DD-YYYY for display ----------
+const formatToMDY = (isoDate) => {
+  if (!isoDate) return '';
+  const [year, month, day] = isoDate.split('-');
+  return `${month}-${day}-${year}`;
+};
+
+// ---------- Helper: Convert MM-DD-YYYY to YYYY-MM-DD for internal storage ----------
+const formatToYMD = (mdyDate) => {
+  if (!mdyDate) return '';
+  const [month, day, year] = mdyDate.split('-');
+  if (!month || !day || !year) return '';
+  return `${year}-${month.padStart(2,'0')}-${day.padStart(2,'0')}`;
+};
+
+// ---------- Helper: Parse user input (digits only) into MM-DD-YYYY ----------
+const formatDateInput = (value) => {
+  let cleaned = value.replace(/\D/g, '');
+  if (cleaned.length === 0) return '';
+  if (cleaned.length > 8) cleaned = cleaned.slice(0, 8);
+  let formatted = '';
+  if (cleaned.length >= 2) {
+    formatted += cleaned.slice(0, 2);
+    if (cleaned.length >= 4) {
+      formatted += '-' + cleaned.slice(2, 4);
+      if (cleaned.length >= 8) {
+        formatted += '-' + cleaned.slice(4, 8);
+      } else if (cleaned.length > 4) {
+        formatted += '-' + cleaned.slice(4);
+      }
+    } else if (cleaned.length > 2) {
+      formatted += '-' + cleaned.slice(2);
+    }
+  } else {
+    formatted = cleaned;
+  }
+  return formatted;
+};
 
 // ---------- Status Configuration ----------
 const STATUS_OPTIONS = [
@@ -46,7 +86,7 @@ const STATUS_COLOR_MAP = {
   red: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
 };
 
-// ---------- Mock Data Generation ----------
+// ---------- Mock Data Generation (keep YYYY-MM-DD for internal) ----------
 const generateMockData = () => {
   const clients = ['ABC Corp', 'XYZ Ltd', 'Global Insurance', 'SecureLife', 'Prime Health', 'Elite Coverage'];
   const underwriters = ['MG', 'SJ', 'MB', 'ED', 'DW'];
@@ -66,7 +106,7 @@ const generateMockData = () => {
       assigned: Math.random() > 0.5,
       assignedUser: assignedUsers[Math.floor(Math.random() * assignedUsers.length)],
       qc: Math.random() > 0.7,
-      receivedDate: receivedDate.toISOString().split('T')[0],
+      receivedDate: receivedDate.toISOString().split('T')[0], // YYYY-MM-DD
       client: clients[Math.floor(Math.random() * clients.length)],
       sourceFile: `SRC-${Math.floor(1000000000000 + Math.random() * 9000000000000)}`,
       firstName: firstNames[Math.floor(Math.random() * firstNames.length)],
@@ -82,13 +122,16 @@ const generateMockData = () => {
   return data;
 };
 
-// ---------- Action Buttons ----------
-const ActionButtons = ({ row, onAction, onSplit }) => {
+// ---------- Action Buttons (Cancel action opens reason modal) ----------
+const ActionButtons = ({ row, onAction, onSplit, onOpenCancelModal }) => {
   const handleAction = (action) => {
+    if (action === 'cancel') {
+      onOpenCancelModal(row.original);
+      return;
+    }
     const messages = {
       start: 'Start processing this case? Status will change to "UW In Progress".',
       complete: 'Mark this case as completed?',
-      cancel: 'Cancel/withdraw this case? Status will change to "Withdrawn".',
     };
     if (window.confirm(messages[action])) {
       onAction(action, row.original);
@@ -129,7 +172,82 @@ const ActionButtons = ({ row, onAction, onSplit }) => {
   );
 };
 
-// ---------- Split Modal Component ----------
+// ---------- Cancel Reason Modal ----------
+const CancelReasonModal = ({ isOpen, onClose, caseData, onSubmit }) => {
+  const [reason, setReason] = useState('');
+  const textareaRef = useRef(null);
+
+  useEffect(() => {
+    if (isOpen && textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 200) + 'px';
+    }
+  }, [reason, isOpen]);
+
+  const handleSubmit = () => {
+    if (!reason.trim()) {
+      alert('Please provide a reason for cancellation.');
+      return;
+    }
+    onSubmit(caseData.id, reason);
+    setReason('');
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fadeIn">
+      <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full shadow-2xl">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-red-500" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Cancel / Withdraw Case</h3>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+            <X size={20} />
+          </button>
+        </div>
+        <div className="p-6 space-y-4">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            You are about to cancel/withdraw case <strong>{caseData?.sourceFile}</strong>.
+            Please provide the reason:
+          </p>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Reason for cancellation <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              ref={textareaRef}
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              rows={3}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500/20 focus:border-red-500 resize-none overflow-y-auto text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              placeholder="Enter detailed reason..."
+              style={{ minHeight: '80px', maxHeight: '200px' }}
+            />
+          </div>
+        </div>
+        <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit}
+            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors shadow-sm"
+          >
+            Confirm Withdraw
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ---------- Split Modal Component (unchanged) ----------
 const SplitModal = ({ isOpen, onClose, caseData, availableUsers, onSplitConfirm }) => {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [pageAssignments, setPageAssignments] = useState([]);
@@ -216,24 +334,23 @@ const SplitModal = ({ isOpen, onClose, caseData, availableUsers, onSplitConfirm 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-          <h3 className="text-xl font-semibold text-gray-900">Split Case Pages</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+        <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-between items-center">
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Split Case Pages</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
         </div>
         <div className="p-6 space-y-4">
-          <div className="bg-gray-50 rounded-lg p-3">
+          <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3">
             <p><strong>Source File:</strong> {caseData?.sourceFile}</p>
             <p><strong>Total Pages:</strong> {totalPages}</p>
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Select Users</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Users</label>
             <div className="relative" ref={dropdownRef}>
               <button
                 type="button"
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="w-full flex items-center justify-between px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-700"
+                className="w-full flex items-center justify-between px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300"
               >
                 <span>
                   {selectedUsers.length === 0
@@ -243,23 +360,22 @@ const SplitModal = ({ isOpen, onClose, caseData, availableUsers, onSplitConfirm 
                 <span className="ml-2">▼</span>
               </button>
               {isDropdownOpen && (
-                <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                <div className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                   {availableUsers.map(user => (
-                    <label key={user} className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                    <label key={user} className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={selectedUsers.includes(user)}
                         onChange={() => handleUserToggle(user)}
                         className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
-                      <span className="text-sm text-gray-700">{user}</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">{user}</span>
                     </label>
                   ))}
                 </div>
               )}
             </div>
           </div>
-
           {selectedUsers.length > 0 && (
             <>
               <div className="flex justify-between items-center">
@@ -270,7 +386,7 @@ const SplitModal = ({ isOpen, onClose, caseData, availableUsers, onSplitConfirm 
               </div>
               <div className="space-y-3">
                 {pageAssignments.map((assign, idx) => (
-                  <div key={assign.user} className="border border-gray-200 rounded-lg p-3">
+                  <div key={assign.user} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
                     <div className="font-medium mb-2">{assign.user}</div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
@@ -279,7 +395,7 @@ const SplitModal = ({ isOpen, onClose, caseData, availableUsers, onSplitConfirm 
                           type="number"
                           value={assign.pageStart}
                           onChange={(e) => handleManualChange(idx, 'pageStart', e.target.value)}
-                          className="w-full px-2 py-1 border border-gray-300 rounded"
+                          className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded"
                         />
                       </div>
                       <div>
@@ -288,21 +404,21 @@ const SplitModal = ({ isOpen, onClose, caseData, availableUsers, onSplitConfirm 
                           type="number"
                           value={assign.pages}
                           onChange={(e) => handleManualChange(idx, 'pages', e.target.value)}
-                          className="w-full px-2 py-1 border border-gray-300 rounded"
+                          className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded"
                         />
                       </div>
                     </div>
                     <div className="text-xs text-gray-500 mt-1">End Page: {assign.pageEnd}</div>
                   </div>
                 ))}
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-gray-600 dark:text-gray-400">
                   Total assigned pages: {pageAssignments.reduce((sum, a) => sum + a.pages, 0)} / {totalPages}
                 </div>
               </div>
             </>
           )}
         </div>
-        <div className="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4 flex justify-end gap-3">
+        <div className="sticky bottom-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-end gap-3">
           <button onClick={onClose} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Cancel</button>
           <button onClick={handleConfirm} className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg">Confirm Split</button>
         </div>
@@ -311,56 +427,18 @@ const SplitModal = ({ isOpen, onClose, caseData, availableUsers, onSplitConfirm 
   );
 };
 
-// ---------- Custom Status Dropdown Cell ----------
-const StatusCell = ({ status, onStatusChange }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
+// ---------- Static Status Cell (no dropdown) ----------
+const StatusCell = ({ status }) => {
   const currentOption = STATUS_OPTIONS.find(opt => opt.value === status);
   const colorClass = STATUS_COLOR_MAP[currentOption?.color || 'blue'];
-
   return (
-    <div className="relative" ref={dropdownRef}>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${colorClass} hover:opacity-80 transition-opacity`}
-      >
-        {currentOption?.label}
-      </button>
-      {isOpen && (
-        <div className="absolute left-0 top-full mt-1 z-20 bg-white rounded-lg shadow-lg border border-gray-200 py-1 min-w-[130px]">
-          {STATUS_OPTIONS.map(opt => {
-            const optColorClass = STATUS_COLOR_MAP[opt.color];
-            return (
-              <button
-                key={opt.value}
-                onClick={() => {
-                  onStatusChange(opt.value);
-                  setIsOpen(false);
-                }}
-                className={`w-full text-left px-3 py-2 text-xs hover:bg-gray-100 transition-colors ${optColorClass}`}
-              >
-                {opt.label}
-              </button>
-            );
-          })}
-        </div>
-      )}
-    </div>
+    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${colorClass}`}>
+      {currentOption?.label}
+    </span>
   );
 };
 
-// ---------- Source File Cell with Hyperlink ----------
+// ---------- Source File Cell (unchanged) ----------
 const SourceFileCell = ({ sourceFile, onViewPatient }) => {
   return (
     <button
@@ -393,16 +471,23 @@ const Dashboard = ({ onLogout, toggleTheme, dark }) => {
     completedDateTo: '',
     sourceFile: '',
   });
+  // For UI display of date inputs (MM-DD-YYYY)
+  const [displayReceivedFrom, setDisplayReceivedFrom] = useState('');
+  const [displayReceivedTo, setDisplayReceivedTo] = useState('');
+  const [displayCompletedFrom, setDisplayCompletedFrom] = useState('');
+  const [displayCompletedTo, setDisplayCompletedTo] = useState('');
+
   const [columnVisibility, setColumnVisibility] = useState({});
   const [caseSplits, setCaseSplits] = useState({});
   const [splitModalOpen, setSplitModalOpen] = useState(false);
   const [currentSplitCase, setCurrentSplitCase] = useState(null);
+  const [cancelModalOpen, setCancelModalOpen] = useState(false);
+  const [currentCancelCase, setCurrentCancelCase] = useState(null);
 
   // Show success message if coming from patient info page
   useEffect(() => {
     if (location.state?.message) {
       alert(location.state.message);
-      // Clear the message
       navigate(location.pathname, { replace: true });
     }
   }, [location, navigate]);
@@ -415,7 +500,7 @@ const Dashboard = ({ onLogout, toggleTheme, dark }) => {
     }, 800);
   }, []);
 
-  // Apply filters
+  // Apply filters (filters store YYYY-MM-DD)
   const filteredData = useMemo(() => {
     let result = [...masterData];
     if (filters.receivedDateFrom) result = result.filter(row => row.receivedDate >= filters.receivedDateFrom);
@@ -445,11 +530,15 @@ const Dashboard = ({ onLogout, toggleTheme, dark }) => {
     switch (action) {
       case 'start': newStatus = 'UW In Progress'; break;
       case 'complete': newStatus = 'Completed'; break;
-      case 'cancel': newStatus = 'Withdrawn'; break;
       default: return;
     }
     updateRow(row.id, { status: newStatus });
     alert(`✅ Action "${action}" completed. Status updated to "${newStatus}".`);
+  }, [updateRow]);
+
+  const handleCancelWithReason = useCallback((caseId, reason) => {
+    updateRow(caseId, { status: 'Withdrawn' });
+    alert(`✅ Case withdrawn. Reason: ${reason}`);
   }, [updateRow]);
 
   const handleStatusChange = useCallback((rowId, newStatus) => {
@@ -495,62 +584,111 @@ const Dashboard = ({ onLogout, toggleTheme, dark }) => {
     alert(`✅ Case ${caseId} split into ${assignments.length} parts.`);
   };
 
-  // Navigate to Patient Info page - UPDATED with returnTo: 'tool'
+  // Navigate to Patient Info page
   const handleViewPatient = (sourceFile) => {
     const caseData = masterData.find(d => d.sourceFile === sourceFile);
-    
-    // Get existing patient data from localStorage
     const savedData = JSON.parse(localStorage.getItem('patientData') || '{}');
     const existingData = savedData[caseData?.id] || savedData[sourceFile];
-    
-    // Navigate to patient-info page with returnTo parameter set to 'tool'
     navigate('/patient-info', {
       state: {
         sourceFile: sourceFile,
         patientId: caseData?.id,
         existingData: existingData,
-        returnTo: 'tool'  // This tells PatientInfo to return to Tool page (Index) after save
+        returnTo: 'tool'
       }
     });
   };
 
-  // Column definitions
+  // Open cancel reason modal
+  const openCancelModal = (caseData) => {
+    setCurrentCancelCase(caseData);
+    setCancelModalOpen(true);
+  };
+
+  // Handlers for date filters with MM-DD-YYYY input
+  const handleReceivedFromChange = (e) => {
+    const raw = e.target.value;
+    const formatted = formatDateInput(raw);
+    setDisplayReceivedFrom(formatted);
+    const ymd = formatToYMD(formatted);
+    setFilters(prev => ({ ...prev, receivedDateFrom: ymd }));
+  };
+  const handleReceivedToChange = (e) => {
+    const raw = e.target.value;
+    const formatted = formatDateInput(raw);
+    setDisplayReceivedTo(formatted);
+    const ymd = formatToYMD(formatted);
+    setFilters(prev => ({ ...prev, receivedDateTo: ymd }));
+  };
+  const handleCompletedFromChange = (e) => {
+    const raw = e.target.value;
+    const formatted = formatDateInput(raw);
+    setDisplayCompletedFrom(formatted);
+    const ymd = formatToYMD(formatted);
+    setFilters(prev => ({ ...prev, completedDateFrom: ymd }));
+  };
+  const handleCompletedToChange = (e) => {
+    const raw = e.target.value;
+    const formatted = formatDateInput(raw);
+    setDisplayCompletedTo(formatted);
+    const ymd = formatToYMD(formatted);
+    setFilters(prev => ({ ...prev, completedDateTo: ymd }));
+  };
+
+  // Reset filters also clears display values
+  const resetFilters = () => {
+    setFilters({
+      receivedDateFrom: '', receivedDateTo: '', client: '', sourceFile: '',
+      firstName: '', lastName: '', underwriter: '', auditor: '', completedDateFrom: '', completedDateTo: '',
+    });
+    setDisplayReceivedFrom('');
+    setDisplayReceivedTo('');
+    setDisplayCompletedFrom('');
+    setDisplayCompletedTo('');
+  };
+
+  // Column definitions (Status cell now static, dates formatted to MM-DD-YYYY)
   const columns = useMemo(() => [
     {
-      accessorKey: 'assigned', 
-      header: 'Assigned', 
+      accessorKey: 'assigned',
+      header: 'Assigned',
       cell: ({ row }) => (
-        <input 
-          type="checkbox" 
-          checked={row.original.assigned} 
-          onChange={(e) => handleAssignedChange(row.original.id, e.target.checked)} 
-          className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" 
+        <input
+          type="checkbox"
+          checked={row.original.assigned}
+          onChange={(e) => handleAssignedChange(row.original.id, e.target.checked)}
+          className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
         />
-      ), 
+      ),
       enableSorting: true
     },
     {
-      accessorKey: 'qc', 
-      header: 'QC', 
+      accessorKey: 'qc',
+      header: 'QC',
       cell: ({ row }) => (
-        <input 
-          type="checkbox" 
-          checked={row.original.qc} 
-          onChange={(e) => handleQCChange(row.original.id, e.target.checked)} 
-          className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" 
+        <input
+          type="checkbox"
+          checked={row.original.qc}
+          onChange={(e) => handleQCChange(row.original.id, e.target.checked)}
+          className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
         />
-      ), 
+      ),
       enableSorting: true
     },
-    { accessorKey: 'receivedDate', header: 'Received Date', enableSorting: true },
+    {
+      accessorKey: 'receivedDate',
+      header: 'Received Date',
+      cell: ({ row }) => formatToMDY(row.original.receivedDate),
+      enableSorting: true
+    },
     { accessorKey: 'client', header: 'Client', enableSorting: true },
     {
       accessorKey: 'sourceFile',
       header: 'Source File',
       cell: ({ row }) => (
-        <SourceFileCell 
-          sourceFile={row.original.sourceFile} 
-          onViewPatient={handleViewPatient} 
+        <SourceFileCell
+          sourceFile={row.original.sourceFile}
+          onViewPatient={handleViewPatient}
         />
       ),
       enableSorting: true,
@@ -564,15 +702,15 @@ const Dashboard = ({ onLogout, toggleTheme, dark }) => {
     {
       accessorKey: 'status',
       header: 'Status',
-      cell: ({ row }) => (
-        <StatusCell
-          status={row.original.status}
-          onStatusChange={(newStatus) => handleStatusChange(row.original.id, newStatus)}
-        />
-      ),
+      cell: ({ row }) => <StatusCell status={row.original.status} />,
       enableSorting: true,
     },
-    { accessorKey: 'completedDate', header: 'Completed Date', enableSorting: true },
+    {
+      accessorKey: 'completedDate',
+      header: 'Completed Date',
+      cell: ({ row }) => row.original.completedDate ? formatToMDY(row.original.completedDate) : '',
+      enableSorting: true,
+    },
     {
       id: 'splitInfo',
       header: 'Split Info',
@@ -599,10 +737,17 @@ const Dashboard = ({ onLogout, toggleTheme, dark }) => {
     {
       id: 'actions',
       header: 'Actions',
-      cell: ({ row }) => <ActionButtons row={row} onAction={handleRowAction} onSplit={openSplitModal} />,
+      cell: ({ row }) => (
+        <ActionButtons
+          row={row}
+          onAction={handleRowAction}
+          onSplit={openSplitModal}
+          onOpenCancelModal={openCancelModal}
+        />
+      ),
       enableSorting: false,
     },
-  ], [handleAssignedChange, handleQCChange, handleStatusChange, handleRowAction, caseSplits]);
+  ], [handleAssignedChange, handleQCChange, handleRowAction, caseSplits, handleViewPatient]);
 
   const table = useReactTable({
     data: filteredData,
@@ -615,14 +760,7 @@ const Dashboard = ({ onLogout, toggleTheme, dark }) => {
     initialState: { pagination: { pageSize: 10 } },
   });
 
-  const resetFilters = () => {
-    setFilters({
-      receivedDateFrom: '', receivedDateTo: '', client: '', sourceFile: '',
-      firstName: '', lastName: '', underwriter: '', auditor: '', completedDateFrom: '', completedDateTo: '',
-    });
-  };
-
-  // Loading skeleton
+  // Loading skeleton (unchanged)
   if (loading) {
     return (
       <AppLayout onLogout={onLogout} toggleTheme={toggleTheme} dark={dark}>
@@ -644,7 +782,7 @@ const Dashboard = ({ onLogout, toggleTheme, dark }) => {
     <AppLayout onLogout={onLogout} toggleTheme={toggleTheme} dark={dark}>
       <div className="h-full w-full overflow-y-auto">
         <div className="p-2 md:p-3 space-y-4 max-w-[1700px] mx-auto">
-          {/* Stats Cards */}
+          {/* Stats Cards - unchanged */}
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2">
             <div className="bg-white rounded-xl p-2 shadow-sm border border-gray-200 transition-all hover:shadow-md">
               <p className="text-sm text-gray-500">Total Cases</p>
@@ -680,7 +818,6 @@ const Dashboard = ({ onLogout, toggleTheme, dark }) => {
                   readOnly
                 />
               </div>
-
               <div className="flex flex-col sm:flex-row gap-2 flex-shrink-0 items-stretch sm:items-center">
                 <div className="flex items-center gap-2 bg-white rounded-lg border border-gray-300 p-1 pl-3">
                   <span className="text-sm font-medium text-gray-600 whitespace-nowrap">Assign to:</span>
@@ -711,11 +848,24 @@ const Dashboard = ({ onLogout, toggleTheme, dark }) => {
                   <button onClick={() => setShowFilters(false)} className="text-gray-400 hover:text-gray-600"><X size={18} /></button>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {/* Received Date - now MM-DD-YYYY text inputs */}
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">Received Date</label>
                     <div className="flex gap-2">
-                      <input type="date" value={filters.receivedDateFrom} onChange={(e) => setFilters({ ...filters, receivedDateFrom: e.target.value })} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg" />
-                      <input type="date" value={filters.receivedDateTo} onChange={(e) => setFilters({ ...filters, receivedDateTo: e.target.value })} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg" />
+                      <input
+                        type="text"
+                        placeholder="MM-DD-YYYY"
+                        value={displayReceivedFrom}
+                        onChange={handleReceivedFromChange}
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
+                      />
+                      <input
+                        type="text"
+                        placeholder="MM-DD-YYYY"
+                        value={displayReceivedTo}
+                        onChange={handleReceivedToChange}
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
+                      />
                     </div>
                   </div>
                   <div>
@@ -747,11 +897,24 @@ const Dashboard = ({ onLogout, toggleTheme, dark }) => {
                       {uniqueAuditors.map(aud => <option key={aud} value={aud}>{aud}</option>)}
                     </select>
                   </div>
+                  {/* Completed Date - now MM-DD-YYYY text inputs */}
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">Completed Date</label>
                     <div className="flex gap-2">
-                      <input type="date" value={filters.completedDateFrom} onChange={(e) => setFilters({ ...filters, completedDateFrom: e.target.value })} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg" />
-                      <input type="date" value={filters.completedDateTo} onChange={(e) => setFilters({ ...filters, completedDateTo: e.target.value })} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg" />
+                      <input
+                        type="text"
+                        placeholder="MM-DD-YYYY"
+                        value={displayCompletedFrom}
+                        onChange={handleCompletedFromChange}
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
+                      />
+                      <input
+                        type="text"
+                        placeholder="MM-DD-YYYY"
+                        value={displayCompletedTo}
+                        onChange={handleCompletedToChange}
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
+                      />
                     </div>
                   </div>
                 </div>
@@ -767,7 +930,7 @@ const Dashboard = ({ onLogout, toggleTheme, dark }) => {
             )}
           </div>
 
-          {/* Data Table */}
+          {/* Data Table - unchanged except date columns already formatted via cell renderers */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full min-w-[800px]">
@@ -813,7 +976,7 @@ const Dashboard = ({ onLogout, toggleTheme, dark }) => {
               </table>
             </div>
 
-            {/* Pagination */}
+            {/* Pagination - unchanged */}
             <div className="flex flex-wrap justify-between items-center gap-4 px-4 py-3 border-t border-gray-200 bg-gray-50">
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-700">Rows per page:</span>
@@ -861,6 +1024,14 @@ const Dashboard = ({ onLogout, toggleTheme, dark }) => {
         caseData={currentSplitCase}
         availableUsers={uniqueAssignedUsers.filter(u => u !== 'Unassigned')}
         onSplitConfirm={handleSplitConfirm}
+      />
+
+      {/* Cancel Reason Modal */}
+      <CancelReasonModal
+        isOpen={cancelModalOpen}
+        onClose={() => setCancelModalOpen(false)}
+        caseData={currentCancelCase}
+        onSubmit={handleCancelWithReason}
       />
 
       <style jsx>{`
