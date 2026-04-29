@@ -8,6 +8,8 @@ import ReportPage from "./pages/ReportPage";
 import LoginPage from "./components/LoginPage";
 import PatientInfo from "./pages/PatientInfo";
 import AdminSetupPage from "./pages/admin/AdminPage";
+import CompleteDashboard from './pages/CompleteDashboard';
+import IndexingPanel from './pages/IndexingPanel';
 
 const AppContent = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -80,7 +82,30 @@ const AppContent = () => {
           )
         }
       />
-      
+     
+      <Route
+        path="/complete-dashboard"
+        element={
+          isAuthenticated ? (
+            <CompleteDashboard onLogout={handleLogout} toggleTheme={toggleTheme} dark={dark} />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
+
+      {/* NEW INDEXING ROUTE */}
+      <Route
+        path="/indexing"
+        element={
+          isAuthenticated ? (
+            <IndexingPanel onLogout={handleLogout} toggleTheme={toggleTheme} dark={dark} />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
+
       <Route
         path="/report"
         element={

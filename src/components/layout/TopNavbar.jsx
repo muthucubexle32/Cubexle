@@ -9,7 +9,7 @@ import {
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect, useRef } from "react"; 
 
-// Tooltip Component
+// Tooltip Component (unchanged)
 const Tooltip = ({ children, text, position = "bottom" }) => {
   const [show, setShow] = useState(false);
   
@@ -140,12 +140,17 @@ const TopNavbar = ({ onPanelChange, activePanel, onLogout }) => {
     setIsMobileMenuOpen(false);
   };
 
+  // ----- UPDATED NAVIGATION ITEMS -----
+  // Changed "Complete Dashboard" path from "/tool" to "/complete-dashboard"
   const navItems = [
-    { label: "Dashboard", path: "/dashboard", icon: Layout, tooltip: "Go to Dashboard" },
+    { label: "Team Dashboard", path: "/dashboard", icon: Layout, tooltip: "Team Dashboard" },
     { label: "Tool", path: "/tool", icon: Activity, tooltip: "Data Entry Tool" },
     { label: "Admin", path: "/admin", icon: Settings, tooltip: "Admin Panel" },
     { label: "Report", path: "/report", icon: FileText, tooltip: "View Reports" },
+    { label: "Complete Dashboard", path: "/complete-dashboard", icon: Layout, tooltip: "Complete Dashboard" },
+    { label: "Indexing", path: "/indexing", icon: Layout, tooltip: "Indexing" }
   ];
+  // ---------------------------------
 
   const entryItems = [
     { label: "OV", icon: Stethoscope, panelId: "ov", color: "from-blue-500 to-cyan-400", tooltip: "Office Visit" },
@@ -158,6 +163,7 @@ const TopNavbar = ({ onPanelChange, activePanel, onLogout }) => {
     { label: "Family History", icon: Heart, panelId: "family-medical-history", color: "from-pink-500 to-rose-400", tooltip: "Family Medical History" },
     { label: "Health Overview", icon: HealthActivity, panelId: "health-overview", color: "from-cyan-500 to-blue-400", tooltip: "Health Overview" },
     { label: "Special Attention", icon: AlertCircle, panelId: "special-attention", color: "from-red-500 to-pink-400", tooltip: "Special Attention & APS" },
+    { label: "Disease State", icon: Activity, panelId: "disease-state", color: "from-orange-500 to-red-400", tooltip: "Disease State" },
   ];
 
   const getSelectedEntryLabel = () => {

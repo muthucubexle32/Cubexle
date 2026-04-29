@@ -14,7 +14,7 @@ import PshPanel from "@/components/Datapanel/PshPanel";
 import FamilyMedicalHistoryPanel from "@/components/Datapanel/FamilyMedicalHistoryPanel";
 import HealthOverviewPanel from "@/components/Datapanel/HealthOverviewPanel";
 import SpecialAttentionPanel from "@/components/Datapanel/SpecialAttentionPanel";
-
+import DiseaseStatePanel from '@/components/Datapanel/DiseaseStatePanel';
 const Index = ({ onLogout, toggleTheme, dark }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [menuSide, setMenuSide] = useState('right');
@@ -71,6 +71,8 @@ const Index = ({ onLogout, toggleTheme, dark }) => {
         return <HealthOverviewPanel />;
       case 'special-attention':
         return <SpecialAttentionPanel />;
+      case 'disease-state':
+        return <DiseaseStatePanel />;
       default:
         return <OVPanel />;
     }
