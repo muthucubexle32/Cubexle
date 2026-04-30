@@ -15,71 +15,69 @@ import FamilyMedicalHistoryPanel from "@/components/Datapanel/FamilyMedicalHisto
 import HealthOverviewPanel from "@/components/Datapanel/HealthOverviewPanel";
 import SpecialAttentionPanel from "@/components/Datapanel/SpecialAttentionPanel";
 import DiseaseStatePanel from '@/components/Datapanel/DiseaseStatePanel';
+import IndexingPanel from '@/pages/IndexingPanel';  // <-- import
+
 const Index = ({ onLogout, toggleTheme, dark }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [menuSide, setMenuSide] = useState('right');
   const [activePanel, setActivePanel] = useState('ov');
+  const [indexingStatus, setIndexingStatus] = useState(null); // 'Clarification' or 'Completed'
 
-  // Load patient data and update PDF viewer on mount
+  // Load patient data and check for indexing state from navigation
   useEffect(() => {
     const loadPatientData = () => {
       const currentPatient = localStorage.getItem('currentPatient');
       if (currentPatient) {
         const patient = JSON.parse(currentPatient);
-        console.log('Loaded patient for Tool page:', patient);
-        // You can dispatch an event or update state to refresh PDF viewer
         window.dispatchEvent(new CustomEvent('patientLoaded', { detail: patient }));
       }
     };
-    
     loadPatientData();
-    
-    // Listen for storage changes (when patient info is saved)
+
+    // If navigated from Indexing click with state, set active panel
+    if (window.history.state?.usr?.activePanel) {
+      setActivePanel(window.history.state.usr.activePanel);
+    }
+
     const handleStorageChange = (e) => {
-      if (e.key === 'currentPatient') {
-        loadPatientData();
-      }
+      if (e.key === 'currentPatient') loadPatientData();
     };
     window.addEventListener('storage', handleStorageChange);
-    
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  const handleToggle = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
+  const handleToggle = () => setIsMenuOpen(!isMenuOpen);
+  const handlePanelChange = (panel) => setActivePanel(panel);
 
   const renderRightPanel = () => {
     switch(activePanel) {
-      case 'ov':
-        return <OVPanel />;
-      case 'diagnostics':
-        return <DiagnosticsPanel />;
+      case 'ov': 
+      return <OVPanel />;
+      case 'diagnostics': 
+      return <DiagnosticsPanel />;
       case 'labs':
-        return <LabsPanel />;
-      case 'ekg':
-        return <EKGPanel />;
-      case 'socialhistory':
-        return <SocialHistoryPanel />;
-      case 'pmh':
-        return <PmhPanel />;
-      case 'psh':
-        return <PshPanel />;
-      case 'family-medical-history':
-        return <FamilyMedicalHistoryPanel />;
-      case 'health-overview':
-        return <HealthOverviewPanel />;
-      case 'special-attention':
-        return <SpecialAttentionPanel />;
-      case 'disease-state':
-        return <DiseaseStatePanel />;
-      default:
-        return <OVPanel />;
+      return <LabsPanel />;
+      case 'ekg': 
+      return <EKGPanel />;
+      case 'socialhistory': 
+      return <SocialHistoryPanel />;
+      case 'pmh': 
+      return <PmhPanel />;
+      case 'psh': 
+      return <PshPanel />;
+      case 'family-medical-history': 
+      return <FamilyMedicalHistoryPanel />;
+      case 'health-overview': 
+      return <HealthOverviewPanel />;
+      case 'special-attention': 
+      return <SpecialAttentionPanel />;
+      case 'disease-state': 
+      return <DiseaseStatePanel />;
+      case 'indexing': 
+      return <IndexingPanel />;  // <-- new case
+      default: 
+      return <OVPanel />;
     }
-  };
-
-  const handlePanelChange = (panel) => {
-    setActivePanel(panel);
   };
 
   return (
@@ -89,6 +87,8 @@ const Index = ({ onLogout, toggleTheme, dark }) => {
       onLogout={onLogout}
       toggleTheme={toggleTheme}
       dark={dark}
+      indexingStatus={indexingStatus}
+      onIndexingStatusChange={setIndexingStatus}
     >
       <div className="flex h-full">
         {/* Left - PDF Viewer */}
@@ -100,11 +100,7 @@ const Index = ({ onLogout, toggleTheme, dark }) => {
         {menuSide === 'left' && <SideMenu isOpen={isMenuOpen} side="left" />}
 
         {/* Toggle Button */}
-        <Toggle 
-          isOpen={isMenuOpen} 
-          onToggle={handleToggle} 
-          position={menuSide === 'left' ? 'right' : 'left'} 
-        />
+        <Toggle isOpen={isMenuOpen} onToggle={handleToggle} position={menuSide === 'left' ? 'right' : 'left'} />
 
         {/* Menu on Right Side (if selected) */}
         {menuSide === 'right' && <SideMenu isOpen={isMenuOpen} side="right" />}

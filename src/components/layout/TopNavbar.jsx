@@ -4,7 +4,9 @@ import {
   Calendar, Settings, Activity, Microscope, HeartPulse, Stethoscope, 
   Sparkles, Info, Users, FileText as MedicalFile, 
   Activity as HealthActivity, AlertCircle, Heart,
-  Layout
+  Layout,
+  CheckCircle,
+  AlertCircle as AlertIcon
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect, useRef } from "react"; 
@@ -42,20 +44,26 @@ const Tooltip = ({ children, text, position = "bottom" }) => {
   );
 };
 
-const TopNavbar = ({ onPanelChange, activePanel, onLogout }) => {
+const TopNavbar = ({ 
+  onPanelChange, 
+  activePanel, 
+  onLogout,
+  indexingStatus,        
+  onIndexingStatusChange 
+}) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [userName] = useState("John Doe");
   const [userRole] = useState("Physician");
+  const [toast, setToast] = useState({ show: false, message: '', type: '' });
 
   const [showEntryDropdown, setShowEntryDropdown] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const entryDropdownRef = useRef(null);
   const userDropdownRef = useRef(null);
 
-  // State for patient data from localStorage
   const [patientData, setPatientData] = useState({
     provider: 'No Patient Selected',
     dob: '—',
@@ -63,7 +71,6 @@ const TopNavbar = ({ onPanelChange, activePanel, onLogout }) => {
     pageNo: '—'
   });
 
-  // Load patient data from localStorage on mount and when location changes
   useEffect(() => {
     loadPatientData();
   }, [location.pathname]);
@@ -79,7 +86,6 @@ const TopNavbar = ({ onPanelChange, activePanel, onLogout }) => {
         pageNo: patient.pages || '1-500'
       });
     } else {
-      // Try to load from patientData if exists
       const allPatients = JSON.parse(localStorage.getItem('patientData') || '{}');
       const firstPatient = Object.values(allPatients)[0];
       if (firstPatient) {
@@ -93,19 +99,22 @@ const TopNavbar = ({ onPanelChange, activePanel, onLogout }) => {
     }
   };
 
-  // Listen for storage changes (when patient data is saved from another tab)
+  // Show toast helper
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast({ show: false, message: '', type: '' });
+    }, 2000);
+  };
+
   useEffect(() => {
-    const handleStorageChange = () => {
-      loadPatientData();
-    };
+    const handleStorageChange = () => loadPatientData();
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
+    const handleScroll = () => setIsScrolled(window.scrollY > 10);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -124,33 +133,33 @@ const TopNavbar = ({ onPanelChange, activePanel, onLogout }) => {
   }, []);
 
   const handleLogoutClick = () => {
-    if (onLogout) {
-      onLogout();
-    } else {
-      navigate("/login");
-    }
+    if (onLogout) onLogout();
+    else navigate("/login");
     setIsMobileMenuOpen(false);
   };
 
   const handleEntrySelect = (panelId) => {
-    if (onPanelChange) {
-      onPanelChange(panelId);
-    }
+    if (onPanelChange) onPanelChange(panelId);
     setShowEntryDropdown(false);
     setIsMobileMenuOpen(false);
   };
 
-  // ----- UPDATED NAVIGATION ITEMS -----
-  // Changed "Complete Dashboard" path from "/tool" to "/complete-dashboard"
+  // Handle status change with toast
+  const handleStatusChange = (status) => {
+    if (onIndexingStatusChange) {
+      onIndexingStatusChange(status);
+    }
+    showToast(`Document status set to "${status}"`, status === 'Completed' ? 'success' : 'info');
+  };
+
   const navItems = [
     { label: "Team Dashboard", path: "/dashboard", icon: Layout, tooltip: "Team Dashboard" },
     { label: "Tool", path: "/tool", icon: Activity, tooltip: "Data Entry Tool" },
     { label: "Admin", path: "/admin", icon: Settings, tooltip: "Admin Panel" },
     { label: "Report", path: "/report", icon: FileText, tooltip: "View Reports" },
     { label: "Complete Dashboard", path: "/complete-dashboard", icon: Layout, tooltip: "Complete Dashboard" },
-    { label: "Indexing", path: "/indexing", icon: Layout, tooltip: "Indexing" }
+    { label: "Indexing", path: "/tool", icon: Layout, tooltip: "Indexing" }
   ];
-  // ---------------------------------
 
   const entryItems = [
     { label: "OV", icon: Stethoscope, panelId: "ov", color: "from-blue-500 to-cyan-400", tooltip: "Office Visit" },
@@ -172,7 +181,26 @@ const TopNavbar = ({ onPanelChange, activePanel, onLogout }) => {
     return selected ? `Entry Page - ${selected.label}` : "Entry Page";
   };
 
-  const showFilterBar = location.pathname === "/" || location.pathname === "/tool";
+  const showPatientBar = (location.pathname === "/" || location.pathname === "/tool") && activePanel !== 'indexing';
+  const showIndexingStatusBar = location.pathname === "/tool" && activePanel === 'indexing';
+
+  const handleIndexingClick = () => {
+    if (location.pathname === "/tool") {
+      if (onPanelChange) onPanelChange('indexing');
+    } else {
+      navigate('/tool', { state: { activePanel: 'indexing' } });
+    }
+    setIsMobileMenuOpen(false);
+  };
+
+  const handleToolClick = () => {
+    if (location.pathname === "/tool") {
+      if (onPanelChange) onPanelChange('ov');
+    } else {
+      navigate('/tool');
+    }
+    setIsMobileMenuOpen(false);
+  };
 
   return (
     <div className={`w-full transition-all duration-500 ${
@@ -184,7 +212,7 @@ const TopNavbar = ({ onPanelChange, activePanel, onLogout }) => {
       <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 animate-gradient-x"></div>
 
       {/* ROW 1: Main Navigation */}
-      <div className="relative flex items-center justify-between px-2 xs:px-3 sm:px-4 md:px-6 lg:px-8 xl:px-10 py-1.5 gap-2">
+      <div className="relative flex flex-wrap items-center justify-between px-2 xs:px-3 sm:px-4 md:px-6 lg:px-8 xl:px-10 py-1.5 gap-2">
         {/* Logo Section */}
         <Tooltip text="Return to Dashboard" position="right">
           <div 
@@ -202,14 +230,32 @@ const TopNavbar = ({ onPanelChange, activePanel, onLogout }) => {
         </Tooltip>
 
         {/* Desktop Navigation */}
-        <div className="hidden lg:flex items-center gap-1 xl:gap-2 2xl:gap-4">
+        <div className="hidden lg:flex items-center gap-1 xl:gap-2 2xl:gap-4 flex-wrap">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive = location.pathname === item.path;
+            let isActive = false;
+            if (item.label === "Tool") {
+              isActive = location.pathname === "/tool" && activePanel !== 'indexing';
+            } else if (item.label === "Indexing") {
+              isActive = location.pathname === "/tool" && activePanel === 'indexing';
+            } else {
+              isActive = location.pathname === item.path;
+            }
+            
+            const handleClick = () => {
+              if (item.label === "Indexing") {
+                handleIndexingClick();
+              } else if (item.label === "Tool") {
+                handleToolClick();
+              } else {
+                navigate(item.path);
+              }
+            };
+
             return (
               <Tooltip key={item.path} text={item.tooltip} position="bottom">
                 <button
-                  onClick={() => navigate(item.path)}
+                  onClick={handleClick}
                   className={`relative px-2 md:px-3 lg:px-4 xl:px-5 py-1.5 md:py-2 text-[11px] md:text-xs lg:text-sm font-medium rounded-xl transition-all duration-300 group overflow-hidden ${
                     isActive 
                       ? 'text-white bg-white/15 shadow-lg shadow-white/5' 
@@ -233,7 +279,6 @@ const TopNavbar = ({ onPanelChange, activePanel, onLogout }) => {
 
         {/* Right Actions */}
         <div className="flex items-center gap-1 xs:gap-2 sm:gap-3 md:gap-4 flex-shrink-0">
-          {/* User Info */}
           <div className="hidden md:block relative" ref={userDropdownRef}>
             <Tooltip text="User Profile" position="bottom">
               <button
@@ -249,8 +294,6 @@ const TopNavbar = ({ onPanelChange, activePanel, onLogout }) => {
               </button>
             </Tooltip>
           </div>
-
-          {/* Logout Button */}
           <Tooltip text="Logout" position="bottom">
             <button
               onClick={handleLogoutClick}
@@ -260,8 +303,6 @@ const TopNavbar = ({ onPanelChange, activePanel, onLogout }) => {
               <LogOut className="w-3.5 h-3.5 md:w-4 md:h-4 xl:w-4 xl:h-4 group-hover:rotate-180 transition-transform duration-500" />
             </button>
           </Tooltip>
-
-          {/* Mobile Menu Button */}
           <Tooltip text={isMobileMenuOpen ? "Close Menu" : "Open Menu"} position="bottom">
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -277,12 +318,11 @@ const TopNavbar = ({ onPanelChange, activePanel, onLogout }) => {
         </div>
       </div>
 
-      {/* ROW 2: Search/Filter Bar with Patient Data */}
-      {showFilterBar && (
+      {/* ROW 2: Patient Information Bar (normal mode) */}
+      {showPatientBar && (
         <div className="border-t border-white/30 bg-current">
           <div className="px-1 xs:px-2 sm:px-3 md:px-4 lg:px-5 xl:px-6 py-1 sm:py-1.5">
-            
-            {/* Mobile: Horizontal scroll */}
+            {/* Mobile horizontal scroll */}
             <div className="block sm:hidden overflow-x-auto overflow-y-visible scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent pb-1 -mx-1 px-1">
               <div className="flex items-center gap-1.5 min-w-max">
                 <Tooltip text="Current Patient" position="top">
@@ -318,7 +358,6 @@ const TopNavbar = ({ onPanelChange, activePanel, onLogout }) => {
                 </div>
               </div>
             </div>
-
             {/* Tablet & Desktop */}
             <div className="hidden sm:flex sm:flex-wrap sm:items-center sm:justify-between gap-2">
               <div className="flex flex-wrap items-center gap-2 md:gap-3 lg:gap-4">
@@ -347,82 +386,48 @@ const TopNavbar = ({ onPanelChange, activePanel, onLogout }) => {
                   </div>
                 </Tooltip>
               </div>
-
               <div className="relative flex-shrink-0" ref={entryDropdownRef}>
                 <Tooltip text="Select clinical entry" position="top">
                   <button
                     onClick={() => setShowEntryDropdown(!showEntryDropdown)}
                     className="flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 bg-gradient-to-r from-slate-950 to-black rounded-md text-white text-[10px] md:text-xs hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all duration-300 shadow-lg"
                   >
-                    <span className="font-medium whitespace-nowrap">
-                      {getSelectedEntryLabel()}
-                    </span>
+                    <span className="font-medium whitespace-nowrap">{getSelectedEntryLabel()}</span>
                     <ChevronDown className={`w-3 h-3 md:w-4 md:h-4 text-white/80 transition-transform duration-300 ${showEntryDropdown ? 'rotate-180' : ''}`} />
                   </button>
                 </Tooltip>
-
-                {/* Entry Pages Dropdown */}
                 {showEntryDropdown && (
                   <>
-                    {/* Mobile full-screen dropdown */}
                     <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:hidden">
                       <div className="w-full bg-white dark:bg-gray-800 rounded-t-xl p-4 animate-slideUp max-h-[80vh] overflow-y-auto">
                         <div className="flex justify-between items-center mb-4 sticky top-0 bg-white dark:bg-gray-800 pt-2 pb-2">
                           <h3 className="text-base font-semibold text-gray-800 dark:text-white">Select Entry</h3>
-                          <button onClick={() => setShowEntryDropdown(false)} className="p-2">
-                            <X className="w-5 h-5 text-gray-500" />
-                          </button>
+                          <button onClick={() => setShowEntryDropdown(false)} className="p-2"><X className="w-5 h-5 text-gray-500" /></button>
                         </div>
                         <div className="space-y-2">
                           {entryItems.map((item) => {
                             const Icon = item.icon;
                             const isActive = activePanel === item.panelId;
                             return (
-                              <button
-                                key={item.panelId}
-                                onClick={() => {
-                                  handleEntrySelect(item.panelId);
-                                  setShowEntryDropdown(false);
-                                }}
-                                className={`w-full flex items-center gap-3 p-3 rounded-lg transition-all ${
-                                  isActive 
-                                    ? 'bg-gradient-to-r from-blue-500/10 to-indigo-500/10 dark:from-gray-700 dark:to-gray-600 border border-blue-500/20' 
-                                    : 'hover:bg-gray-100 dark:hover:bg-gray-700'
-                                }`}
-                              >
-                                <div className={`p-2 rounded-lg bg-gradient-to-r ${item.color} bg-opacity-20`}>
-                                  <Icon className="w-5 h-5" />
-                                </div>
-                                <span className={`flex-1 text-left text-sm ${isActive ? 'font-medium text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'}`}>
-                                  {item.label}
-                                </span>
+                              <button key={item.panelId} onClick={() => { handleEntrySelect(item.panelId); setShowEntryDropdown(false); }}
+                                className={`w-full flex items-center gap-3 p-3 rounded-lg transition-all ${isActive ? 'bg-gradient-to-r from-blue-500/10 to-indigo-500/10 dark:from-gray-700 dark:to-gray-600 border border-blue-500/20' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
+                                <div className={`p-2 rounded-lg bg-gradient-to-r ${item.color} bg-opacity-20`}><Icon className="w-5 h-5" /></div>
+                                <span className={`flex-1 text-left text-sm ${isActive ? 'font-medium text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'}`}>{item.label}</span>
                               </button>
                             );
                           })}
                         </div>
                       </div>
                     </div>
-
-                    {/* Desktop dropdown */}
                     <div className="hidden sm:block absolute right-0 top-full mt-1 w-40 md:w-44 lg:w-48 bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700 py-1 rounded-lg z-50">
                       {entryItems.map((item) => {
                         const Icon = item.icon;
                         const isActive = activePanel === item.panelId;
                         return (
-                          <button
-                            key={item.panelId}
-                            onClick={() => handleEntrySelect(item.panelId)}
-                            className={`w-full flex items-center gap-2 px-3 py-2 text-xs md:text-sm transition-all hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                              isActive ? 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-600' : ''
-                            }`}
-                            title={item.tooltip}
-                          >
-                            <div className={`p-1 rounded-lg bg-gradient-to-r ${item.color} bg-opacity-20`}>
-                              <Icon className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                            </div>
-                            <span className={`flex-1 text-left ${isActive ? 'font-medium text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'}`}>
-                              {item.label}
-                            </span>
+                          <button key={item.panelId} onClick={() => handleEntrySelect(item.panelId)}
+                            className={`w-full flex items-center gap-2 px-3 py-2 text-xs md:text-sm transition-all hover:bg-gray-50 dark:hover:bg-gray-700 ${isActive ? 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-600' : ''}`} title={item.tooltip}>
+                            <div className={`p-1 rounded-lg bg-gradient-to-r ${item.color} bg-opacity-20`}><Icon className="w-3.5 h-3.5 md:w-4 md:h-4" /></div>
+                            <span className={`flex-1 text-left ${isActive ? 'font-medium text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'}`}>{item.label}</span>
                           </button>
                         );
                       })}
@@ -435,12 +440,42 @@ const TopNavbar = ({ onPanelChange, activePanel, onLogout }) => {
         </div>
       )}
 
+      {/* ROW 2 (alternate) : Indexing Status Bar - RESPONSIVE with Toast */}
+      {showIndexingStatusBar && (
+        <div className="border-t border-white/30 bg-current">
+          <div className="px-3 sm:px-4 md:px-6 py-2 flex flex-col sm:flex-row justify-end items-center gap-3 sm:gap-4">
+            <span className="text-white text-xs sm:text-sm font-medium">Document Status:</span>
+            <div className="flex gap-2 flex-wrap justify-center">
+              <button
+                onClick={() => handleStatusChange('Clarification')}
+                className={`px-3 sm:px-4 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-all ${
+                  indexingStatus === 'Clarification'
+                    ? 'bg-yellow-500 text-white shadow-md'
+                    : 'bg-white/10 text-white/80 hover:bg-white/20'
+                }`}
+              >
+                Clarification
+              </button>
+              <button
+                onClick={() => handleStatusChange('Completed')}
+                className={`px-3 sm:px-4 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-all ${
+                  indexingStatus === 'Completed'
+                    ? 'bg-green-500 text-white shadow-md'
+                    : 'bg-white/10 text-white/80 hover:bg-white/20'
+                }`}
+              >
+                Completed
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="lg:hidden fixed inset-0 top-[57px] xs:top-[60px] sm:top-[65px] bg-gradient-to-b from-slate-900 to-slate-800 dark:from-gray-900 dark:to-gray-800 z-40 animate-slideDown overflow-y-auto">
           <div className="min-h-full pb-20">
             <div className="p-3 xs:p-4 sm:p-6 space-y-3 xs:space-y-4 sm:space-y-6">
-              {/* User Profile */}
               <div className="relative bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-3 xs:p-4 sm:p-6 text-white overflow-hidden">
                 <div className="absolute top-0 right-0 w-20 xs:w-24 sm:w-32 h-20 xs:h-24 sm:h-32 bg-white/10 rounded-full transform translate-x-12 xs:translate-x-16 -translate-y-12 xs:-translate-y-16"></div>
                 <div className="absolute bottom-0 left-0 w-16 xs:w-20 sm:w-24 h-16 xs:h-20 sm:h-24 bg-black/10 rounded-full transform -translate-x-8 xs:-translate-x-12 translate-y-8 xs:translate-y-12"></div>
@@ -455,39 +490,38 @@ const TopNavbar = ({ onPanelChange, activePanel, onLogout }) => {
                     </div>
                   </div>
                   <Tooltip text="Logout from application" position="top">
-                    <button
-                      onClick={handleLogoutClick}
-                      className="w-full flex items-center justify-center gap-2 px-3 py-2 xs:px-4 xs:py-3 bg-red-500/30 hover:bg-red-500/40 rounded-xl transition-colors text-xs xs:text-sm sm:text-base"
-                    >
-                      <LogOut className="w-3.5 h-3.5 xs:w-4 xs:h-4 sm:w-5 sm:h-5" />
-                      <span>Logout</span>
+                    <button onClick={handleLogoutClick} className="w-full flex items-center justify-center gap-2 px-3 py-2 xs:px-4 xs:py-3 bg-red-500/30 hover:bg-red-500/40 rounded-xl transition-colors text-xs xs:text-sm sm:text-base">
+                      <LogOut className="w-3.5 h-3.5 xs:w-4 xs:h-4 sm:w-5 sm:h-5" /><span>Logout</span>
                     </button>
                   </Tooltip>
                 </div>
               </div>
-
-              {/* Main Navigation */}
               <div className="space-y-1 xs:space-y-2">
                 <div className="text-[9px] xs:text-[10px] font-semibold text-gray-400 uppercase tracking-wider px-3 xs:px-4">Main Menu</div>
                 {navItems.map((item) => {
                   const Icon = item.icon;
-                  const isActive = location.pathname === item.path;
+                  let isActive = false;
+                  if (item.label === "Tool") {
+                    isActive = location.pathname === "/tool" && activePanel !== 'indexing';
+                  } else if (item.label === "Indexing") {
+                    isActive = location.pathname === "/tool" && activePanel === 'indexing';
+                  } else {
+                    isActive = location.pathname === item.path;
+                  }
+                  const handleClick = () => {
+                    if (item.label === "Indexing") {
+                      handleIndexingClick();
+                    } else if (item.label === "Tool") {
+                      handleToolClick();
+                    } else {
+                      navigate(item.path);
+                    }
+                    setIsMobileMenuOpen(false);
+                  };
                   return (
                     <Tooltip key={item.path} text={item.tooltip} position="right">
-                      <button
-                        onClick={() => {
-                          navigate(item.path);
-                          setIsMobileMenuOpen(false);
-                        }}
-                        className={`w-full flex items-center gap-3 xs:gap-4 px-3 xs:px-4 py-2.5 xs:py-3 sm:py-4 rounded-xl transition-all duration-300 ${
-                          isActive 
-                            ? 'bg-white/20 text-white shadow-lg' 
-                            : 'text-white/70 hover:bg-white/10 hover:text-white'
-                        }`}
-                      >
-                        <div className={`p-1.5 xs:p-2 rounded-lg ${isActive ? 'bg-white/20' : 'bg-white/5'}`}>
-                          <Icon className="w-3.5 h-3.5 xs:w-4 xs:h-4 sm:w-5 sm:h-5" />
-                        </div>
+                      <button onClick={handleClick} className={`w-full flex items-center gap-3 xs:gap-4 px-3 xs:px-4 py-2.5 xs:py-3 sm:py-4 rounded-xl transition-all duration-300 ${isActive ? 'bg-white/20 text-white shadow-lg' : 'text-white/70 hover:bg-white/10 hover:text-white'}`}>
+                        <div className={`p-1.5 xs:p-2 rounded-lg ${isActive ? 'bg-white/20' : 'bg-white/5'}`}><Icon className="w-3.5 h-3.5 xs:w-4 xs:h-4 sm:w-5 sm:h-5" /></div>
                         <span className="font-medium flex-1 text-left text-xs xs:text-sm sm:text-base">{item.label}</span>
                         {isActive && <Sparkles className="w-2.5 h-2.5 xs:w-3 xs:h-3 sm:w-4 sm:h-4 text-blue-300 animate-pulse" />}
                       </button>
@@ -495,8 +529,6 @@ const TopNavbar = ({ onPanelChange, activePanel, onLogout }) => {
                   );
                 })}
               </div>
-
-              {/* Entry Pages */}
               <div className="space-y-1 xs:space-y-2 pt-3 xs:pt-4 border-t border-white/10">
                 <div className="text-[9px] xs:text-[10px] font-semibold text-gray-400 uppercase tracking-wider px-3 xs:px-4">Entry Pages</div>
                 {entryItems.map((item) => {
@@ -504,50 +536,39 @@ const TopNavbar = ({ onPanelChange, activePanel, onLogout }) => {
                   const isActive = activePanel === item.panelId;
                   return (
                     <Tooltip key={item.panelId} text={item.tooltip} position="right">
-                      <button
-                        onClick={() => {
-                          handleEntrySelect(item.panelId);
-                          setIsMobileMenuOpen(false);
-                        }}
-                        className={`w-full flex items-center gap-3 xs:gap-4 px-3 xs:px-4 py-2.5 xs:py-3 sm:py-4 rounded-xl transition-all duration-300 ${
-                          isActive 
-                            ? `bg-gradient-to-r ${item.color} text-white shadow-lg` 
-                            : 'text-white/70 hover:bg-white/10'
-                        }`}
-                      >
-                        <div className={`p-1.5 xs:p-2 rounded-lg ${isActive ? 'bg-white/20' : 'bg-white/5'}`}>
-                          <Icon className="w-3.5 h-3.5 xs:w-4 xs:h-4 sm:w-5 sm:h-5" />
-                        </div>
+                      <button onClick={() => { handleEntrySelect(item.panelId); setIsMobileMenuOpen(false); }}
+                        className={`w-full flex items-center gap-3 xs:gap-4 px-3 xs:px-4 py-2.5 xs:py-3 sm:py-4 rounded-xl transition-all duration-300 ${isActive ? `bg-gradient-to-r ${item.color} text-white shadow-lg` : 'text-white/70 hover:bg-white/10'}`}>
+                        <div className={`p-1.5 xs:p-2 rounded-lg ${isActive ? 'bg-white/20' : 'bg-white/5'}`}><Icon className="w-3.5 h-3.5 xs:w-4 xs:h-4 sm:w-5 sm:h-5" /></div>
                         <span className="font-medium flex-1 text-left text-xs xs:text-sm sm:text-base">{item.label}</span>
                       </button>
                     </Tooltip>
                   );
                 })}
               </div>
-
-              {/* Patient Data Display in Mobile Menu */}
               <div className="space-y-1 xs:space-y-2 pt-3 xs:pt-4 border-t border-white/10">
                 <div className="text-[9px] xs:text-[10px] font-semibold text-gray-400 uppercase tracking-wider px-3 xs:px-4">Current Patient</div>
                 <div className="bg-white/5 rounded-xl p-3 xs:p-4 space-y-2">
-                  <div className="flex justify-between items-center text-xs xs:text-sm">
-                    <span className="text-white/60">Patient:</span>
-                    <span className="text-white font-medium truncate ml-2 max-w-[150px]">{patientData.provider}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-xs xs:text-sm">
-                    <span className="text-white/60">DOB:</span>
-                    <span className="text-white font-medium">{patientData.dob}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-xs xs:text-sm">
-                    <span className="text-white/60">Gender:</span>
-                    <span className="text-white font-medium">{patientData.gender}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-xs xs:text-sm">
-                    <span className="text-white/60">Pages:</span>
-                    <span className="text-white font-medium">{patientData.pageNo}</span>
-                  </div>
+                  <div className="flex justify-between items-center text-xs xs:text-sm"><span className="text-white/60">Patient:</span><span className="text-white font-medium truncate ml-2 max-w-[150px]">{patientData.provider}</span></div>
+                  <div className="flex justify-between items-center text-xs xs:text-sm"><span className="text-white/60">DOB:</span><span className="text-white font-medium">{patientData.dob}</span></div>
+                  <div className="flex justify-between items-center text-xs xs:text-sm"><span className="text-white/60">Gender:</span><span className="text-white font-medium">{patientData.gender}</span></div>
+                  <div className="flex justify-between items-center text-xs xs:text-sm"><span className="text-white/60">Pages:</span><span className="text-white font-medium">{patientData.pageNo}</span></div>
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification for Status Confirmation */}
+      {toast.show && (
+        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[100] animate-slideUp">
+          <div className={`flex items-center gap-2 px-4 py-2 rounded-lg shadow-lg text-sm font-medium ${
+            toast.type === 'success' 
+              ? 'bg-green-500 text-white' 
+              : 'bg-yellow-500 text-white'
+          }`}>
+            {toast.type === 'success' ? <CheckCircle size={16} /> : <AlertIcon size={16} />}
+            <span>{toast.message}</span>
           </div>
         </div>
       )}
